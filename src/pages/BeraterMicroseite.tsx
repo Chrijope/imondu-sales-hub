@@ -4,9 +4,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, ExternalLink, User, Building2, Home } from "lucide-react";
+import { Copy, ExternalLink, User, Building2, Home, Plus, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import imonduLogo from "@/assets/imondu-logo.png";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface RabattCode {
+  id: string;
+  code: string;
+  type: "developer" | "customer";
+  nutzungen: number;
+  zahlend: number;
+  promo: number;
+}
+
+const INITIAL_CODES: RabattCode[] = [
+  { id: "1", code: "K4P4", type: "customer", nutzungen: 1, zahlend: 0, promo: 1 },
+  { id: "2", code: "H991", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "3", code: "5Y31", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "4", code: "27J5", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "5", code: "178D", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "6", code: "6L7Y", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "7", code: "B8N8", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "8", code: "J9B3", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "9", code: "J12Q", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+];
 
 export default function BeraterMicroseite() {
   const { toast } = useToast();
@@ -18,14 +41,53 @@ export default function BeraterMicroseite() {
   const [devCode, setDevCode] = useState("J9B3");
   const [cusCode, setCusCode] = useState("K4P4");
   const [activeTab, setActiveTab] = useState("developer");
+  const [rabattCodes, setRabattCodes] = useState<RabattCode[]>(INITIAL_CODES);
+  const [expandedCode, setExpandedCode] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newCode, setNewCode] = useState("");
+  const [newCodeType, setNewCodeType] = useState<"developer" | "customer">("developer");
 
   const devUrl = `https://imondu.com/developer?dev_code=${devCode}`;
   const cusUrl = `https://imondu.com/customer?cus_code=${cusCode}`;
+
+  const totalNutzungen = rabattCodes.reduce((s, c) => s + c.nutzungen, 0);
+  const totalZahlend = rabattCodes.reduce((s, c) => s + c.zahlend, 0);
+  const totalPromo = rabattCodes.reduce((s, c) => s + c.promo, 0);
 
   const copyToClipboard = (url: string) => {
     navigator.clipboard.writeText(url);
     toast({ title: "Link kopiert!", description: url });
   };
+
+  const generateCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  };
+
+  const addRabattCode = () => {
+    const code = newCode || generateCode();
+    setRabattCodes(prev => [...prev, {
+      id: Date.now().toString(),
+      code,
+      type: newCodeType,
+      nutzungen: 0, zahlend: 0, promo: 0,
+    }]);
+    setNewCode("");
+    setShowAddDialog(false);
+    toast({ title: "Rabattcode erstellt", description: `Code: ${code}` });
+  };
+
+  const deleteRabattCode = (id: string) => {
+    setRabattCodes(prev => prev.filter(c => c.id !== id));
+    toast({ title: "Rabattcode gelöscht" });
+  };
+
+  const getAffiliateUrl = (rc: RabattCode) =>
+    rc.type === "customer"
+      ? `https://imondu.com/customer?cus_code=${rc.code}`
+      : `https://imondu.com/developer?dev_code=${rc.code}`;
 
   return (
     <CRMLayout>
@@ -191,6 +253,113 @@ export default function BeraterMicroseite() {
             </div>
           </div>
         </div>
+
+        {/* Rabattcodes Section */}
+        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-1 bg-accent rounded-full" />
+                <h2 className="font-semibold text-foreground">Rabattcodes</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Verwalte deine Rabatt- und Affiliate-Codes.</p>
+            </div>
+            <Button size="sm" onClick={() => setShowAddDialog(true)}>
+              <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
+            </Button>
+          </div>
+
+          {/* KPI Tiles */}
+          <div className="p-6 grid grid-cols-3 gap-4">
+            <div className="border border-border rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground">Gesamt Code-Nutzungen</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{totalNutzungen}</p>
+            </div>
+            <div className="border border-border rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground">Zahlende Nutzungen</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{totalZahlend}</p>
+            </div>
+            <div className="border border-border rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground">Kostenlose Promo-Nutzungen</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{totalPromo}</p>
+            </div>
+          </div>
+
+          {/* Code List */}
+          <div className="px-6 pb-6 space-y-2">
+            {rabattCodes.map((rc) => {
+              const url = getAffiliateUrl(rc);
+              const isExpanded = expandedCode === rc.id;
+              return (
+                <div key={rc.id} className="border border-border rounded-lg bg-muted/30">
+                  <div
+                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setExpandedCode(isExpanded ? null : rc.id)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-muted-foreground">Rabatt-Code:</span>
+                      <span className="font-bold text-foreground">{rc.code}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {rc.type === "customer" ? "Eigentümer" : "Entwickler"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-muted-foreground">Affiliate-Link:</span>
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline" onClick={e => e.stopPropagation()}>
+                        {url}
+                      </a>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); copyToClipboard(url); }}>
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    </div>
+                  </div>
+                  {isExpanded && (
+                    <div className="px-4 pb-3 pt-1 border-t border-border flex items-center justify-between">
+                      <div className="flex gap-6 text-sm">
+                        <span className="text-muted-foreground">Nutzungen: <span className="font-medium text-foreground">{rc.nutzungen}</span></span>
+                        <span className="text-muted-foreground">Zahlend: <span className="font-medium text-foreground">{rc.zahlend}</span></span>
+                        <span className="text-muted-foreground">Promo: <span className="font-medium text-foreground">{rc.promo}</span></span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRabattCode(rc.id)}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Add Code Dialog */}
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Neuen Rabattcode anlegen</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Code (leer = automatisch generiert)</label>
+                <Input value={newCode} onChange={(e) => setNewCode(e.target.value.toUpperCase())} placeholder="z.B. X7K2" maxLength={6} />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Typ</label>
+                <Select value={newCodeType} onValueChange={(v) => setNewCodeType(v as "developer" | "customer")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="developer">Entwickler (dev_code)</SelectItem>
+                    <SelectItem value="customer">Eigentümer (cus_code)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>Abbrechen</Button>
+              <Button onClick={addRabattCode}>Code erstellen</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </CRMLayout>
   );
