@@ -32,6 +32,7 @@ import Inserate from "./pages/Inserate";
 import EntwicklerRegistrieren from "./pages/EntwicklerRegistrieren";
 import Entwickleruebersicht from "./pages/Entwickleruebersicht";
 import Kalender from "./pages/Kalender";
+import Nutzerverwaltung from "./pages/Nutzerverwaltung";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,7 @@ const App = () => (
           <Route path="/entwickler-registrieren" element={<EntwicklerRegistrieren />} />
           <Route path="/entwickler" element={<Entwickleruebersicht />} />
           <Route path="/kalender" element={<Kalender />} />
+          <Route path="/nutzerverwaltung" element={<Nutzerverwaltung />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
