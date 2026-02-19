@@ -17,6 +17,7 @@ import {
   Phone,
   Megaphone,
   ShoppingBag,
+  Globe,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -37,6 +38,7 @@ const navItems = [
   { path: "/statistik", icon: TrendingUp, label: "Statistik" },
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
   { path: "/marketing-leads", icon: Megaphone, label: "Marketing Leads" },
+  { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
   { path: "/shop", icon: ShoppingBag, label: "Shop" },
 ];
 
