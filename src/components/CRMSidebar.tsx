@@ -33,6 +33,8 @@ import {
   Settings,
   GraduationCap,
   Home,
+  HardHat,
+  ClipboardList,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -83,6 +85,8 @@ const bottomNavItems = [
   { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
   { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
   { path: "/academy", icon: GraduationCap, label: "Academy" },
+  { path: "/entwickler-registrieren", icon: ClipboardList, label: "Entwickler registrieren" },
+  { path: "/entwickler", icon: HardHat, label: "Entwicklerübersicht" },
 ];
 
 function NavItem({ path, icon: Icon, label, isActive }: { path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean }) {
