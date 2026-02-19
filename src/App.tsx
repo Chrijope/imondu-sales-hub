@@ -18,6 +18,7 @@ import Teampartner from "./pages/Teampartner";
 import Statistik from "./pages/Statistik";
 import Ansprechpartner from "./pages/Ansprechpartner";
 import MarketingLeads from "./pages/MarketingLeads";
+import BeraterMicroseite from "./pages/BeraterMicroseite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/statistik" element={<Statistik />} />
           <Route path="/ansprechpartner" element={<Ansprechpartner />} />
           <Route path="/marketing-leads" element={<MarketingLeads />} />
+          <Route path="/berater-microseite" element={<BeraterMicroseite />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
