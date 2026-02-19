@@ -15,9 +15,13 @@ import {
   Zap,
   Wrench,
   Globe,
+  StickyNote,
+  CheckSquare,
+  PhoneCall,
+  Video,
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
-import { SAMPLE_LEADS, PIPELINE_STAGES } from "@/data/crm-data";
+import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 
 const sampleActivities = [
   { type: "call" as const, desc: "Erstgespräch geführt – Interesse an Sanierungspaket", time: "Heute 11:30", by: "Max Müller" },
@@ -48,9 +52,22 @@ export default function LeadDetail() {
     );
   }
 
-  const stage = PIPELINE_STAGES.find((s) => s.id === lead.status);
+  const pipelineStages = lead.type === "b2c" ? B2C_PIPELINE_STAGES : B2B_PIPELINE_STAGES;
+  const currentStage = pipelineStages.find((s) => s.id === lead.status);
+  const currentStageIndex = pipelineStages.findIndex((s) => s.id === lead.status);
   const name = lead.type === "b2b" ? lead.companyName : `${lead.firstName} ${lead.lastName}`;
   const typeLabel = lead.type === "b2b" ? "Partner" : "Eigentümer";
+
+  const actions = [
+    { icon: StickyNote, label: "Notiz erstellen", color: "bg-primary text-primary-foreground" },
+    { icon: Mail, label: "E-Mail schreiben", color: "bg-secondary text-secondary-foreground" },
+    { icon: Phone, label: "Anruf", color: "bg-secondary text-secondary-foreground" },
+    { icon: CheckSquare, label: "Aufgabe erstellen", color: "bg-secondary text-secondary-foreground" },
+    { icon: CalendarDays, label: "Meeting erstellen", color: "bg-secondary text-secondary-foreground" },
+    { icon: MessageSquare, label: "WhatsApp schreiben", color: "bg-success text-success-foreground" },
+    { icon: PhoneCall, label: "Anruf protokollieren", color: "bg-secondary text-secondary-foreground" },
+    { icon: Video, label: "Meeting protokollieren", color: "bg-secondary text-secondary-foreground" },
+  ];
 
   return (
     <CRMLayout>
@@ -65,8 +82,11 @@ export default function LeadDetail() {
         </button>
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-4">
           <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-1 rounded-full gradient-brand" />
+            </div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-display font-bold text-foreground">{name}</h1>
               <span
@@ -88,64 +108,148 @@ export default function LeadDetail() {
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="px-3 py-1.5 rounded-full text-xs font-semibold text-primary-foreground"
-              style={{ backgroundColor: stage?.color }}
-            >
-              {stage?.name}
-            </div>
-            <button className="p-2 rounded-lg border border-border hover:bg-secondary transition-colors">
-              <Edit3 className="h-4 w-4 text-muted-foreground" />
-            </button>
+          <button className="p-2 rounded-lg border border-border hover:bg-secondary transition-colors">
+            <Edit3 className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Pipeline Status Bar */}
+        <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border mb-6">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Status</h2>
+          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            {pipelineStages.map((stage, i) => {
+              const isActive = stage.id === lead.status;
+              const isPast = i < currentStageIndex;
+              const isLost = stage.id.endsWith("_lost");
+              const isWon = stage.id.endsWith("_won") || stage.id.endsWith("_inserat");
+
+              return (
+                <div key={stage.id} className="flex items-center shrink-0">
+                  {i > 0 && <span className="text-muted-foreground mx-0.5 text-xs">→</span>}
+                  <div
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium border transition-all ${
+                      isActive
+                        ? "text-primary-foreground border-transparent shadow-sm"
+                        : isPast
+                        ? "bg-muted text-foreground border-border"
+                        : "bg-card text-muted-foreground border-border"
+                    }`}
+                    style={isActive ? { backgroundColor: stage.color } : undefined}
+                  >
+                    {stage.name}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Details */}
+          {/* Left Column */}
           <div className="space-y-4">
-            {/* Contact Info */}
-            <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Kontaktdaten</h2>
-              <div className="space-y-3">
-                {lead.phone && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{lead.phone}</span>
-                  </div>
-                )}
-                {lead.email && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{lead.email}</span>
-                  </div>
-                )}
-                {lead.address && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{lead.address}</span>
-                  </div>
-                )}
-                {lead.type === "b2b" && lead.website && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{lead.website}</span>
-                  </div>
-                )}
-                {lead.type === "b2b" && lead.region && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">Region: {lead.region}</span>
-                  </div>
-                )}
+            {/* Aktionen */}
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-1 rounded-full gradient-brand" />
+                <h2 className="text-sm font-semibold text-foreground">Aktionen</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {actions.map((action, i) => (
+                  <button
+                    key={i}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity ${action.color}`}
+                  >
+                    <action.icon className="h-3.5 w-3.5" />
+                    {action.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Objekt-Daten (B2C) */}
+            {/* Kontaktdaten */}
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-1 rounded-full gradient-brand" />
+                <h2 className="text-sm font-semibold text-foreground">Kontaktdaten</h2>
+              </div>
+              <dl className="space-y-2.5 text-sm">
+                {lead.type === "b2c" && lead.firstName && (
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Vorname</dt>
+                    <dd className="text-foreground font-medium">{lead.firstName}</dd>
+                  </div>
+                )}
+                {lead.type === "b2c" && lead.lastName && (
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Nachname</dt>
+                    <dd className="text-foreground font-medium">{lead.lastName}</dd>
+                  </div>
+                )}
+                {lead.type === "b2b" && lead.companyName && (
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Firma</dt>
+                    <dd className="text-foreground font-medium">{lead.companyName}</dd>
+                  </div>
+                )}
+                {lead.type === "b2b" && lead.contactPerson && (
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Ansprechpartner</dt>
+                    <dd className="text-foreground font-medium">{lead.contactPerson}</dd>
+                  </div>
+                )}
+                {lead.phone && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> Telefon</dt>
+                    <dd className="text-foreground">{lead.phone}</dd>
+                  </div>
+                )}
+                {lead.email && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> E-Mail</dt>
+                    <dd className="text-foreground text-right max-w-[180px] truncate">{lead.email}</dd>
+                  </div>
+                )}
+                {lead.address && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> Adresse</dt>
+                    <dd className="text-foreground text-right max-w-[180px]">{lead.address}</dd>
+                  </div>
+                )}
+                {lead.type === "b2b" && lead.website && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Website</dt>
+                    <dd className="text-foreground">{lead.website}</dd>
+                  </div>
+                )}
+                {lead.type === "b2b" && lead.region && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> Region</dt>
+                    <dd className="text-foreground">{lead.region}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Quelle</dt>
+                  <dd className="text-foreground">{lead.source}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Berater</dt>
+                  <dd className="text-foreground">{lead.assignee}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Angelegt am</dt>
+                  <dd className="text-foreground">{lead.createdAt}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Immobiliendaten (B2C) */}
             {lead.type === "b2c" && (
-              <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
-                <h2 className="text-sm font-semibold text-foreground mb-4">Immobilie</h2>
-                <dl className="space-y-2 text-sm">
+              <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-1 rounded-full bg-b2c" />
+                  <h2 className="text-sm font-semibold text-foreground">Immobiliendaten</h2>
+                </div>
+                <dl className="space-y-2.5 text-sm">
                   {lead.objekttyp && (
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground flex items-center gap-2"><Home className="h-3.5 w-3.5" /> Objekttyp</dt>
@@ -184,7 +288,7 @@ export default function LeadDetail() {
                   )}
                   <div className="flex justify-between">
                     <dt className="text-muted-foreground flex items-center gap-2"><Zap className="h-3.5 w-3.5" /> Energieausweis</dt>
-                    <dd className="text-foreground">{lead.energieausweis ? 'Vorhanden' : 'Nicht vorhanden'}</dd>
+                    <dd className="text-foreground">{lead.energieausweis ? "Vorhanden" : "Nicht vorhanden"}</dd>
                   </div>
                   {lead.sanierungsstatus && (
                     <div className="flex justify-between">
@@ -201,18 +305,21 @@ export default function LeadDetail() {
                   {lead.interesse && (
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Interesse</dt>
-                      <dd className="font-semibold text-primary">{lead.interesse}</dd>
+                      <dd className="font-semibold text-accent">{lead.interesse}</dd>
                     </div>
                   )}
                 </dl>
               </div>
             )}
 
-            {/* Firmendaten (B2B) */}
+            {/* Partnerdaten (B2B) */}
             {lead.type === "b2b" && (
-              <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
-                <h2 className="text-sm font-semibold text-foreground mb-4">Partnerdaten</h2>
-                <dl className="space-y-2 text-sm">
+              <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-1 rounded-full bg-b2b" />
+                  <h2 className="text-sm font-semibold text-foreground">Partnerdaten</h2>
+                </div>
+                <dl className="space-y-2.5 text-sm">
                   {lead.gewerk && (
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground flex items-center gap-2"><Wrench className="h-3.5 w-3.5" /> Gewerk</dt>
@@ -221,76 +328,61 @@ export default function LeadDetail() {
                   )}
                   {lead.companySize && (
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground flex items-center gap-2"><Building2 className="h-3.5 w-3.5" /> Unternehmensgröße</dt>
-                      <dd className="text-foreground">{lead.companySize} MA</dd>
+                      <dt className="text-muted-foreground flex items-center gap-2"><Building2 className="h-3.5 w-3.5" /> Größe</dt>
+                      <dd className="text-foreground">{lead.companySize} Mitarbeiter</dd>
                     </div>
                   )}
                   {lead.partnerStatus && (
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Partnerstatus</dt>
-                      <dd className={`font-semibold ${lead.partnerStatus === 'Aktiver Partner' ? 'text-success' : lead.partnerStatus === 'Inaktiv' ? 'text-destructive' : 'text-foreground'}`}>
+                      <dd className={`font-semibold ${lead.partnerStatus === "Aktiver Partner" ? "text-success" : lead.partnerStatus === "Inaktiv" ? "text-destructive" : "text-foreground"}`}>
                         {lead.partnerStatus}
                       </dd>
                     </div>
                   )}
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Mitgliedschaft</dt>
+                    <dd className="text-foreground">1.250 € / Jahr</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Deine Provision</dt>
+                    <dd className="font-semibold text-accent">312,50 € (25%)</dd>
+                  </div>
                 </dl>
               </div>
             )}
 
-            {/* Meta */}
-            <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Details</h2>
-              <dl className="space-y-2 text-sm">
+            {/* Details */}
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-1 rounded-full gradient-brand" />
+                <h2 className="text-sm font-semibold text-foreground">Details</h2>
+              </div>
+              <dl className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Wert</dt>
-                  <dd className="font-semibold text-foreground">€{lead.value.toLocaleString("de-DE")}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Quelle</dt>
-                  <dd className="text-foreground">{lead.source}</dd>
+                  <dt className="text-muted-foreground">Provision</dt>
+                  <dd className="font-semibold text-foreground">{lead.value.toLocaleString("de-DE")} €</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Priorität</dt>
-                  <dd className="text-foreground capitalize">{lead.priority}</dd>
+                  <dd className={`font-medium capitalize ${lead.priority === "high" ? "text-destructive" : lead.priority === "medium" ? "text-warning" : "text-muted-foreground"}`}>
+                    {lead.priority === "high" ? "Hoch" : lead.priority === "medium" ? "Mittel" : "Niedrig"}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Verantwortlich</dt>
-                  <dd className="text-foreground">{lead.assignee}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Erstellt</dt>
-                  <dd className="text-foreground">{lead.createdAt}</dd>
+                  <dt className="text-muted-foreground">Zuletzt aktualisiert</dt>
+                  <dd className="text-foreground">{lead.updatedAt}</dd>
                 </div>
               </dl>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
-              <h2 className="text-sm font-semibold text-foreground mb-3">Aktionen</h2>
-              <div className="grid grid-cols-2 gap-2">
-                <button className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
-                  <Phone className="h-3.5 w-3.5" />
-                  Anrufen
-                </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition-colors">
-                  <Mail className="h-3.5 w-3.5" />
-                  E-Mail
-                </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition-colors">
-                  <FileText className="h-3.5 w-3.5" />
-                  Angebot
-                </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition-colors">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  Termin
-                </button>
-              </div>
             </div>
           </div>
 
           {/* Right: Timeline */}
-          <div className="lg:col-span-2 bg-card rounded-lg p-5 shadow-crm-sm border border-border">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Aktivitäten-Timeline</h2>
+          <div className="lg:col-span-2 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-1 rounded-full gradient-brand" />
+              <h2 className="text-sm font-semibold text-foreground">Aktivitäten-Timeline</h2>
+            </div>
             <div className="space-y-0">
               {sampleActivities.map((act, i) => {
                 const Icon = activityIcons[act.type] || Clock;
