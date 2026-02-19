@@ -10,7 +10,6 @@ import {
   Kanban,
   MessageSquare,
   Contact,
-  Users,
   Building2,
   Briefcase,
   UserPlus,
@@ -40,6 +39,8 @@ import {
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
+// ── Sub-items for collapsible groups ──
+
 const b2cSubItems = [
   { path: "/b2c/neue-leads", icon: Sparkles, label: "Neue Leads" },
   { path: "/b2c/hot-leads", icon: Flame, label: "Hot Leads" },
@@ -60,38 +61,63 @@ const b2bSubItems = [
   { path: "/b2b/bestand", icon: Archive, label: "Bestand" },
 ];
 
-const topNavItems = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/inbox", icon: Inbox, label: "Inbox" },
-  { path: "/kalender", icon: CalendarDays, label: "Kalender" },
-  { path: "/news", icon: Newspaper, label: "News" },
-  { path: "/presentation", icon: Presentation, label: "Präsentation" },
-  { path: "/analysetool", icon: BarChart3, label: "Analysetool" },
-  { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
-  { path: "/pipeline", icon: Kanban, label: "Pipeline" },
-  { path: "/chat", icon: MessageSquare, label: "Chat" },
-  { path: "/kontakte", icon: Contact, label: "Kontakte" },
-  { path: "/inserate", icon: Home, label: "Inserate" },
-];
-
 const shopSubItems = [
   { path: "/shop/lead-kauf", icon: ShoppingCart, label: "Lead-Kauf" },
   { path: "/shop/merchandise", icon: ShoppingBag, label: "Merchandise" },
 ];
 
-const bottomNavItems = [
-  { path: "/teampartner", icon: UserPlus, label: "Teampartner" },
-  { path: "/auswertungen", icon: Trophy, label: "Auswertungen" },
-  { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
-  { path: "/statistik", icon: TrendingUp, label: "Statistik" },
-  { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
-  { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
-  { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
-  { path: "/academy", icon: GraduationCap, label: "Academy" },
-  { path: "/entwickler-registrieren", icon: ClipboardList, label: "Entwickler registrieren" },
-  { path: "/entwickler", icon: HardHat, label: "Entwicklerübersicht" },
-  { path: "/nutzerverwaltung", icon: UsersRound, label: "Nutzerverwaltung" },
+// ── Sections ──
+
+const sectionOverview = [
+  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/inbox", icon: Inbox, label: "Inbox" },
+  { path: "/kalender", icon: CalendarDays, label: "Kalender" },
+  { path: "/news", icon: Newspaper, label: "News" },
 ];
+
+const sectionVertrieb = [
+  { path: "/pipeline", icon: Kanban, label: "Pipeline" },
+  { path: "/dialer", icon: Phone, label: "Powerdialer" },
+  { path: "/kontakte", icon: Contact, label: "Kontakte" },
+];
+
+const sectionImmobilien = [
+  { path: "/inserate", icon: Home, label: "Inserate" },
+  { path: "/entwickler", icon: HardHat, label: "Entwicklerübersicht" },
+  { path: "/entwickler-registrieren", icon: ClipboardList, label: "Entwickler registrieren" },
+];
+
+const sectionAuswertung = [
+  { path: "/auswertungen", icon: Trophy, label: "Auswertungen" },
+  { path: "/statistik", icon: TrendingUp, label: "Statistik" },
+  { path: "/analysetool", icon: BarChart3, label: "Analysetool" },
+  { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
+];
+
+const sectionTools = [
+  { path: "/academy", icon: GraduationCap, label: "Academy" },
+  { path: "/presentation", icon: Presentation, label: "Präsentation" },
+  { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
+  { path: "/chat", icon: MessageSquare, label: "Chat" },
+  { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
+];
+
+const sectionTeam = [
+  { path: "/teampartner", icon: UserPlus, label: "Teampartner" },
+  { path: "/nutzerverwaltung", icon: UsersRound, label: "Nutzerverwaltung" },
+  { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
+  { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
+];
+
+// ── Components ──
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+      {children}
+    </p>
+  );
+}
 
 function NavItem({ path, icon: Icon, label, isActive }: { path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean }) {
   return (
@@ -162,6 +188,25 @@ function CollapsibleGroup({ label, icon: Icon, items, color }: {
   );
 }
 
+function NavSection({ title, items, isActive }: {
+  title: string;
+  items: { path: string; icon: React.ComponentType<{ className?: string }>; label: string }[];
+  isActive: (path: string) => boolean;
+}) {
+  return (
+    <div>
+      <SectionLabel>{title}</SectionLabel>
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Sidebar ──
+
 export default function CRMSidebar() {
   const location = useLocation();
 
@@ -176,29 +221,44 @@ export default function CRMSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto">
-        {topNavItems.map((item) => (
-          <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
-        ))}
-
-        {/* Leads Überschrift + B2C/B2B Groups */}
-        <div className="pt-3">
-          <p className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Leads</p>
-          <div className="space-y-0.5">
-            <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />
-            <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />
-          </div>
-        </div>
-
-        <div className="pt-2 space-y-0.5">
-          {bottomNavItems.map((item) => (
+      <nav className="flex-1 py-1 px-3 overflow-y-auto space-y-0.5">
+        {/* ÜBERSICHT */}
+        <div className="space-y-0.5">
+          {sectionOverview.map((item) => (
             <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
           ))}
         </div>
 
-        {/* Shop Group */}
-        <div className="pt-1">
-          <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" />
+        {/* VERTRIEB */}
+        <div>
+          <SectionLabel>Vertrieb</SectionLabel>
+          <div className="space-y-0.5">
+            <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />
+            <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />
+            {sectionVertrieb.map((item) => (
+              <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+            ))}
+          </div>
+        </div>
+
+        {/* IMMOBILIEN */}
+        <NavSection title="Immobilien" items={sectionImmobilien} isActive={isActive} />
+
+        {/* AUSWERTUNG */}
+        <NavSection title="Auswertung" items={sectionAuswertung} isActive={isActive} />
+
+        {/* TOOLS & WISSEN */}
+        <NavSection title="Tools & Wissen" items={sectionTools} isActive={isActive} />
+
+        {/* TEAM & ADMIN */}
+        <NavSection title="Team & Admin" items={sectionTeam} isActive={isActive} />
+
+        {/* SHOP */}
+        <div>
+          <SectionLabel>Shop</SectionLabel>
+          <div className="space-y-0.5">
+            <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" />
+          </div>
         </div>
       </nav>
 
