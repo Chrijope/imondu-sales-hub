@@ -29,6 +29,7 @@ import {
   Trophy,
   Archive,
   Sparkles,
+  Settings,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -188,15 +189,16 @@ export default function CRMSidebar() {
 
       {/* User */}
       <div className="px-4 py-3 border-t border-border">
-        <div className="flex items-center gap-3">
+        <Link to="/einstellungen" className="flex items-center gap-3 group">
           <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
             MM
           </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Max Müller</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Max Müller</p>
             <p className="text-xs text-muted-foreground">Vertriebler</p>
           </div>
-        </div>
+          <Settings className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+        </Link>
       </div>
     </aside>
   );
