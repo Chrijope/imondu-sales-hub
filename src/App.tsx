@@ -15,6 +15,7 @@ import Praesentation from "./pages/Praesentation";
 import Unterlagen from "./pages/Unterlagen";
 import Analysetool from "./pages/Analysetool";
 import Teampartner from "./pages/Teampartner";
+import Statistik from "./pages/Statistik";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/unterlagen" element={<Unterlagen />} />
           <Route path="/analysetool" element={<Analysetool />} />
           <Route path="/teampartner" element={<Teampartner />} />
+          <Route path="/statistik" element={<Statistik />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
