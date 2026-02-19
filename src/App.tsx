@@ -16,6 +16,7 @@ import Unterlagen from "./pages/Unterlagen";
 import Analysetool from "./pages/Analysetool";
 import Teampartner from "./pages/Teampartner";
 import Statistik from "./pages/Statistik";
+import Ansprechpartner from "./pages/Ansprechpartner";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/analysetool" element={<Analysetool />} />
           <Route path="/teampartner" element={<Teampartner />} />
           <Route path="/statistik" element={<Statistik />} />
+          <Route path="/ansprechpartner" element={<Ansprechpartner />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
