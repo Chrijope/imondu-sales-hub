@@ -18,6 +18,10 @@ import {
   ChevronDown,
   Check,
   CheckCheck,
+  Building2,
+  Home,
+  Users,
+  MessageSquare,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -52,11 +56,13 @@ interface ChatThread {
   time: string;
   unread: number;
   pinned: boolean;
+  category: "intern" | "entwickler" | "eigentuemer";
   members: { name: string; initials: string; role: string }[];
   messages: ChatMessage[];
 }
 
 const initialChats: ChatThread[] = [
+  // ── Intern ──
   {
     id: "1",
     name: "Andreas Hub",
@@ -65,6 +71,7 @@ const initialChats: ChatThread[] = [
     time: "17:39",
     unread: 2,
     pinned: true,
+    category: "intern",
     members: [
       { name: "Andreas Hub", initials: "AH", role: "Admin" },
       { name: "Christian Peetz", initials: "CP", role: "Teampartner" },
@@ -77,25 +84,6 @@ const initialChats: ChatThread[] = [
     ],
   },
   {
-    id: "2",
-    name: "Oliver Gjorgijev",
-    initials: "OG",
-    lastMessage: "Perfekt, danke euch allen",
-    time: "14:22",
-    unread: 0,
-    pinned: false,
-    members: [
-      { name: "Oliver Gjorgijev", initials: "OG", role: "Teampartner" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
-    ],
-    messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "28.01.2026", isOwn: false, isSystem: true },
-      { id: "m1", sender: "Oliver Gjorgijev", initials: "OG", text: "Gibt es Neuigkeiten zu dem Projekt in München?", time: "14:10", isOwn: false },
-      { id: "m2", sender: "Max Müller", initials: "MM", text: "Ja, der Kunde hat sich zurückgemeldet. Termin steht für nächste Woche.", time: "14:15", isOwn: true },
-      { id: "m3", sender: "Oliver Gjorgijev", initials: "OG", text: "Perfekt, danke euch allen", time: "14:22", isOwn: false },
-    ],
-  },
-  {
     id: "3",
     name: "Team Vertrieb",
     initials: "TV",
@@ -103,6 +91,7 @@ const initialChats: ChatThread[] = [
     time: "09:45",
     unread: 5,
     pinned: false,
+    category: "intern",
     members: [
       { name: "Max Müller", initials: "MM", role: "Vertriebler" },
       { name: "Sarah Klein", initials: "SK", role: "Admin" },
@@ -115,6 +104,149 @@ const initialChats: ChatThread[] = [
       { id: "m3", sender: "Sarah Klein", initials: "SK", text: "Neue Leads sind da, bitte prüfen", time: "09:45", isOwn: false },
     ],
   },
+  {
+    id: "int-3",
+    name: "Oliver Gjorgijev",
+    initials: "OG",
+    lastMessage: "Perfekt, danke euch allen",
+    time: "14:22",
+    unread: 0,
+    pinned: false,
+    category: "intern",
+    members: [
+      { name: "Oliver Gjorgijev", initials: "OG", role: "Teampartner" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "28.01.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Oliver Gjorgijev", initials: "OG", text: "Gibt es Neuigkeiten zu dem Projekt in München?", time: "14:10", isOwn: false },
+      { id: "m2", sender: "Max Müller", initials: "MM", text: "Ja, der Kunde hat sich zurückgemeldet. Termin steht für nächste Woche.", time: "14:15", isOwn: true },
+      { id: "m3", sender: "Oliver Gjorgijev", initials: "OG", text: "Perfekt, danke euch allen", time: "14:22", isOwn: false },
+    ],
+  },
+  // ── Entwickler ──
+  {
+    id: "dev-1",
+    name: "Weber Bau GmbH",
+    initials: "WB",
+    lastMessage: "Wann können wir mit dem Auftrag rechnen?",
+    time: "15:10",
+    unread: 1,
+    pinned: false,
+    category: "entwickler",
+    members: [
+      { name: "Thomas Weber", initials: "TW", role: "Entwickler" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "10.02.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Max Müller", initials: "MM", text: "Hallo Herr Weber, ich habe ein passendes Projekt in Ihrer Region gefunden.", time: "14:30", isOwn: true },
+      { id: "m2", sender: "Thomas Weber", initials: "TW", text: "Das klingt interessant! Können Sie mir mehr Details schicken?", time: "14:45", isOwn: false },
+      { id: "m3", sender: "Max Müller", initials: "MM", text: "Natürlich, ich schicke Ihnen die Unterlagen per E-Mail.", time: "14:50", isOwn: true },
+      { id: "m4", sender: "Thomas Weber", initials: "TW", text: "Wann können wir mit dem Auftrag rechnen?", time: "15:10", isOwn: false },
+    ],
+  },
+  {
+    id: "dev-2",
+    name: "Elektro Schmitt",
+    initials: "ES",
+    lastMessage: "Die Referenzbilder sind angehängt",
+    time: "11:30",
+    unread: 0,
+    pinned: false,
+    category: "entwickler",
+    members: [
+      { name: "Peter Schmitt", initials: "PS", role: "Entwickler" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "05.02.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Peter Schmitt", initials: "PS", text: "Guten Tag, ich wollte meine Referenzen für das Profil nachreichen.", time: "11:20", isOwn: false },
+      { id: "m2", sender: "Peter Schmitt", initials: "PS", text: "Die Referenzbilder sind angehängt", time: "11:30", isOwn: false },
+    ],
+  },
+  {
+    id: "dev-3",
+    name: "Dach & Fassade Krüger",
+    initials: "DK",
+    lastMessage: "Können wir die Konditionen nochmal besprechen?",
+    time: "Gestern",
+    unread: 3,
+    pinned: true,
+    category: "entwickler",
+    members: [
+      { name: "Hans Krüger", initials: "HK", role: "Entwickler" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Sarah Klein", initials: "SK", role: "Admin" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "01.02.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Hans Krüger", initials: "HK", text: "Wir sind an einer Partnerschaft interessiert, aber der Jahresbeitrag ist für uns aktuell etwas hoch.", time: "16:00", isOwn: false },
+      { id: "m2", sender: "Max Müller", initials: "MM", text: "Verstehe ich. Lassen Sie uns gerne die verschiedenen Optionen besprechen.", time: "16:15", isOwn: true },
+      { id: "m3", sender: "Hans Krüger", initials: "HK", text: "Können wir die Konditionen nochmal besprechen?", time: "16:30", isOwn: false },
+    ],
+  },
+  // ── Eigentümer ──
+  {
+    id: "eigen-1",
+    name: "Anna Schmidt",
+    initials: "AS",
+    lastMessage: "Vielen Dank, der Termin passt mir gut!",
+    time: "16:45",
+    unread: 1,
+    pinned: false,
+    category: "eigentuemer",
+    members: [
+      { name: "Anna Schmidt", initials: "AS", role: "Eigentümer" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "17.02.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Max Müller", initials: "MM", text: "Hallo Frau Schmidt, vielen Dank für Ihr Interesse an einer Immobilienbewertung. Ich würde Ihnen gerne einen Vor-Ort-Termin anbieten.", time: "16:20", isOwn: true },
+      { id: "m2", sender: "Anna Schmidt", initials: "AS", text: "Das wäre super! Wann hätten Sie Zeit?", time: "16:30", isOwn: false },
+      { id: "m3", sender: "Max Müller", initials: "MM", text: "Wie wäre es am Donnerstag um 14 Uhr?", time: "16:35", isOwn: true },
+      { id: "m4", sender: "Anna Schmidt", initials: "AS", text: "Vielen Dank, der Termin passt mir gut!", time: "16:45", isOwn: false },
+    ],
+  },
+  {
+    id: "eigen-2",
+    name: "Klaus Meier",
+    initials: "KM",
+    lastMessage: "Können Sie mir eine zweite Meinung geben?",
+    time: "12:15",
+    unread: 0,
+    pinned: false,
+    category: "eigentuemer",
+    members: [
+      { name: "Klaus Meier", initials: "KM", role: "Eigentümer" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "12.02.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Klaus Meier", initials: "KM", text: "Hallo, ich habe bereits eine Bewertung von einem anderen Makler erhalten, aber die Zahl kommt mir niedrig vor.", time: "12:00", isOwn: false },
+      { id: "m2", sender: "Klaus Meier", initials: "KM", text: "Können Sie mir eine zweite Meinung geben?", time: "12:15", isOwn: false },
+    ],
+  },
+  {
+    id: "eigen-3",
+    name: "Petra Schulz",
+    initials: "PS",
+    lastMessage: "Welche Unterlagen brauchen Sie von mir?",
+    time: "10:00",
+    unread: 2,
+    pinned: false,
+    category: "eigentuemer",
+    members: [
+      { name: "Petra Schulz", initials: "PS", role: "Eigentümer" },
+      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "18.02.2026", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Max Müller", initials: "MM", text: "Hallo Frau Schulz, Sie wurden mir als neuer Lead zugewiesen. Ich helfe Ihnen gerne bei der Bewertung Ihrer Immobilie.", time: "09:45", isOwn: true },
+      { id: "m2", sender: "Petra Schulz", initials: "PS", text: "Super, das freut mich! Ich möchte mein Einfamilienhaus verkaufen.", time: "09:55", isOwn: false },
+      { id: "m3", sender: "Petra Schulz", initials: "PS", text: "Welche Unterlagen brauchen Sie von mir?", time: "10:00", isOwn: false },
+    ],
+  },
 ];
 
 const teamMembers = [
@@ -123,6 +255,19 @@ const teamMembers = [
   { name: "Sarah Klein", initials: "SK", role: "Admin" },
   { name: "Jan Weber", initials: "JW", role: "Admin" },
   { name: "Lukas Bauer", initials: "LB", role: "Teampartner" },
+  { name: "Weber Bau GmbH", initials: "WB", role: "Entwickler" },
+  { name: "Elektro Schmitt", initials: "ES", role: "Entwickler" },
+  { name: "Dach & Fassade Krüger", initials: "DK", role: "Entwickler" },
+  { name: "Anna Schmidt", initials: "AS", role: "Eigentümer" },
+  { name: "Klaus Meier", initials: "KM", role: "Eigentümer" },
+  { name: "Petra Schulz", initials: "PS", role: "Eigentümer" },
+];
+
+const CHAT_CATEGORIES = [
+  { id: "alle" as const, label: "Alle", icon: MessageSquare },
+  { id: "intern" as const, label: "Intern", icon: Users },
+  { id: "entwickler" as const, label: "Entwickler", icon: Building2 },
+  { id: "eigentuemer" as const, label: "Eigentümer", icon: Home },
 ];
 
 export default function Chat() {
@@ -131,11 +276,13 @@ export default function Chat() {
   const [searchQuery, setSearchQuery] = useState("");
   const [messageInput, setMessageInput] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-  const [inviteType, setInviteType] = useState<"admin" | "teampartner">("teampartner");
+  const [inviteType, setInviteType] = useState<"admin" | "teampartner" | "entwickler" | "eigentuemer">("teampartner");
+  const [activeCategory, setActiveCategory] = useState<"alle" | "intern" | "entwickler" | "eigentuemer">("alle");
 
   const activeChat = chats.find((c) => c.id === activeChatId);
 
   const filteredChats = chats
+    .filter((c) => activeCategory === "alle" || c.category === activeCategory)
     .filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
@@ -209,7 +356,10 @@ export default function Chat() {
   const availableInvites = teamMembers.filter(
     (tm) =>
       !activeChat?.members.some((m) => m.name === tm.name) &&
-      (inviteType === "admin" ? tm.role === "Admin" : tm.role === "Teampartner")
+      (inviteType === "admin" ? tm.role === "Admin"
+        : inviteType === "entwickler" ? tm.role === "Entwickler"
+        : inviteType === "eigentuemer" ? tm.role === "Eigentümer"
+        : tm.role === "Teampartner")
   );
 
   return (
@@ -217,7 +367,7 @@ export default function Chat() {
       <div className="flex h-[calc(100vh-2rem)] bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
         {/* Chat List Sidebar */}
         <div className="w-[300px] border-r border-border flex flex-col bg-muted/30">
-          <div className="p-3 border-b border-border">
+          <div className="p-3 border-b border-border space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -226,6 +376,33 @@ export default function Chat() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 text-sm bg-background"
               />
+            </div>
+            {/* Category Tabs */}
+            <div className="flex gap-1">
+              {CHAT_CATEGORIES.map(cat => {
+                const count = cat.id === "alle"
+                  ? chats.filter(c => c.unread > 0).length
+                  : chats.filter(c => c.category === cat.id && c.unread > 0).length;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors flex-1 justify-center ${
+                      activeCategory === cat.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <cat.icon className="h-3 w-3" />
+                    {cat.label}
+                    {count > 0 && (
+                      <span className={`text-[9px] font-bold ml-0.5 ${activeCategory === cat.id ? "text-primary-foreground" : "text-primary"}`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -264,6 +441,8 @@ export default function Chat() {
                     <div className="flex items-center justify-between mt-0.5">
                       <p className="text-xs text-muted-foreground truncate">{chat.lastMessage}</p>
                       <div className="flex items-center gap-1 ml-2 shrink-0">
+                        {chat.category === "entwickler" && <Building2 className="h-3 w-3 text-[hsl(var(--info))]" />}
+                        {chat.category === "eigentuemer" && <Home className="h-3 w-3 text-[hsl(var(--success))]" />}
                         {chat.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
                         {chat.unread > 0 && (
                           <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] gradient-brand text-primary-foreground border-0">
@@ -321,72 +500,50 @@ export default function Chat() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 mt-3">
-                <Dialog open={inviteDialogOpen && inviteType === "admin"} onOpenChange={(o) => { setInviteDialogOpen(o); setInviteType("admin"); }}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10">
-                      <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                      Admin einladen
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Admin einladen</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-2 mt-2">
-                      {availableInvites.length > 0 ? availableInvites.map((m) => (
-                        <button
-                          key={m.name}
-                          onClick={() => inviteMember(m)}
-                          className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
-                        >
-                          <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
-                            {m.initials}
-                          </div>
-                          <div className="text-left">
-                            <p className="text-sm font-medium text-foreground">{m.name}</p>
-                            <p className="text-xs text-muted-foreground">{m.role}</p>
-                          </div>
-                        </button>
-                      )) : (
-                        <p className="text-sm text-muted-foreground py-4 text-center">Keine Admins verfügbar</p>
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={inviteDialogOpen && inviteType === "teampartner"} onOpenChange={(o) => { setInviteDialogOpen(o); setInviteType("teampartner"); }}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10">
-                      <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                      Teampartner einladen
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Teampartner einladen</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-2 mt-2">
-                      {availableInvites.length > 0 ? availableInvites.map((m) => (
-                        <button
-                          key={m.name}
-                          onClick={() => inviteMember(m)}
-                          className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
-                        >
-                          <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
-                            {m.initials}
-                          </div>
-                          <div className="text-left">
-                            <p className="text-sm font-medium text-foreground">{m.name}</p>
-                            <p className="text-xs text-muted-foreground">{m.role}</p>
-                          </div>
-                        </button>
-                      )) : (
-                        <p className="text-sm text-muted-foreground py-4 text-center">Keine Teampartner verfügbar</p>
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
+                {([
+                  { type: "admin" as const, label: "Admin" },
+                  { type: "teampartner" as const, label: "Teampartner" },
+                  { type: "entwickler" as const, label: "Entwickler" },
+                  { type: "eigentuemer" as const, label: "Eigentümer" },
+                ]).map(({ type, label }) => (
+                  <Dialog
+                    key={type}
+                    open={inviteDialogOpen && inviteType === type}
+                    onOpenChange={(o) => { setInviteDialogOpen(o); setInviteType(type); }}
+                  >
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10">
+                        <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                        {label} einladen
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{label} einladen</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-2 mt-2">
+                        {availableInvites.length > 0 ? availableInvites.map((m) => (
+                          <button
+                            key={m.name}
+                            onClick={() => inviteMember(m)}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
+                          >
+                            <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
+                              {m.initials}
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-medium text-foreground">{m.name}</p>
+                              <p className="text-xs text-muted-foreground">{m.role}</p>
+                            </div>
+                          </button>
+                        )) : (
+                          <p className="text-sm text-muted-foreground py-4 text-center">Keine {label} verfügbar</p>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ))}
 
                 <Button
                   variant="outline"
