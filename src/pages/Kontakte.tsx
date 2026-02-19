@@ -4,8 +4,8 @@ import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/c
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
-import { Search, Building2, Briefcase, ExternalLink, Phone, Mail, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Building2, Briefcase, Phone, Mail, Filter } from "lucide-react";
 
 const ALL_STAGES = [...B2C_PIPELINE_STAGES, ...B2B_PIPELINE_STAGES];
 const stageLabel = (id: string) => ALL_STAGES.find(s => s.id === id)?.name ?? id;
@@ -14,6 +14,7 @@ const stageColor = (id: string) => ALL_STAGES.find(s => s.id === id)?.color ?? "
 type TypeFilter = "alle" | "b2c" | "b2b";
 
 export default function Kontakte() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("alle");
 
@@ -108,7 +109,11 @@ export default function Kontakte() {
                     : (lead.gewerk ?? "");
 
                   return (
-                    <tr key={lead.id} className="border-b border-border/40 hover:bg-secondary/20 transition-colors">
+                    <tr
+                      key={lead.id}
+                      className="border-b border-border/40 hover:bg-secondary/20 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/lead/${lead.id}`)}
+                    >
                       <td className="py-3 px-4">
                         <Badge
                           variant="secondary"
@@ -125,18 +130,18 @@ export default function Kontakte() {
                       <td className="py-3 px-4 text-muted-foreground">{contactPerson}</td>
                       <td className="py-3 px-4">
                         {lead.phone ? (
-                          <a href={`tel:${lead.phone}`} className="text-foreground hover:text-primary transition-colors flex items-center gap-1">
+                          <span className="text-foreground flex items-center gap-1">
                             <Phone className="h-3 w-3 text-muted-foreground" />
                             {lead.phone}
-                          </a>
+                          </span>
                         ) : "–"}
                       </td>
                       <td className="py-3 px-4">
                         {lead.email ? (
-                          <a href={`mailto:${lead.email}`} className="text-foreground hover:text-primary transition-colors flex items-center gap-1">
+                          <span className="text-foreground flex items-center gap-1">
                             <Mail className="h-3 w-3 text-muted-foreground" />
                             <span className="truncate max-w-[160px]">{lead.email}</span>
-                          </a>
+                          </span>
                         ) : "–"}
                       </td>
                       <td className="py-3 px-4">
@@ -151,13 +156,7 @@ export default function Kontakte() {
                       <td className="py-3 px-4 text-muted-foreground text-xs">
                         {new Date(lead.createdAt).toLocaleDateString("de-DE")}
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <Link to={`/lead/${lead.id}`}>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary">
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Button>
-                        </Link>
-                      </td>
+                      <td className="py-3 px-4" />
                     </tr>
                   );
                 })}
