@@ -1,5 +1,5 @@
 import CRMLayout from "@/components/CRMLayout";
-import { Search, Filter, MoreHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SAMPLE_LEADS, PIPELINE_STAGES } from "@/data/crm-data";
@@ -52,7 +52,7 @@ export default function Leads() {
                     : "bg-card text-muted-foreground hover:bg-secondary"
                 }`}
               >
-                {type === "all" ? "Alle" : type}
+                {type === "all" ? "Alle" : type === "b2c" ? "Eigentümer" : "Partner"}
               </button>
             ))}
           </div>
@@ -65,6 +65,7 @@ export default function Leads() {
               <tr className="border-b border-border bg-secondary/30">
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</th>
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Typ</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Details</th>
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Quelle</th>
                 <th className="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Wert</th>
@@ -74,6 +75,7 @@ export default function Leads() {
             <tbody>
               {filtered.map((lead) => {
                 const name = lead.type === "b2b" ? lead.companyName : `${lead.firstName} ${lead.lastName}`;
+                const detail = lead.type === "b2b" ? lead.gewerk : lead.objekttyp;
                 const stage = PIPELINE_STAGES.find((s) => s.id === lead.status);
                 return (
                   <tr
@@ -86,9 +88,10 @@ export default function Leads() {
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                         lead.type === "b2c" ? "bg-b2c/10 text-b2c" : "bg-b2b/10 text-b2b"
                       }`}>
-                        {lead.type}
+                        {lead.type === "b2c" ? "Eigentümer" : "Partner"}
                       </span>
                     </td>
+                    <td className="py-3 px-4 text-muted-foreground">{detail}</td>
                     <td className="py-3 px-4">
                       <span className="inline-flex items-center gap-1.5 text-xs">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage?.color }} />
