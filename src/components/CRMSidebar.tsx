@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  Inbox,
   Newspaper,
   Presentation,
   BarChart3,
@@ -30,6 +31,7 @@ import {
   Archive,
   Sparkles,
   Settings,
+  GraduationCap,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -55,6 +57,7 @@ const b2bSubItems = [
 
 const topNavItems = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/inbox", icon: Inbox, label: "Inbox" },
   { path: "/news", icon: Newspaper, label: "News" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/analysetool", icon: BarChart3, label: "Analysetool" },
@@ -77,6 +80,7 @@ const bottomNavItems = [
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
   { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
   { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
+  { path: "/academy", icon: GraduationCap, label: "Academy" },
 ];
 
 function NavItem({ path, icon: Icon, label, isActive }: { path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean }) {
