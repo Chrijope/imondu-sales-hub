@@ -19,8 +19,8 @@ const abrechnungsHistorie = [
 export default function Abrechnungen() {
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
   const b2bLeads = SAMPLE_LEADS.filter((l) => l.type === "b2b");
-  const b2cBestand = b2cLeads.filter((l) => l.status === "won").length;
-  const b2bBestand = b2bLeads.filter((l) => l.status === "won").length;
+  const b2cBestand = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
+  const b2bBestand = b2bLeads.filter((l) => l.status === "b2b_won").length;
 
   const b2cProvisionAktuell = b2cBestand * B2C_PROVISION_PER_INSERAT;
   const b2bProvisionAktuell = b2bBestand * B2B_PROVISION;

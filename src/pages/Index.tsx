@@ -56,10 +56,10 @@ const tasks = [
 export default function Dashboard() {
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
   const b2bLeads = SAMPLE_LEADS.filter((l) => l.type === "b2b");
-  const b2cBestand = b2cLeads.filter((l) => l.status === "won").length;
-  const b2bBestand = b2bLeads.filter((l) => l.status === "won").length;
-  const b2cNew = b2cLeads.filter((l) => l.status === "new").length;
-  const b2bNew = b2bLeads.filter((l) => l.status === "new").length;
+  const b2cBestand = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
+  const b2bBestand = b2bLeads.filter((l) => l.status === "b2b_won").length;
+  const b2cNew = b2cLeads.filter((l) => l.status === "b2c_new").length;
+  const b2bNew = b2bLeads.filter((l) => l.status === "b2b_new").length;
 
   // Provision calculations
   const b2cProvision = b2cBestand * 10; // 10€ per Inserat
@@ -123,7 +123,7 @@ export default function Dashboard() {
               </div>
               <div className="text-center">
                 <p className="text-3xl font-display font-bold text-foreground">
-                  {SAMPLE_LEADS.filter((l) => l.status === "won").length}
+                  {SAMPLE_LEADS.filter((l) => l.status === "b2c_inserat" || l.status === "b2b_won").length}
                 </p>
                 <p className="text-xs text-muted-foreground font-medium mt-1">Abschlüsse</p>
               </div>
