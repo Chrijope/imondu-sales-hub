@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User, Building, FileText, MapPin, Camera, Save, Info } from "lucide-react";
+import { User, Building, FileText, MapPin, Camera, Save, Info, Calendar } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface ProfileData {
@@ -225,6 +225,39 @@ export default function Einstellungen() {
               <Input value={profile.bankname} onChange={(e) => update("bankname", e.target.value)} />
             </Field>
           </div>
+        </SectionCard>
+
+        {/* Kalender-Verbindung */}
+        <SectionCard icon={Calendar} title="Kalender-Verbindung">
+          <p className="text-xs text-muted-foreground mb-4">
+            Verbinde deinen Kalender, damit Meetings, Termine und Follow-ups automatisch synchronisiert werden.
+          </p>
+          <div className="space-y-3">
+            {[
+              { name: "Google Calendar", connected: false },
+              { name: "Microsoft Outlook", connected: false },
+              { name: "Apple Kalender", connected: false },
+            ].map((cal) => (
+              <div key={cal.name} className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/20">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{cal.name}</p>
+                  <p className="text-xs text-muted-foreground">{cal.connected ? "Verbunden" : "Nicht verbunden"}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    toast({ title: `${cal.name} Verbindung`, description: "Bitte gehe zur Kalender-Seite für die vollständige Einrichtung." })
+                  }
+                >
+                  Verbinden
+                </Button>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Für erweiterte Kalender-Einstellungen besuche die <a href="/kalender" className="text-primary hover:underline font-medium">Kalender-Seite</a>.
+          </p>
         </SectionCard>
 
         {/* Speichern */}

@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, Phone } from "lucide-react";
 import { useState } from "react";
 import CRMLayout from "@/components/CRMLayout";
+import Powerdialer from "@/components/Powerdialer";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, Lead } from "@/data/crm-data";
 
 const SUB_PAGE_CONFIG: Record<string, { title: string; description: string; filterFn: (l: Lead) => boolean }> = {
@@ -46,6 +47,7 @@ export default function B2CLeads() {
   const { subPage } = useParams<{ subPage: string }>();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [showDialer, setShowDialer] = useState(subPage === "neue-leads");
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
 
@@ -74,7 +76,21 @@ export default function B2CLeads() {
             <h1 className="text-2xl font-display font-bold text-foreground">{config.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">{filtered.length} Leads · {config.description}</p>
           </div>
+          <button
+            onClick={() => setShowDialer(!showDialer)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              showDialer ? "gradient-brand text-primary-foreground shadow-crm-sm" : "bg-secondary text-foreground hover:bg-secondary/80"
+            }`}
+          >
+            <Phone className="h-4 w-4" />
+            Powerdialer
+          </button>
         </div>
+
+        {showDialer ? (
+          <Powerdialer leads={filtered} type="b2c" />
+        ) : (
+          <>
 
         {/* Search */}
         <div className="flex items-center gap-3 mb-4">
@@ -144,6 +160,8 @@ export default function B2CLeads() {
             </tbody>
           </table>
         </div>
+        </>
+        )}
       </div>
     </CRMLayout>
   );
