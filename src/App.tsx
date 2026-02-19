@@ -26,6 +26,8 @@ import MerchShop from "./pages/MerchShop";
 import Einstellungen from "./pages/Einstellungen";
 import Auswertungen from "./pages/Auswertungen";
 import Kontakte from "./pages/Kontakte";
+import InboxPage from "./pages/Inbox";
+import Academy from "./pages/Academy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +62,8 @@ const App = () => (
           <Route path="/einstellungen" element={<Einstellungen />} />
           <Route path="/auswertungen" element={<Auswertungen />} />
           <Route path="/kontakte" element={<Kontakte />} />
+          <Route path="/inbox" element={<InboxPage />} />
+          <Route path="/academy" element={<Academy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
