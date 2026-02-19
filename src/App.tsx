@@ -8,6 +8,7 @@ import Pipeline from "./pages/Pipeline";
 import Leads from "./pages/Leads";
 import LeadDetail from "./pages/LeadDetail";
 import Dialer from "./pages/Dialer";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/leads" element={<Leads />} />
           <Route path="/lead/:id" element={<LeadDetail />} />
           <Route path="/dialer" element={<Dialer />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
