@@ -60,9 +60,9 @@ const teamStats = [
 ];
 
 const tasks = [
-  { text: "Follow-Up: TechVision GmbH anrufen", due: "Heute 14:00", priority: "high" },
-  { text: "Angebot InnoWare AG nachfassen", due: "Heute 16:00", priority: "high" },
-  { text: "Peter Klein – Rückruf", due: "Morgen 10:00", priority: "medium" },
+  { text: "Follow-Up: Architektur Bauer GmbH anrufen", due: "Heute 14:00", priority: "high" },
+  { text: "Angebot FensterPro AG nachfassen", due: "Heute 16:00", priority: "high" },
+  { text: "Peter Klein – Rückruf (MFH Sanierung)", due: "Morgen 10:00", priority: "medium" },
   { text: "Webinar-Leads qualifizieren", due: "Morgen", priority: "low" },
 ];
 

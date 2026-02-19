@@ -11,7 +11,7 @@ function LeadCard({ lead }: { lead: Lead }) {
       ? lead.companyName
       : `${lead.firstName} ${lead.lastName}`;
   const subtitle =
-    lead.type === "b2b" ? lead.contactPerson : lead.email;
+    lead.type === "b2b" ? lead.gewerk : lead.objekttyp;
 
   return (
     <div
@@ -118,7 +118,7 @@ export default function Pipeline() {
                     : "bg-card text-muted-foreground hover:bg-secondary"
                 }`}
               >
-                {type === "all" ? "Alle" : type}
+                {type === "all" ? "Alle" : type === "b2c" ? "Eigentümer" : "Partner"}
               </button>
             ))}
           </div>
