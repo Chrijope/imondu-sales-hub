@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   EyeOff,
   UserPlus,
   LogOut,
-  MoreVertical,
+  ChevronDown,
   Check,
   CheckCheck,
 } from "lucide-react";
@@ -231,63 +231,68 @@ export default function Chat() {
 
           <ScrollArea className="flex-1">
             {filteredChats.map((chat) => (
-              <div
-                key={chat.id}
-                onClick={() => { setActiveChatId(chat.id); markRead(chat.id); }}
-                className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-border/50 transition-colors ${
-                  activeChatId === chat.id ? "bg-background" : "hover:bg-background/60"
-                }`}
-              >
-                <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
-                  {chat.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm font-semibold truncate ${chat.unread > 0 ? "text-accent" : "text-foreground"}`}>
-                      {chat.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{chat.time}</span>
+              <DropdownMenu key={chat.id}>
+                <div
+                  onClick={() => { setActiveChatId(chat.id); markRead(chat.id); }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    // Find and click the dropdown trigger
+                    const trigger = e.currentTarget.querySelector('[data-chat-trigger]') as HTMLElement;
+                    trigger?.click();
+                  }}
+                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-border/50 transition-colors group ${
+                    activeChatId === chat.id ? "bg-background" : "hover:bg-background/60"
+                  }`}
+                >
+                  <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
+                    {chat.initials}
                   </div>
-                  <div className="flex items-center justify-between mt-0.5">
-                    <p className="text-xs text-muted-foreground truncate">{chat.lastMessage}</p>
-                    <div className="flex items-center gap-1 ml-2 shrink-0">
-                      {chat.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
-                      {chat.unread > 0 && (
-                        <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] gradient-brand text-primary-foreground border-0">
-                          {chat.unread}
-                        </Badge>
-                      )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-semibold truncate ${chat.unread > 0 ? "text-accent" : "text-foreground"}`}>
+                        {chat.name}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                        <span className="text-xs text-muted-foreground">{chat.time}</span>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <button data-chat-trigger className="p-0.5 rounded hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                          </button>
+                        </DropdownMenuTrigger>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate">{chat.lastMessage}</p>
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
+                        {chat.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
+                        {chat.unread > 0 && (
+                          <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] gradient-brand text-primary-foreground border-0">
+                            {chat.unread}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Context menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <button className="opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100 p-1 rounded hover:bg-muted">
-                      <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePin(chat.id); }}>
-                      {chat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
-                      {chat.pinned ? "Lösen" : "Anpinnen"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUnread(chat.id); }}>
-                      {chat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-                      {chat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={(e) => { e.stopPropagation(); leaveChat(chat.id); }}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Chat verlassen
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                <DropdownMenuContent align="end" className="w-48 z-50 bg-popover border border-border shadow-lg">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePin(chat.id); }}>
+                    {chat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
+                    {chat.pinned ? "Lösen" : "Anpinnen"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUnread(chat.id); }}>
+                    {chat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                    {chat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => { e.stopPropagation(); leaveChat(chat.id); }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Chat verlassen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ))}
           </ScrollArea>
         </div>
