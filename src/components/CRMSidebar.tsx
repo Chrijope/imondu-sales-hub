@@ -27,6 +27,7 @@ import {
   RotateCcw,
   CalendarCheck,
   Calendar,
+  CalendarDays,
   Trophy,
   Archive,
   Sparkles,
@@ -61,6 +62,7 @@ const b2bSubItems = [
 const topNavItems = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/inbox", icon: Inbox, label: "Inbox" },
+  { path: "/kalender", icon: CalendarDays, label: "Kalender" },
   { path: "/news", icon: Newspaper, label: "News" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/analysetool", icon: BarChart3, label: "Analysetool" },
