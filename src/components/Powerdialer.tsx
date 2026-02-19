@@ -3,14 +3,46 @@ import { useNavigate } from "react-router-dom";
 import {
   Phone, Play, Pause, SkipForward, CheckCircle2, XCircle, Clock, Calendar,
   PhoneOff, User, Mail, MapPin, Home, FileText, MessageSquare, ArrowRight, Flame,
+  Upload, Plus, Trash2, Edit2, FileUp, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import CallScript, { ScriptStepResult } from "@/components/CallScript";
+import CallScript, { ScriptStepResult, ScriptStep, B2C_SCRIPT, B2B_SCRIPT } from "@/components/CallScript";
+
+// ── Custom script type ──
+export interface CustomScript {
+  id: string;
+  name: string;
+  type: "b2c" | "b2b";
+  steps: ScriptStep[];
+  createdAt: string;
+  isDefault?: boolean;
+}
+
+// ── Built-in scripts ──
+const BUILT_IN_SCRIPTS: CustomScript[] = [
+  {
+    id: "default-b2c",
+    name: "Standard B2C – Eigentümer",
+    type: "b2c",
+    steps: B2C_SCRIPT,
+    createdAt: "2026-01-01",
+    isDefault: true,
+  },
+  {
+    id: "default-b2b",
+    name: "Standard B2B – Partner",
+    type: "b2b",
+    steps: B2B_SCRIPT,
+    createdAt: "2026-01-01",
+    isDefault: true,
+  },
+];
 
 interface PowerdialerProps {
   leads: Lead[];
@@ -26,6 +58,124 @@ const CALL_OUTCOMES = [
   { id: "callback", label: "Wiedervorlage", icon: Phone, color: "text-primary", bgColor: "bg-primary/10 border-primary/20" },
 ];
 
+// ── Script Upload Dialog ──
+function ScriptUploadDialog({
+  open, onOpenChange, onAdd, targetType,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onAdd: (script: CustomScript) => void;
+  targetType: "b2c" | "b2b";
+}) {
+  const [name, setName] = useState("");
+  const [stepsText, setStepsText] = useState("");
+  const [error, setError] = useState("");
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      try {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          setStepsText(JSON.stringify(parsed, null, 2));
+          if (!name) setName(file.name.replace(/\.json$/i, ""));
+          setError("");
+        } else {
+          setError("JSON muss ein Array von Skript-Schritten sein.");
+        }
+      } catch {
+        // Treat as plain text – convert lines to simple steps
+        const lines = text.split("\n").filter(l => l.trim());
+        const steps: ScriptStep[] = lines.map((line, i) => ({
+          id: `custom_${i}`,
+          type: i === 0 ? "intro" as const : i === lines.length - 1 ? "closing" as const : "question" as const,
+          title: `Schritt ${i + 1}`,
+          text: line.trim(),
+          noteLabel: "Notiz",
+        }));
+        setStepsText(JSON.stringify(steps, null, 2));
+        if (!name) setName(file.name.replace(/\.(txt|json)$/i, ""));
+        setError("");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleCreate = () => {
+    if (!name.trim()) { setError("Bitte gib einen Namen ein."); return; }
+    let steps: ScriptStep[];
+    try {
+      steps = JSON.parse(stepsText);
+      if (!Array.isArray(steps) || steps.length === 0) throw new Error();
+    } catch {
+      setError("Ungültiges Skript-Format. Bitte lade eine JSON-Datei hoch oder verwende die Textdatei-Methode.");
+      return;
+    }
+    const script: CustomScript = {
+      id: `custom-${Date.now()}`,
+      name: name.trim(),
+      type: targetType,
+      steps,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    onAdd(script);
+    setName("");
+    setStepsText("");
+    setError("");
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Neues Skript hochladen ({targetType.toUpperCase()})</DialogTitle>
+          <DialogDescription>
+            Lade ein Gesprächsskript als JSON- oder Textdatei hoch. Jede Zeile einer Textdatei wird zu einem Skript-Schritt.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 mt-2">
+          <div>
+            <label className="text-xs font-medium text-foreground">Skript-Name</label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="z.B. Kaltakquise Premium" className="mt-1" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-foreground">Datei hochladen</label>
+            <div className="mt-1">
+              <label className="flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-border hover:border-primary/40 cursor-pointer transition-colors bg-secondary/20">
+                <FileUp className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">JSON oder TXT Datei auswählen</span>
+                <input type="file" accept=".json,.txt" className="hidden" onChange={handleFileUpload} />
+              </label>
+            </div>
+          </div>
+          {stepsText && (
+            <div>
+              <label className="text-xs font-medium text-foreground">Vorschau ({JSON.parse(stepsText).length} Schritte)</label>
+              <textarea
+                value={stepsText}
+                onChange={e => setStepsText(e.target.value)}
+                className="w-full h-32 mt-1 px-3 py-2 rounded-lg border border-border bg-card text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              />
+            </div>
+          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+            <Button size="sm" onClick={handleCreate} disabled={!name.trim() || !stepsText}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Skript hinzufügen
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main Powerdialer ──
 export default function Powerdialer({ leads, type }: PowerdialerProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,6 +187,19 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   const [callLog, setCallLog] = useState<{ leadId: string; outcome: string; note: string; duration: number; scriptResults?: ScriptStepResult[] }[]>([]);
   const [scriptResults, setScriptResults] = useState<ScriptStepResult[]>([]);
   const [scriptSaved, setScriptSaved] = useState(false);
+
+  // ── Script management state ──
+  const [allScripts, setAllScripts] = useState<CustomScript[]>(BUILT_IN_SCRIPTS);
+  const [activeB2CScriptId, setActiveB2CScriptId] = useState<string>("default-b2c");
+  const [activeB2BScriptId, setActiveB2BScriptId] = useState<string>("default-b2b");
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showScriptManager, setShowScriptManager] = useState(false);
+
+  const activeScriptId = type === "b2c" ? activeB2CScriptId : activeB2BScriptId;
+  const setActiveScriptId = type === "b2c" ? setActiveB2CScriptId : setActiveB2BScriptId;
+  const activeScript = allScripts.find(s => s.id === activeScriptId);
+  const scriptsForType = allScripts.filter(s => s.type === type);
+  const hasScriptSelected = !!activeScript;
 
   const dialerLeads = leads.filter((l) => l.phone);
   const current = dialerLeads[currentIndex];
@@ -58,12 +221,17 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   };
 
   const startCall = useCallback(() => {
+    if (!hasScriptSelected) {
+      toast({ title: "Skript auswählen", description: `Bitte wähle zuerst ein ${type.toUpperCase()}-Skript aus.`, variant: "destructive" });
+      setShowScriptManager(true);
+      return;
+    }
     setIsDialing(true);
     setCallSeconds(0);
     setCallNote("");
     setScriptResults([]);
     setScriptSaved(false);
-  }, []);
+  }, [hasScriptSelected, type, toast]);
 
   const endCall = useCallback(() => {
     setIsDialing(false);
@@ -104,6 +272,23 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
     }
   };
 
+  const addScript = (script: CustomScript) => {
+    setAllScripts(prev => [...prev, script]);
+    setActiveScriptId(script.id);
+    toast({ title: "Skript hinzugefügt", description: `"${script.name}" wurde als aktives ${script.type.toUpperCase()}-Skript gesetzt.` });
+  };
+
+  const deleteScript = (scriptId: string) => {
+    const script = allScripts.find(s => s.id === scriptId);
+    if (script?.isDefault) return;
+    setAllScripts(prev => prev.filter(s => s.id !== scriptId));
+    if (activeScriptId === scriptId) {
+      const fallback = allScripts.find(s => s.type === type && s.id !== scriptId);
+      setActiveScriptId(fallback?.id || "");
+    }
+    toast({ title: "Skript gelöscht", description: `"${script?.name}" wurde entfernt.` });
+  };
+
   if (dialerLeads.length === 0) {
     return (
       <div className="bg-card rounded-lg p-8 shadow-crm-sm border border-border text-center">
@@ -120,6 +305,100 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
 
   return (
     <div className="space-y-4">
+      {/* ── Script Manager Panel ── */}
+      <div className="bg-card rounded-lg shadow-crm-sm border border-border overflow-hidden">
+        <button
+          onClick={() => setShowScriptManager(!showScriptManager)}
+          className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <FileText className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">Gesprächsskripte</span>
+            <span className="text-xs text-muted-foreground">
+              Aktiv: <strong className="text-foreground">{activeScript?.name || "– Kein Skript gewählt –"}</strong>
+            </span>
+            {!hasScriptSelected && (
+              <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded">Pflichtfeld</span>
+            )}
+          </div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showScriptManager ? "rotate-180" : ""}`} />
+        </button>
+
+        {showScriptManager && (
+          <div className="border-t border-border px-5 py-4 space-y-4">
+            {/* Script list */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {type.toUpperCase()}-Skripte ({scriptsForType.length})
+                </p>
+                <Button size="sm" variant="outline" onClick={() => setShowUploadDialog(true)}>
+                  <Upload className="h-3.5 w-3.5 mr-1.5" /> Skript hochladen
+                </Button>
+              </div>
+              <div className="space-y-1.5">
+                {scriptsForType.map(script => (
+                  <div
+                    key={script.id}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors cursor-pointer ${
+                      activeScriptId === script.id
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border hover:bg-secondary/30"
+                    }`}
+                    onClick={() => setActiveScriptId(script.id)}
+                  >
+                    <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      activeScriptId === script.id ? "border-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {activeScriptId === script.id && (
+                        <div className="h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{script.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {script.steps.length} Schritte • {script.isDefault ? "Standard" : `Erstellt am ${script.createdAt}`}
+                      </p>
+                    </div>
+                    {activeScriptId === script.id && (
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">Aktiv</span>
+                    )}
+                    {!script.isDefault && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteScript(script.id); }}
+                        className="h-7 w-7 rounded flex items-center justify-center hover:bg-destructive/10 transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Other type scripts */}
+            {(() => {
+              const otherType = type === "b2c" ? "b2b" : "b2c";
+              const otherScripts = allScripts.filter(s => s.type === otherType);
+              const otherActiveId = otherType === "b2c" ? activeB2CScriptId : activeB2BScriptId;
+              const otherActive = allScripts.find(s => s.id === otherActiveId);
+              return (
+                <div className="pt-3 border-t border-border">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    {otherType.toUpperCase()}-Skript (aktiv)
+                  </p>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 border border-border">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+                    <span className="text-xs text-foreground font-medium">{otherActive?.name || "Nicht ausgewählt"}</span>
+                    <span className="text-[10px] text-muted-foreground">({otherScripts.length} verfügbar)</span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Main Dialer */}
         <div className="lg:col-span-2 space-y-4">
@@ -176,7 +455,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
                 {formatTime(callSeconds)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {isDialing ? "Gespräch läuft..." : "Bereit zum Anrufen"}
+                {isDialing ? "Gespräch läuft..." : hasScriptSelected ? "Bereit zum Anrufen" : "⚠️ Bitte zuerst ein Skript auswählen"}
               </p>
               <div className="flex items-center justify-center gap-3 mt-4">
                 <button onClick={skipLead} className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
@@ -187,7 +466,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
                     <PhoneOff className="h-5 w-5 text-destructive-foreground" />
                   </button>
                 ) : (
-                  <button onClick={startCall} className="h-14 w-14 rounded-full gradient-brand flex items-center justify-center shadow-crm-md hover:opacity-90 transition-opacity">
+                  <button onClick={startCall} className={`h-14 w-14 rounded-full flex items-center justify-center shadow-crm-md transition-opacity ${hasScriptSelected ? "gradient-brand hover:opacity-90" : "bg-muted cursor-not-allowed opacity-60"}`}>
                     <Play className="h-5 w-5 text-primary-foreground ml-0.5" />
                   </button>
                 )}
@@ -198,11 +477,13 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
             </div>
           </div>
 
-          {/* Call Script – auto-opens when dialing */}
-          {isDialing && current && (
+          {/* Call Script – auto-opens when dialing with custom steps */}
+          {isDialing && current && activeScript && (
             <CallScript
               type={type}
               contactName={currentName}
+              customSteps={activeScript.steps}
+              scriptName={activeScript.name}
               onSave={(results) => {
                 setScriptResults(results);
                 setScriptSaved(true);
@@ -227,7 +508,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
             />
           </div>
 
-          {/* Quick Workflow Buttons (always visible) */}
+          {/* Quick Workflow Buttons */}
           <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
             <h3 className="text-sm font-semibold text-foreground mb-3">Schnell-Aktionen</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -321,6 +602,14 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Upload Dialog */}
+      <ScriptUploadDialog
+        open={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
+        onAdd={addScript}
+        targetType={type}
+      />
     </div>
   );
 }

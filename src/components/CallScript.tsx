@@ -166,10 +166,13 @@ interface CallScriptProps {
   type: "b2c" | "b2b";
   contactName: string;
   onSave: (results: ScriptStepResult[]) => void;
+  customSteps?: ScriptStep[];
+  scriptName?: string;
 }
 
-export default function CallScript({ type, contactName, onSave }: CallScriptProps) {
-  const script = type === "b2c" ? B2C_SCRIPT : B2B_SCRIPT;
+export default function CallScript({ type, contactName, onSave, customSteps, scriptName }: CallScriptProps) {
+  const script = customSteps || (type === "b2c" ? B2C_SCRIPT : B2B_SCRIPT);
+  const displayName = scriptName || (type === "b2c" ? "Eigentümer (B2C)" : "Partner (B2B)");
   const [results, setResults] = useState<Record<string, ScriptStepResult>>({});
   const [expandedStep, setExpandedStep] = useState<string>(script[0]?.id || "");
   const [saved, setSaved] = useState(false);
@@ -210,7 +213,7 @@ export default function CallScript({ type, contactName, onSave }: CallScriptProp
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-display font-semibold text-foreground">
-              Gesprächsskript – {type === "b2c" ? "Eigentümer (B2C)" : "Partner (B2B)"}
+              Gesprächsskript – {displayName}
             </h3>
           </div>
           <div className="flex items-center gap-3">
