@@ -1,7 +1,7 @@
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
-import { Euro, TrendingUp, Building2, Briefcase } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info } from "lucide-react";
 
 const B2C_PROVISION_PER_INSERAT = 10; // €
 const B2B_MITGLIEDSCHAFT = 1250; // €
@@ -42,6 +42,24 @@ export default function Abrechnungen() {
           </div>
           <h1 className="text-2xl font-display font-bold text-foreground">Abrechnungen</h1>
           <p className="text-sm text-muted-foreground mt-1">Provisionsübersicht und Abrechnungspotenzial</p>
+        </div>
+
+        {/* Gutschrift-Hinweis */}
+        <div className="gradient-brand-subtle border border-primary/15 rounded-xl p-5 flex items-start gap-4">
+          <div className="h-10 w-10 rounded-lg gradient-brand flex items-center justify-center shrink-0">
+            <FileCheck className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-display font-semibold text-foreground mb-1">Auszahlung per Gutschrift</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Deine Provisionen werden von Imondu als <strong className="text-foreground">Gutschriften</strong> ausgestellt und direkt an dich ausgezahlt. 
+              Du musst <strong className="text-foreground">keine eigene Rechnung</strong> schreiben – die Gutschrift ersetzt die Rechnung und wird dir automatisch als PDF bereitgestellt.
+            </p>
+            <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+              <Info className="h-3.5 w-3.5 text-primary" />
+              <span>Stelle sicher, dass deine Stammdaten und Steuernummer in den <strong className="text-foreground">Einstellungen</strong> hinterlegt sind.</span>
+            </div>
+          </div>
         </div>
 
         {/* KPI Row */}
@@ -163,12 +181,12 @@ export default function Abrechnungen() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Monat</th>
-                  <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Inserate</th>
+                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Inserate</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Prov.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Mitgl.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Prov.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Gesamt</th>
-                  <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
+                  <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Gutschrift</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,7 +200,7 @@ export default function Abrechnungen() {
                     <td className="text-right py-3 font-bold text-foreground">{(row.b2cProv + row.b2bProv).toLocaleString("de-DE")} €</td>
                     <td className="text-right py-3">
                       <Badge variant={row.status === "ausgezahlt" ? "default" : "secondary"} className={row.status === "ausgezahlt" ? "bg-success text-success-foreground" : ""}>
-                        {row.status === "ausgezahlt" ? "Ausgezahlt" : "Ausstehend"}
+                        {row.status === "ausgezahlt" ? "Gutschrift erteilt" : "In Bearbeitung"}
                       </Badge>
                     </td>
                   </tr>
