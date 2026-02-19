@@ -71,6 +71,7 @@ const shopSubItems = [
 
 const bottomNavItems = [
   { path: "/teampartner", icon: UserPlus, label: "Teampartner" },
+  { path: "/auswertungen", icon: Trophy, label: "Auswertungen" },
   { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
   { path: "/statistik", icon: TrendingUp, label: "Statistik" },
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
