@@ -32,6 +32,7 @@ import {
   Sparkles,
   Settings,
   GraduationCap,
+  Home,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -65,6 +66,7 @@ const topNavItems = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/kontakte", icon: Contact, label: "Kontakte" },
+  { path: "/inserate", icon: Home, label: "Inserate" },
 ];
 
 const shopSubItems = [
