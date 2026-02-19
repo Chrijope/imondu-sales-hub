@@ -18,6 +18,7 @@ import {
   Phone,
   Megaphone,
   ShoppingBag,
+  ShoppingCart,
   Globe,
   ChevronDown,
   ChevronRight,
@@ -64,7 +65,8 @@ const topNavItems = [
 ];
 
 const shopSubItems = [
-  { path: "/shop/lead-kauf", icon: ShoppingBag, label: "Lead-Kauf" },
+  { path: "/shop/lead-kauf", icon: ShoppingCart, label: "Lead-Kauf" },
+  { path: "/shop/merchandise", icon: ShoppingBag, label: "Merchandise" },
 ];
 
 const bottomNavItems = [
