@@ -34,6 +34,7 @@ import Entwickleruebersicht from "./pages/Entwickleruebersicht";
 import Kalender from "./pages/Kalender";
 import Nutzerverwaltung from "./pages/Nutzerverwaltung";
 import SupportKI from "./pages/SupportKI";
+import EmailPage from "./pages/Email";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => (
           <Route path="/kalender" element={<Kalender />} />
           <Route path="/nutzerverwaltung" element={<Nutzerverwaltung />} />
           <Route path="/support-ki" element={<SupportKI />} />
+          <Route path="/email" element={<EmailPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

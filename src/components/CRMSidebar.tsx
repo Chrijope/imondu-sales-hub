@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Inbox,
+  Mail,
   Newspaper,
   Presentation,
   BarChart3,
@@ -72,6 +73,7 @@ const shopSubItems = [
 const sectionOverview = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/inbox", icon: Inbox, label: "Inbox" },
+  { path: "/email", icon: Mail, label: "E-Mail" },
   { path: "/kalender", icon: CalendarDays, label: "Kalender" },
   { path: "/news", icon: Newspaper, label: "News" },
 ];
