@@ -18,37 +18,18 @@ const sections: Section[] = [
     heading: "Geschäftsführung",
     contacts: [
       { name: "Marinko Marjanovic", title: "CEO & Founder", tasks: "Geschäftsführung, Strategie, Unternehmensentwicklung", email: "marinko@imondu.de" },
-      { name: "Manuel Schilling", title: "Geschäftsführer", tasks: "Vertrieb, Partnermanagement, Wachstum", email: "manuel@imondu.de" },
-      { name: "Cagdas Yüksel", title: "Geschäftsführer", tasks: "Technologie, Produkt, Plattform", email: "cagdas@imondu.de" },
       { name: "Dominic Harrison", title: "Geschäftsführer", tasks: "Marketing, Brand, Reichweite", email: "dominic@imondu.de" },
     ],
   },
   {
     heading: "Vertrieb & Partnermanagement",
     contacts: [
-      { name: "Andreas Hub", title: "Head of Sales", tasks: "Vertriebsleitung, Partnerbetreuung", email: "vertrieb@imondu.de" },
+      { name: "Manuel Schilling", title: "Geschäftsführer", tasks: "Vertrieb, Partnermanagement, Wachstum", email: "manuel@imondu.de" },
+      { name: "Christian Peetz", title: "Vertriebsleiter", tasks: "Partnerbetreuung, Vertriebssteuerung", email: "christian@imondu.de" },
     ],
   },
   {
-    heading: "Neukunden & Abwicklung",
-    contacts: [
-      { name: "Tobias Fritz", title: "Key Account Manager", tasks: "Neukunden, Kundenabwicklung", email: "neukunden@imondu.de" },
-    ],
-  },
-  {
-    heading: "After Sales & Service",
-    contacts: [
-      { name: "Timo Schach", title: "Service & After-Sales Manager", tasks: "Service, Betreuung, After-Sales Management", email: "service@imondu.de" },
-    ],
-  },
-  {
-    heading: "Objekte",
-    contacts: [
-      { name: "Florian Walz", title: "Objekt Manager", tasks: "Objektprüfung, Objektmanagement", email: "objekte@imondu.de" },
-    ],
-  },
-  {
-    heading: "Buchhaltung & Abrechnung",
+    heading: "Buchhaltung",
     contacts: [
       { name: "Karin Martini", title: "Finance & Controlling", tasks: "Abrechnung, Zahlungswesen", email: "buchhaltung@imondu.de" },
     ],
@@ -60,9 +41,9 @@ const sections: Section[] = [
     ],
   },
   {
-    heading: "IT & Support",
+    heading: "Backoffice & Support",
     contacts: [
-      { name: "Support Team", title: "Technischer Support", tasks: "CRM-Support, Plattform-Hilfe", email: "support@imondu.de" },
+      { name: "Support Team", title: "Backoffice & Support", tasks: "CRM-Support, Plattform-Hilfe, Administration", email: "support@imondu.de" },
     ],
   },
 ];
