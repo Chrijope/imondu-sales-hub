@@ -113,29 +113,30 @@ export default function MerchShop() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-1 rounded-full gradient-brand" />
+              <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-foreground">Merchandise Shop</h1>
+            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Merchandise Shop</h1>
             <p className="text-sm text-muted-foreground mt-1">Werbemittel und Kleidung mit Imondu-Branding bestellen</p>
           </div>
-          <Button variant="outline" className="gap-2 relative" onClick={() => setShowCart(true)}>
-            <ShoppingCart className="h-4 w-4" />
+          <Button variant="outline" className="gap-2 relative border-primary/20 hover:border-primary/40 transition-colors" onClick={() => setShowCart(true)}>
+            <ShoppingCart className="h-4 w-4 text-primary" />
             Warenkorb
             {cartCount > 0 && (
-              <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[10px] h-5 w-5 flex items-center justify-center p-0 rounded-full">
+              <span className="absolute -top-2 -right-2 gradient-brand text-primary-foreground text-[10px] h-5 w-5 flex items-center justify-center rounded-full font-bold">
                 {cartCount}
-              </Badge>
+              </span>
             )}
           </Button>
         </div>
 
         {/* Category Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {CATEGORIES.map((cat) => (
             <Button
               key={cat.id}
               variant={category === cat.id ? "default" : "outline"}
               size="sm"
+              className={category === cat.id ? "gradient-brand border-0 text-white shadow-crm-md" : "border-border hover:border-primary/30 hover:text-primary transition-colors"}
               onClick={() => setCategory(cat.id)}
             >
               {cat.label}
@@ -148,27 +149,27 @@ export default function MerchShop() {
           {filtered.map((product) => (
             <div
               key={product.id}
-              className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-all group cursor-pointer"
+              className="bg-card border border-border rounded-xl overflow-hidden shadow-crm-sm hover:shadow-crm-lg transition-all duration-300 group cursor-pointer"
               onClick={() => { setSelectedProduct(product); setQuantity(1); setSelectedSize(""); }}
             >
-              <div className="aspect-square overflow-hidden bg-muted">
+              <div className="aspect-square overflow-hidden bg-muted relative">
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-              </div>
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-foreground">{product.name}</h3>
-                  <Badge variant="secondary" className="text-xs shrink-0 ml-2">
+                <div className="absolute top-3 right-3">
+                  <Badge className="gradient-brand border-0 text-white text-[10px] font-semibold shadow-crm-sm">
                     {product.category === "werbemittel" ? "Werbemittel" : product.category === "kleidung" ? "Kleidung" : "Messe"}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
+              </div>
+              <div className="p-5">
+                <h3 className="font-display font-semibold text-foreground mb-1">{product.name}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{product.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-foreground">{product.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</span>
-                  <Button size="sm" className="gap-1.5">
+                  <span className="text-lg font-bold text-primary">{product.price.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</span>
+                  <Button size="sm" className="gap-1.5 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 transition-opacity">
                     <ShoppingCart className="h-3.5 w-3.5" /> Details
                   </Button>
                 </div>
@@ -181,12 +182,13 @@ export default function MerchShop() {
         <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>{selectedProduct?.name}</DialogTitle>
+              <div className="w-8 h-1 rounded-full gradient-brand mb-2" />
+              <DialogTitle className="font-display">{selectedProduct?.name}</DialogTitle>
               <DialogDescription>Produkt konfigurieren und bestellen</DialogDescription>
             </DialogHeader>
             {selectedProduct && (
               <div className="space-y-4">
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                <div className="aspect-video rounded-lg overflow-hidden bg-muted shadow-crm-sm">
                   <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-sm text-muted-foreground">{selectedProduct.description}</p>
@@ -200,6 +202,7 @@ export default function MerchShop() {
                           key={size}
                           variant={selectedSize === size ? "default" : "outline"}
                           size="sm"
+                          className={selectedSize === size ? "gradient-brand border-0 text-white" : "border-border hover:border-primary/40"}
                           onClick={() => setSelectedSize(size)}
                         >
                           {size}
@@ -212,19 +215,19 @@ export default function MerchShop() {
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Menge:</p>
                   <div className="flex items-center gap-3">
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                    <Button variant="outline" size="icon" className="h-8 w-8 border-border hover:border-primary/40" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
                       <Minus className="h-3.5 w-3.5" />
                     </Button>
-                    <span className="text-lg font-semibold text-foreground w-8 text-center">{quantity}</span>
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setQuantity(quantity + 1)}>
+                    <span className="text-lg font-display font-semibold text-foreground w-8 text-center">{quantity}</span>
+                    <Button variant="outline" size="icon" className="h-8 w-8 border-border hover:border-primary/40" onClick={() => setQuantity(quantity + 1)}>
                       <Plus className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
 
-                <div className="bg-muted/50 rounded-lg p-4 flex justify-between items-center">
+                <div className="gradient-brand-subtle rounded-lg p-4 flex justify-between items-center border border-primary/10">
                   <span className="text-sm text-muted-foreground">Gesamtpreis</span>
-                  <span className="text-xl font-bold text-foreground">
+                  <span className="text-xl font-display font-bold text-primary">
                     {(selectedProduct.price * quantity).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €
                   </span>
                 </div>
@@ -232,7 +235,7 @@ export default function MerchShop() {
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setSelectedProduct(null)}>Abbrechen</Button>
-              <Button onClick={addToCart} className="gap-2">
+              <Button onClick={addToCart} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90">
                 <ShoppingCart className="h-4 w-4" /> In den Warenkorb
               </Button>
             </DialogFooter>
@@ -243,7 +246,8 @@ export default function MerchShop() {
         <Dialog open={showCart} onOpenChange={setShowCart}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Warenkorb</DialogTitle>
+              <div className="w-8 h-1 rounded-full gradient-brand mb-2" />
+              <DialogTitle className="font-display">Warenkorb</DialogTitle>
               <DialogDescription>{cartCount} Artikel im Warenkorb</DialogDescription>
             </DialogHeader>
             {cart.length === 0 ? (
@@ -254,7 +258,7 @@ export default function MerchShop() {
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
                 {cart.map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                  <div key={i} className="flex items-center gap-3 bg-card border border-border rounded-lg p-3 shadow-crm-sm">
                     <img src={item.product.image} alt={item.product.name} className="h-14 w-14 rounded-md object-cover" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{item.product.name}</p>
@@ -263,7 +267,7 @@ export default function MerchShop() {
                         {item.size && ` · Größe ${item.size}`}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-foreground shrink-0">
+                    <span className="text-sm font-semibold text-primary shrink-0">
                       {(item.product.price * item.quantity).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €
                     </span>
                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeFromCart(i)}>
@@ -272,10 +276,10 @@ export default function MerchShop() {
                   </div>
                 ))}
                 <div className="border-t border-border pt-3 flex justify-between items-center">
-                  <span className="font-semibold text-foreground">Gesamt</span>
-                  <span className="text-xl font-bold text-foreground">{cartTotal.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</span>
+                  <span className="font-display font-semibold text-foreground">Gesamt</span>
+                  <span className="text-xl font-display font-bold text-primary">{cartTotal.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</span>
                 </div>
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-start gap-2">
+                <div className="gradient-brand-subtle border border-primary/10 rounded-lg p-3 flex items-start gap-2">
                   <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">Die Bestellung wird intern verarbeitet. Du erhältst eine Bestätigung per E-Mail.</p>
                 </div>
@@ -284,7 +288,7 @@ export default function MerchShop() {
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowCart(false)}>Weiter einkaufen</Button>
               {cart.length > 0 && (
-                <Button onClick={handleOrder} className="gap-2">
+                <Button onClick={handleOrder} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90">
                   <Check className="h-4 w-4" /> Jetzt bestellen
                 </Button>
               )}
