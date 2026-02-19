@@ -61,7 +61,6 @@ const topNavItems = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/kontakte", icon: Contact, label: "Kontakte" },
-  { path: "/leads", icon: Users, label: "Leads" },
 ];
 
 const shopSubItems = [
@@ -166,14 +165,13 @@ export default function CRMSidebar() {
           <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
         ))}
 
-        {/* B2C Group */}
-        <div className="pt-2">
-          <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />
-        </div>
-
-        {/* B2B Group */}
-        <div className="pt-1">
-          <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />
+        {/* Leads Überschrift + B2C/B2B Groups */}
+        <div className="pt-3">
+          <p className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Leads</p>
+          <div className="space-y-0.5">
+            <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />
+            <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />
+          </div>
         </div>
 
         <div className="pt-2 space-y-0.5">
