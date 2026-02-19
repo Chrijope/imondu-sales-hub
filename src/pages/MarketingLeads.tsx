@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import CRMLayout from "@/components/CRMLayout";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import L from "leaflet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -488,33 +488,7 @@ function MapTab() {
             <h2 className="font-semibold text-foreground">Standorte DACH-Region</h2>
           </div>
         </div>
-        <MapContainer
-          center={[49.5, 10.5]} zoom={5}
-          style={{ height: "calc(100% - 48px)", width: "100%", minHeight: 550 }}
-          scrollWheelZoom={true}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org">OSM</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {filteredPins.map((pin) => (
-            <CircleMarker key={pin.id} center={[pin.lat, pin.lng]} radius={8}
-              pathOptions={{
-                fillColor: pin.type === "b2c" ? B2C_COLOR : B2B_COLOR,
-                color: pin.type === "b2c" ? B2C_COLOR : B2B_COLOR,
-                weight: 2, opacity: 0.9, fillOpacity: 0.7,
-              }}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <p className="font-semibold">{pin.label}</p>
-                  <p className="text-muted-foreground">{pin.subLabel}</p>
-                  <Badge className="mt-1 text-[10px]" variant="secondary">{pin.category}</Badge>
-                </div>
-              </Popup>
-            </CircleMarker>
-          ))}
-        </MapContainer>
+        <LeafletMap pins={filteredPins} />
       </div>
     </div>
   );
