@@ -36,6 +36,7 @@ import {
   HardHat,
   ClipboardList,
   UsersRound,
+  BotMessageSquare,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -100,6 +101,7 @@ const sectionTools = [
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
+  { path: "/support-ki", icon: BotMessageSquare, label: "Support KI" },
 ];
 
 const sectionTeam = [
