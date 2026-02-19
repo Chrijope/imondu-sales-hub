@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Filter, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
-import { SAMPLE_LEADS, PIPELINE_STAGES, Lead } from "@/data/crm-data";
+import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES, Lead, PipelineStage } from "@/data/crm-data";
 
 function LeadCard({ lead }: { lead: Lead }) {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ function LeadCard({ lead }: { lead: Lead }) {
               : "bg-b2b/10 text-b2b"
           }`}
         >
-          {lead.type}
+          {lead.type === "b2c" ? "Eigentümer" : "Partner"}
         </span>
         <span
           className={`h-2 w-2 rounded-full ${
@@ -47,19 +47,94 @@ function LeadCard({ lead }: { lead: Lead }) {
       <div className="flex items-center justify-between mt-3">
         <span className="text-xs text-muted-foreground">{lead.assignee}</span>
         <span className="text-xs font-semibold text-foreground">
-          €{lead.value.toLocaleString("de-DE")}
+          {lead.value.toLocaleString("de-DE")} €
         </span>
       </div>
     </div>
   );
 }
 
+function PipelineBoard({ stages, leads }: { stages: PipelineStage[]; leads: Lead[] }) {
+  // Exclude won/lost from main board display
+  const activeStages = stages.filter(
+    (s) => !s.id.endsWith("_lost") && !s.id.endsWith("_inserat") && !s.id.endsWith("_won")
+  );
+  const endStages = stages.filter(
+    (s) => s.id.endsWith("_lost") || s.id.endsWith("_inserat") || s.id.endsWith("_won")
+  );
+
+  return (
+    <>
+      <div className="overflow-x-auto pb-4">
+        <div className="flex gap-4 min-w-max">
+          {activeStages.map((stage) => {
+            const stageLeads = leads.filter((l) => l.status === stage.id);
+            return (
+              <div key={stage.id} className="w-[250px] shrink-0">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
+                    <span className="text-xs font-semibold text-foreground">{stage.name}</span>
+                    <span className="text-[11px] text-muted-foreground bg-secondary rounded-full px-1.5">
+                      {stageLeads.length}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2 min-h-[200px] bg-secondary/30 rounded-lg p-2">
+                  {stageLeads.map((lead) => (
+                    <LeadCard key={lead.id} lead={lead} />
+                  ))}
+                  {stageLeads.length === 0 && (
+                    <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
+                      Keine Leads
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* End stages (won/inserat/lost) */}
+      {endStages.length > 0 && (
+        <div className="flex gap-4 mt-4">
+          {endStages.map((stage) => {
+            const stageLeads = leads.filter((l) => l.status === stage.id);
+            return (
+              <div key={stage.id} className="flex-1 min-w-[200px]">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
+                  <span className="text-xs font-semibold text-foreground">{stage.name}</span>
+                  <span className="text-[11px] text-muted-foreground bg-secondary rounded-full px-1.5">
+                    {stageLeads.length}
+                  </span>
+                </div>
+                <div className="space-y-2 bg-secondary/30 rounded-lg p-2 min-h-[80px]">
+                  {stageLeads.map((lead) => (
+                    <LeadCard key={lead.id} lead={lead} />
+                  ))}
+                  {stageLeads.length === 0 && (
+                    <div className="flex items-center justify-center h-16 text-xs text-muted-foreground">
+                      Keine Leads
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function Pipeline() {
-  const [filterType, setFilterType] = useState<"all" | "b2c" | "b2b">("all");
+  const [activeTab, setActiveTab] = useState<"b2c" | "b2b">("b2c");
   const [search, setSearch] = useState("");
 
   const filteredLeads = SAMPLE_LEADS.filter((l) => {
-    if (filterType !== "all" && l.type !== filterType) return false;
+    if (l.type !== activeTab) return false;
     if (search) {
       const s = search.toLowerCase();
       const name =
@@ -71,10 +146,8 @@ export default function Pipeline() {
     return true;
   });
 
-  // Exclude "won" and "lost" from active pipeline display, show only first 5
-  const activeStages = PIPELINE_STAGES.filter(
-    (s) => s.id !== "won" && s.id !== "lost"
-  );
+  const stages = activeTab === "b2c" ? B2C_PIPELINE_STAGES : B2B_PIPELINE_STAGES;
+  const totalLeads = filteredLeads.length;
 
   return (
     <CRMLayout>
@@ -82,11 +155,12 @@ export default function Pipeline() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">
-              Pipeline
-            </h1>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-1 rounded-full gradient-brand" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-foreground">Pipeline</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {filteredLeads.length} Leads in der Pipeline
+              {totalLeads} {activeTab === "b2c" ? "Eigentümer" : "Partner"} in der Pipeline
             </p>
           </div>
           <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-brand text-primary-foreground text-sm font-medium shadow-crm-sm hover:opacity-90 transition-opacity">
@@ -95,8 +169,31 @@ export default function Pipeline() {
           </button>
         </div>
 
-        {/* Filters */}
+        {/* Tabs */}
         <div className="flex items-center gap-3 mb-6">
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              onClick={() => setActiveTab("b2c")}
+              className={`px-4 py-2 text-xs font-medium transition-colors ${
+                activeTab === "b2c"
+                  ? "bg-b2c text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:bg-secondary"
+              }`}
+            >
+              🏠 Eigentümer (B2C)
+            </button>
+            <button
+              onClick={() => setActiveTab("b2b")}
+              className={`px-4 py-2 text-xs font-medium transition-colors ${
+                activeTab === "b2b"
+                  ? "bg-b2b text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:bg-secondary"
+              }`}
+            >
+              🤝 Partner (B2B)
+            </button>
+          </div>
+
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
@@ -107,72 +204,23 @@ export default function Pipeline() {
               className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
             />
           </div>
-          <div className="flex rounded-lg border border-border overflow-hidden">
-            {(["all", "b2c", "b2b"] as const).map((type) => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`px-3 py-2 text-xs font-medium uppercase transition-colors ${
-                  filterType === type
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-muted-foreground hover:bg-secondary"
-                }`}
-              >
-                {type === "all" ? "Alle" : type === "b2c" ? "Eigentümer" : "Partner"}
-              </button>
-            ))}
-          </div>
+        </div>
+
+        {/* Pipeline description */}
+        <div className="mb-4 px-1">
+          {activeTab === "b2c" ? (
+            <p className="text-xs text-muted-foreground">
+              Ziel: Eigentümer anrufen → zur kostenlosen Registrierung bewegen → Immobilie inserieren lassen (10 € Provision/Inserat)
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Ziel: Entwicklungspartner kontaktieren → Imondu-Plattform vorstellen → 12-Monats-Mitgliedschaft verkaufen (1.250 € / 312,50 € Provision)
+            </p>
+          )}
         </div>
 
         {/* Kanban Board */}
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-4 min-w-max">
-            {activeStages.map((stage) => {
-              const stageLeads = filteredLeads.filter(
-                (l) => l.status === stage.id
-              );
-              const stageValue = stageLeads.reduce((s, l) => s + l.value, 0);
-
-              return (
-                <div
-                  key={stage.id}
-                  className="w-[280px] shrink-0"
-                >
-                  {/* Column Header */}
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: stage.color }}
-                      />
-                      <span className="text-sm font-semibold text-foreground">
-                        {stage.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground bg-secondary rounded-full px-1.5">
-                        {stageLeads.length}
-                      </span>
-                    </div>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      €{(stageValue / 1000).toFixed(0)}k
-                    </span>
-                  </div>
-
-                  {/* Column Content */}
-                  <div className="space-y-2 min-h-[200px] bg-secondary/30 rounded-lg p-2">
-                    {stageLeads.map((lead) => (
-                      <LeadCard key={lead.id} lead={lead} />
-                    ))}
-                    {stageLeads.length === 0 && (
-                      <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
-                        Keine Leads
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <PipelineBoard stages={stages} leads={filteredLeads} />
       </div>
     </CRMLayout>
   );
