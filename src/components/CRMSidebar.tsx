@@ -68,7 +68,7 @@ const bottomNavItems = [
   { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
   { path: "/statistik", icon: TrendingUp, label: "Statistik" },
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
-  { path: "/marketing-leads", icon: Megaphone, label: "Marketing Leads" },
+  { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
   { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
   { path: "/shop", icon: ShoppingBag, label: "Shop" },
 ];
