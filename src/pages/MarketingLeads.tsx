@@ -398,6 +398,44 @@ function LeadShopTab() {
   );
 }
 
+/* ── Leaflet Map Component ─────────────────────── */
+function LeafletMap({ pins }: { pins: MapPin[] }) {
+  const mapRef = useRef<L.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef<L.CircleMarker[]>([]);
+
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+    if (!mapRef.current) {
+      mapRef.current = L.map(mapContainerRef.current).setView([49.5, 10.5], 5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org">OSM</a>',
+      }).addTo(mapRef.current);
+    }
+    // Clear old markers
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+    // Add new markers
+    pins.forEach((pin) => {
+      const color = pin.type === "b2c" ? B2C_COLOR : B2B_COLOR;
+      const marker = L.circleMarker([pin.lat, pin.lng], {
+        radius: 8, fillColor: color, color, weight: 2, opacity: 0.9, fillOpacity: 0.7,
+      }).addTo(mapRef.current!);
+      marker.bindPopup(`<div style="font-size:13px"><b>${pin.label}</b><br/>${pin.subLabel}<br/><span style="color:#888">${pin.category}</span></div>`);
+      markersRef.current.push(marker);
+    });
+    return () => {};
+  }, [pins]);
+
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
+    };
+  }, []);
+
+  return <div ref={mapContainerRef} style={{ height: "calc(100% - 48px)", width: "100%", minHeight: 550 }} />;
+}
+
 /* ── Map Tab ───────────────────────────────────── */
 function MapTab() {
   const [b2cFilters, setB2cFilters] = useState<Set<ObjektFilter>>(new Set(B2C_FILTERS));
