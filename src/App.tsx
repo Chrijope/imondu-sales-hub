@@ -21,6 +21,7 @@ import MarketingLeads from "./pages/MarketingLeads";
 import BeraterMicroseite from "./pages/BeraterMicroseite";
 import B2CLeads from "./pages/B2CLeads";
 import B2BLeads from "./pages/B2BLeads";
+import LeadKauf from "./pages/LeadKauf";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/berater-microseite" element={<BeraterMicroseite />} />
           <Route path="/b2c/:subPage" element={<B2CLeads />} />
           <Route path="/b2b/:subPage" element={<B2BLeads />} />
+          <Route path="/shop/lead-kauf" element={<LeadKauf />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -63,6 +63,10 @@ const topNavItems = [
   { path: "/leads", icon: Users, label: "Leads" },
 ];
 
+const shopSubItems = [
+  { path: "/shop/lead-kauf", icon: ShoppingBag, label: "Lead-Kauf" },
+];
+
 const bottomNavItems = [
   { path: "/teampartner", icon: UserPlus, label: "Teampartner" },
   { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
@@ -70,7 +74,6 @@ const bottomNavItems = [
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
   { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
   { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
-  { path: "/shop", icon: ShoppingBag, label: "Shop" },
 ];
 
 function NavItem({ path, icon: Icon, label, isActive }: { path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean }) {
@@ -175,6 +178,11 @@ export default function CRMSidebar() {
           {bottomNavItems.map((item) => (
             <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
           ))}
+        </div>
+
+        {/* Shop Group */}
+        <div className="pt-1">
+          <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" />
         </div>
       </nav>
 
