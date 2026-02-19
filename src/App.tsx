@@ -11,6 +11,7 @@ import Dialer from "./pages/Dialer";
 import Chat from "./pages/Chat";
 import Abrechnungen from "./pages/Abrechnungen";
 import News from "./pages/News";
+import Praesentation from "./pages/Praesentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/abrechnungen" element={<Abrechnungen />} />
           <Route path="/news" element={<News />} />
+          <Route path="/presentation" element={<Praesentation />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
