@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
+import CallScript, { ScriptStepResult } from "@/components/CallScript";
 
 interface PowerdialerProps {
   leads: Lead[];
@@ -33,7 +34,9 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   const [callSeconds, setCallSeconds] = useState(0);
   const [callNote, setCallNote] = useState("");
   const [showOutcomeDialog, setShowOutcomeDialog] = useState(false);
-  const [callLog, setCallLog] = useState<{ leadId: string; outcome: string; note: string; duration: number }[]>([]);
+  const [callLog, setCallLog] = useState<{ leadId: string; outcome: string; note: string; duration: number; scriptResults?: ScriptStepResult[] }[]>([]);
+  const [scriptResults, setScriptResults] = useState<ScriptStepResult[]>([]);
+  const [scriptSaved, setScriptSaved] = useState(false);
 
   const dialerLeads = leads.filter((l) => l.phone);
   const current = dialerLeads[currentIndex];
@@ -58,6 +61,8 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
     setIsDialing(true);
     setCallSeconds(0);
     setCallNote("");
+    setScriptResults([]);
+    setScriptSaved(false);
   }, []);
 
   const endCall = useCallback(() => {
@@ -68,15 +73,21 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   const handleOutcome = (outcomeId: string) => {
     if (!current) return;
     const outcome = CALL_OUTCOMES.find((o) => o.id === outcomeId);
-    setCallLog((prev) => [...prev, { leadId: current.id, outcome: outcomeId, note: callNote, duration: callSeconds }]);
+    setCallLog((prev) => [...prev, {
+      leadId: current.id, outcome: outcomeId, note: callNote, duration: callSeconds,
+      scriptResults: scriptResults.length > 0 ? scriptResults : undefined,
+    }]);
     toast({
       title: `${outcome?.label} – ${type === "b2c" ? `${current.firstName} ${current.lastName}` : current.companyName}`,
-      description: callNote || "Anruf protokolliert",
+      description: scriptSaved
+        ? "Anruf + Gesprächsskript protokolliert & dem Kundenprofil zugeordnet"
+        : callNote || "Anruf protokolliert",
     });
     setShowOutcomeDialog(false);
     setCallSeconds(0);
     setCallNote("");
-    // Auto-advance
+    setScriptResults([]);
+    setScriptSaved(false);
     if (currentIndex < dialerLeads.length - 1) {
       setCurrentIndex((i) => i + 1);
     }
@@ -88,6 +99,8 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
       setCallSeconds(0);
       setCallNote("");
       setIsDialing(false);
+      setScriptResults([]);
+      setScriptSaved(false);
     }
   };
 
@@ -185,16 +198,32 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
             </div>
           </div>
 
+          {/* Call Script – auto-opens when dialing */}
+          {isDialing && current && (
+            <CallScript
+              type={type}
+              contactName={currentName}
+              onSave={(results) => {
+                setScriptResults(results);
+                setScriptSaved(true);
+                toast({
+                  title: "Gesprächsskript gespeichert ✓",
+                  description: `Skript wird dem Profil von ${currentName} unter Aktivitäten zugeordnet.`,
+                });
+              }}
+            />
+          )}
+
           {/* Notes */}
           <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-primary" /> Call-Notiz
+              <MessageSquare className="h-4 w-4 text-primary" /> Zusätzliche Call-Notiz
             </h3>
             <textarea
               value={callNote}
               onChange={(e) => setCallNote(e.target.value)}
-              placeholder="Notizen zum Gespräch eingeben..."
-              className="w-full h-24 px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              placeholder="Ergänzende Notizen zum Gespräch..."
+              className="w-full h-20 px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             />
           </div>
 
