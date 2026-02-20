@@ -29,7 +29,7 @@ interface EmailMessage {
   time: string;
   read: boolean;
   starred: boolean;
-  folder: "inbox" | "sent" | "drafts" | "trash";
+  folder: "inbox" | "sent" | "drafts" | "trash" | "archive";
   attachments?: string[];
   leadId?: string;
 }
@@ -94,12 +94,13 @@ const FOLDERS = [
   { id: "inbox" as const, label: "Posteingang", icon: Inbox },
   { id: "sent" as const, label: "Gesendet", icon: SendHorizonal },
   { id: "drafts" as const, label: "Entwürfe", icon: FileText },
+  { id: "archive" as const, label: "Archiviert", icon: Archive },
   { id: "trash" as const, label: "Papierkorb", icon: Trash2 },
 ];
 
 export default function EmailPage() {
   const [emails, setEmails] = useState<EmailMessage[]>(sampleEmails);
-  const [activeFolder, setActiveFolder] = useState<"inbox" | "sent" | "drafts" | "trash">("inbox");
+  const [activeFolder, setActiveFolder] = useState<"inbox" | "sent" | "drafts" | "trash" | "archive">("inbox");
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [composeOpen, setComposeOpen] = useState(false);
@@ -141,7 +142,7 @@ export default function EmailPage() {
   };
 
   const archiveEmail = (id: string) => {
-    setEmails(prev => prev.filter(e => e.id !== id));
+    setEmails(prev => prev.map(e => e.id === id ? { ...e, folder: "archive" as const } : e));
     if (selectedEmailId === id) setSelectedEmailId(null);
   };
 
