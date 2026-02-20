@@ -155,6 +155,8 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
               { value: "kalender", label: "Kalender" },
               { value: "gewerbe", label: "Gewerbedaten" },
               { value: "finanzen", label: "Steuer & Bank" },
+              { value: "benachrichtigungen", label: "Benachrichtigungen" },
+              { value: "protokoll", label: "Protokoll" },
               { value: "sicherheit", label: "Sicherheit" },
             ].map((tab) => (
               <TabsTrigger
@@ -464,6 +466,158 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                 <Save className="h-4 w-4" /> Speichern
               </Button>
             </div>
+          </TabsContent>
+
+          {/* ── BENACHRICHTIGUNGEN ── */}
+          <TabsContent value="benachrichtigungen" className="space-y-6 mt-0">
+            <Separator />
+            <SectionBlock title="Wie du benachrichtigt wirst" description="Wähle aus, wo du deine Benachrichtigungen sehen möchtest.">
+              <div className="max-w-lg space-y-3">
+                {[
+                  { id: "email_notif", label: "E-Mails", desc: "Wird an deine E-Mail-Adresse gesendet.", default: true },
+                  { id: "feed", label: "Feed (Glockensymbol)", desc: "Werden in der Navigationsleiste als Glockensymbol angezeigt.", default: true },
+                  { id: "browser", label: "Browser", desc: "Erscheinen auf deinem Bildschirm, wenn du nicht im CRM aktiv bist, die Website aber in einem Browser-Tab geöffnet ist.", default: false },
+                  { id: "popup", label: "Pop-up", desc: "Erscheinen für wenige Sekunden auf deinem Bildschirm, wenn du im CRM aktiv bist.", default: true },
+                ].map((n) => (
+                  <label key={n.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <Switch defaultChecked={n.default} />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{n.label}</p>
+                      <p className="text-xs text-muted-foreground">{n.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </SectionBlock>
+
+            <SectionBlock title="Worüber du benachrichtigt wirst" description="Wähle aus, welche Themen dir wichtig sind.">
+              <div className="max-w-lg space-y-3">
+                {[
+                  { id: "leads", label: "Neue Leads", desc: "Wenn dir ein neuer Lead zugewiesen wird." },
+                  { id: "termine", label: "Termine & Follow-ups", desc: "Erinnerungen an bevorstehende Termine." },
+                  { id: "pipeline", label: "Pipeline-Änderungen", desc: "Wenn ein Lead die Pipeline-Stufe wechselt." },
+                  { id: "provisionen", label: "Provisionen & Abrechnungen", desc: "Neue Gutschriften oder Provisionsabrechnungen." },
+                  { id: "team", label: "Team-Aktivitäten", desc: "Wenn Teampartner Aktionen durchführen." },
+                  { id: "system", label: "System-Updates", desc: "Wartungsarbeiten, neue Features und Ankündigungen." },
+                ].map((n) => (
+                  <label key={n.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <Checkbox defaultChecked className="mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{n.label}</p>
+                      <p className="text-xs text-muted-foreground">{n.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </SectionBlock>
+
+            <div className="flex justify-end pt-2 pb-8">
+              <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+                <Save className="h-4 w-4" /> Speichern
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* ── PROTOKOLL ── */}
+          <TabsContent value="protokoll" className="space-y-6 mt-0">
+            <Separator />
+            <SectionBlock title="Protokoll" description="Zeige Benutzeraktionen an, die in deinem Account durchgeführt wurden.">
+              <div className="space-y-4">
+                <Tabs defaultValue="anmeldeverlauf" className="w-full">
+                  <TabsList className="w-full justify-start bg-secondary/30 rounded-lg">
+                    <TabsTrigger value="alle" className="text-xs">Alle Protokolle</TabsTrigger>
+                    <TabsTrigger value="anmeldeverlauf" className="text-xs">Anmeldeverlauf</TabsTrigger>
+                    <TabsTrigger value="sicherheit_log" className="text-xs">Sicherheitsaktivitäten</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="alle" className="mt-4">
+                    <div className="bg-card rounded-lg border border-border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border bg-secondary/30">
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Kategorie</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Aktion</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Datum</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quelle</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                            { kat: "Anmeldung", aktion: "Anmeldung erfolgreich", datum: "20. Feb. 2026 09:12 CET", quelle: "192.168.1.42" },
+                            { kat: "Einstellungen", aktion: "Profil aktualisiert", datum: "19. Feb. 2026 16:30 CET", quelle: "192.168.1.42" },
+                            { kat: "Anmeldung", aktion: "Anmeldung erfolgreich", datum: "19. Feb. 2026 08:45 CET", quelle: "10.0.0.15" },
+                            { kat: "Sicherheit", aktion: "Passwort geändert", datum: "18. Feb. 2026 14:22 CET", quelle: "192.168.1.42" },
+                            { kat: "Anmeldung", aktion: "Anmeldung erfolgreich", datum: "18. Feb. 2026 08:30 CET", quelle: "192.168.1.42" },
+                          ].map((row, i) => (
+                            <tr key={i} className="border-b border-border/50 hover:bg-secondary/20">
+                              <td className="py-2.5 px-4 text-sm text-foreground">{row.kat}</td>
+                              <td className="py-2.5 px-4 text-sm text-foreground">{row.aktion}</td>
+                              <td className="py-2.5 px-4 text-sm text-muted-foreground">{row.datum}</td>
+                              <td className="py-2.5 px-4 text-xs font-mono text-muted-foreground">{row.quelle}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="anmeldeverlauf" className="mt-4">
+                    <div className="bg-card rounded-lg border border-border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border bg-secondary/30">
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Aktion</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Datum der Änderung</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quelle</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                            { aktion: "Anmeldung erfolgreich", datum: "20. Feb. 2026 09:12 CET", quelle: "192.168.1.42" },
+                            { aktion: "Anmeldung erfolgreich", datum: "19. Feb. 2026 08:45 CET", quelle: "10.0.0.15" },
+                            { aktion: "Anmeldung erfolgreich", datum: "18. Feb. 2026 08:30 CET", quelle: "192.168.1.42" },
+                            { aktion: "Anmeldung erfolgreich", datum: "17. Feb. 2026 09:01 CET", quelle: "192.168.1.42" },
+                            { aktion: "Anmeldung fehlgeschlagen", datum: "16. Feb. 2026 23:15 CET", quelle: "85.214.132.7" },
+                          ].map((row, i) => (
+                            <tr key={i} className="border-b border-border/50 hover:bg-secondary/20">
+                              <td className="py-2.5 px-4 text-sm text-foreground">{row.aktion}</td>
+                              <td className="py-2.5 px-4 text-sm text-muted-foreground">{row.datum}</td>
+                              <td className="py-2.5 px-4 text-xs font-mono text-muted-foreground">{row.quelle}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="sicherheit_log" className="mt-4">
+                    <div className="bg-card rounded-lg border border-border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border bg-secondary/30">
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Aktion</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Datum</th>
+                            <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quelle</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                            { aktion: "Passwort geändert", datum: "18. Feb. 2026 14:22 CET", quelle: "192.168.1.42" },
+                            { aktion: "E-Mail-Adresse aktualisiert", datum: "10. Feb. 2026 11:05 CET", quelle: "192.168.1.42" },
+                          ].map((row, i) => (
+                            <tr key={i} className="border-b border-border/50 hover:bg-secondary/20">
+                              <td className="py-2.5 px-4 text-sm text-foreground">{row.aktion}</td>
+                              <td className="py-2.5 px-4 text-sm text-muted-foreground">{row.datum}</td>
+                              <td className="py-2.5 px-4 text-xs font-mono text-muted-foreground">{row.quelle}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </SectionBlock>
           </TabsContent>
 
           {/* ── SICHERHEIT ── */}

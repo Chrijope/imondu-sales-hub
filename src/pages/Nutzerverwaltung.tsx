@@ -301,16 +301,20 @@ export default function Nutzerverwaltung() {
         </div>
 
         {/* KPI */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
-            { label: "Gesamt", value: users.length },
-            { label: "Aktiv", value: activeCount },
-            { label: "Rollen", value: roles.length },
-            { label: "Heute online", value: users.filter((u) => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length },
+            { label: "LETZTE BENUTZER", value: users.filter((u) => { const d = Date.now() - new Date(u.lastLogin).getTime(); return d < 7 * 86400000; }).length, action: null },
+            { label: "INAKTIVE BENUTZER", value: users.filter((u) => !u.active).length, action: "Benutzer überprüfen" },
+            { label: "DEAKTIVIERTE BENUTZER", value: users.filter((u) => !u.active).length, action: "Benutzer überprüfen" },
+            { label: "EINLADUNG AUSSTEHEND", value: users.filter((u) => u.lastLogin === "–").length, action: "Einladungen erneut senden" },
+            { label: "HEUTE ONLINE", value: users.filter((u) => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length, action: null },
           ].map((kpi) => (
             <div key={kpi.label} className="bg-card rounded-lg p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{kpi.label}</p>
               <p className="text-2xl font-display font-bold text-foreground">{kpi.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{kpi.label}</p>
+              {kpi.action && (
+                <button className="text-xs text-primary hover:underline mt-1 font-medium">{kpi.action}</button>
+              )}
             </div>
           ))}
         </div>
