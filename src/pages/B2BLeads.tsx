@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Search, Phone } from "lucide-react";
+import { Search, Phone, Upload, Download } from "lucide-react";
 import { useState } from "react";
 import CRMLayout from "@/components/CRMLayout";
+import { useToast } from "@/hooks/use-toast";
 import Powerdialer from "@/components/Powerdialer";
 import { SAMPLE_LEADS, B2B_PIPELINE_STAGES, Lead } from "@/data/crm-data";
 
@@ -47,6 +48,7 @@ export default function B2BLeads() {
   const { subPage } = useParams<{ subPage: string }>();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const { toast } = useToast();
   const [showDialer, setShowDialer] = useState(subPage === "neue-leads");
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
@@ -96,7 +98,7 @@ export default function B2BLeads() {
         ) : (
           <>
 
-        {/* Search */}
+        {/* Search + Import/Export */}
         <div className="flex items-center gap-3 mb-4">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -107,6 +109,27 @@ export default function B2BLeads() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
             />
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              onClick={() => toast({ title: "Import", description: "CSV/Excel-Import wird vorbereitet…" })}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors"
+            >
+              <Upload className="h-4 w-4" /> Import
+            </button>
+            <button
+              onClick={() => {
+                const csv = ["Firma,Gewerk,Ansprechpartner,Region,Status,Priorität,Quelle,Wert,Verantwortlich", ...filtered.map(l => `${l.companyName},${l.gewerk},${l.contactPerson},${l.region},${getStage(l.status)?.name},${l.priority},${l.source},${l.value},${l.assignee}`)].join("\n");
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a"); a.href = url; a.download = "b2b-leads.csv"; a.click();
+                URL.revokeObjectURL(url);
+                toast({ title: "Export ✓", description: `${filtered.length} Partner als CSV exportiert.` });
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors"
+            >
+              <Download className="h-4 w-4" /> Export
+            </button>
           </div>
         </div>
 
