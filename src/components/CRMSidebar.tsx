@@ -17,6 +17,7 @@ import {
   Receipt,
   TrendingUp,
   Phone,
+  PhoneCall,
   Megaphone,
   ShoppingBag,
   ShoppingCart,
@@ -89,6 +90,7 @@ const sectionOverview = [
 const sectionVertrieb = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/dialer", icon: Phone, label: "Powerdialer" },
+  { path: "/anrufe", icon: PhoneCall, label: "Anrufe" },
   { path: "/kontakte", icon: Contact, label: "Kontakte" },
 ];
 
