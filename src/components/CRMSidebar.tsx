@@ -110,8 +110,15 @@ const sectionAuswertung = [
   { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
 ];
 
+const immorechnerSubItems = [
+  { path: "/immorechner/grunddaten", icon: Calculator, label: "Grunddaten" },
+  { path: "/immorechner/aufwendungen", icon: Calculator, label: "Aufwendungen" },
+  { path: "/immorechner/hebel", icon: Calculator, label: "Hebel" },
+  { path: "/immorechner/steuer", icon: Calculator, label: "Steuer" },
+  { path: "/immorechner/ergebnis", icon: Calculator, label: "Ergebnis" },
+];
+
 const sectionTools = [
-  { path: "/immorechner", icon: Calculator, label: "Immorechner" },
   { path: "/academy", icon: GraduationCap, label: "Academy" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
@@ -277,6 +284,7 @@ export default function CRMSidebar() {
         <div>
           <SectionLabel>Tools & Wissen</SectionLabel>
           <div className="space-y-0.5">
+            <CollapsibleGroup label="Immorechner" icon={Calculator} items={immorechnerSubItems} color="text-[hsl(35,95%,55%)]" />
             <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" />
             <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" />
             {sectionTools.map((item) => (

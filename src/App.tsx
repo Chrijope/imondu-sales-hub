@@ -94,6 +94,7 @@ const App = () => (
           <Route path="/helpdesk" element={<Helpdesk />} />
           <Route path="/automations" element={<Automations />} />
           <Route path="/immorechner" element={<Immorechner />} />
+          <Route path="/immorechner/:subPage" element={<Immorechner />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
