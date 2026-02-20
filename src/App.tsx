@@ -45,6 +45,7 @@ import Anrufe from "./pages/Anrufe";
 import Helpdesk from "./pages/Helpdesk";
 import Automations from "./pages/Automations";
 import Immorechner from "./pages/Immorechner";
+import Lexikon from "./pages/Lexikon";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -102,6 +103,7 @@ const App = () => (
           <Route path="/automations" element={<P path="/automations"><Automations /></P>} />
           <Route path="/immorechner" element={<P path="/immorechner"><Immorechner /></P>} />
           <Route path="/immorechner/:subPage" element={<P path="/immorechner"><Immorechner /></P>} />
+          <Route path="/lexikon" element={<P path="/lexikon"><Lexikon /></P>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

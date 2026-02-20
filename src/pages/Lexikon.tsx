@@ -1,0 +1,180 @@
+import { useState, useMemo } from "react";
+import CRMLayout from "@/components/CRMLayout";
+import { LEXIKON_ENTRIES, LEXIKON_LETTERS } from "@/data/lexikon-data";
+import { Search, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
+function LetterSection({ letter, entries, defaultOpen }: {
+  letter: string;
+  entries: typeof LEXIKON_ENTRIES;
+  defaultOpen: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  return (
+    <div className="mb-4">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:shadow-crm-sm transition-all"
+      >
+        <span className="h-9 w-9 rounded-lg gradient-brand flex items-center justify-center text-primary-foreground font-bold text-lg">
+          {letter}
+        </span>
+        <span className="text-sm font-semibold text-foreground">
+          {entries.length} {entries.length === 1 ? "Begriff" : "Begriffe"}
+        </span>
+        {open ? (
+          <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground" />
+        ) : (
+          <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" />
+        )}
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-1 pl-2">
+          {entries.map((entry) => (
+            <div
+              key={entry.id}
+              className="rounded-lg border border-border/60 bg-card/60 overflow-hidden transition-all"
+            >
+              <button
+                onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-muted/30 transition-colors"
+              >
+                <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+                  #{entry.id}
+                </Badge>
+                <span className="text-sm font-medium text-foreground">{entry.term}</span>
+                {expandedId === entry.id ? (
+                  <ChevronDown className="h-3.5 w-3.5 ml-auto text-muted-foreground shrink-0" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground shrink-0" />
+                )}
+              </button>
+              {expandedId === entry.id && (
+                <div className="px-4 pb-4 pt-0">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {entry.description}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Lexikon() {
+  const [search, setSearch] = useState("");
+  const [activeLetter, setActiveLetter] = useState<string | null>(null);
+
+  const filtered = useMemo(() => {
+    let entries = LEXIKON_ENTRIES;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      entries = entries.filter(
+        (e) => e.term.toLowerCase().includes(q) || e.description.toLowerCase().includes(q)
+      );
+    }
+    if (activeLetter) {
+      entries = entries.filter((e) => e.letter === activeLetter);
+    }
+    return entries;
+  }, [search, activeLetter]);
+
+  const groupedByLetter = useMemo(() => {
+    const groups: Record<string, typeof LEXIKON_ENTRIES> = {};
+    for (const entry of filtered) {
+      if (!groups[entry.letter]) groups[entry.letter] = [];
+      groups[entry.letter].push(entry);
+    }
+    return groups;
+  }, [filtered]);
+
+  const letters = Object.keys(groupedByLetter).sort();
+
+  return (
+    <CRMLayout>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-10 w-10 rounded-xl gradient-brand flex items-center justify-center">
+              <BookOpen className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Immobilien-Lexikon</h1>
+              <p className="text-sm text-muted-foreground">
+                303 Fachbegriffe von A bis Z – deine Wissensdatenbank für die Immobilienbranche
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Begriff suchen…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Letter filter */}
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          <button
+            onClick={() => setActiveLetter(null)}
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+              !activeLetter
+                ? "gradient-brand text-primary-foreground shadow-crm-sm"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Alle
+          </button>
+          {LEXIKON_LETTERS.map((letter) => (
+            <button
+              key={letter}
+              onClick={() => setActiveLetter(activeLetter === letter ? null : letter)}
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                activeLetter === letter
+                  ? "gradient-brand text-primary-foreground shadow-crm-sm"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+
+        {/* Results count */}
+        <p className="text-xs text-muted-foreground mb-4">
+          {filtered.length} von 303 Begriffen
+        </p>
+
+        {/* Entries grouped by letter */}
+        {letters.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
+            <p className="text-sm">Keine Begriffe gefunden für „{search}"</p>
+          </div>
+        ) : (
+          letters.map((letter) => (
+            <LetterSection
+              key={letter}
+              letter={letter}
+              entries={groupedByLetter[letter]}
+              defaultOpen={letters.length <= 3 || !!search.trim()}
+            />
+          ))
+        )}
+      </div>
+    </CRMLayout>
+  );
+}

@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar,
   CalendarDays, Trophy, Archive, Sparkles, Settings, GraduationCap, Home,
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
-  Zap, HeadphonesIcon, Shield,
+  Zap, HeadphonesIcon, Shield, BookOpen,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -35,6 +35,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/analysetool": "analysetool",
   "/abrechnungen": "abrechnungen",
   "/academy": "academy",
+  "/lexikon": "lexikon",
   "/presentation": "presentation",
   "/unterlagen": "unterlagen",
   "/chat": "chat",
@@ -137,6 +138,7 @@ const sectionAuswertung = [
 
 const sectionTools = [
   { path: "/academy", icon: GraduationCap, label: "Academy" },
+  { path: "/lexikon", icon: BookOpen, label: "Immobilien-Lexikon" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
