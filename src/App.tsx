@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Pipeline from "./pages/Pipeline";
 import Leads from "./pages/Leads";
@@ -48,6 +49,10 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const P = ({ path, children }: { path: string; children: React.ReactNode }) => (
+  <ProtectedRoute path={path}>{children}</ProtectedRoute>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <UserRoleProvider>
@@ -57,46 +62,46 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/pipeline" element={<Pipeline />} />
+          <Route path="/pipeline" element={<P path="/pipeline"><Pipeline /></P>} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/lead/:id" element={<LeadDetail />} />
-          <Route path="/dialer" element={<Dialer />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/abrechnungen" element={<Abrechnungen />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/presentation" element={<Praesentation />} />
-          <Route path="/unterlagen" element={<Unterlagen />} />
-          <Route path="/analysetool" element={<Analysetool />} />
-          <Route path="/teampartner" element={<Teampartner />} />
-          <Route path="/statistik" element={<Statistik />} />
-          <Route path="/ansprechpartner" element={<Ansprechpartner />} />
-          <Route path="/marketing-leads" element={<MarketingLeads />} />
-          <Route path="/social-media-creator" element={<SocialMediaCreator />} />
-          <Route path="/berater-microseite" element={<BeraterMicroseite />} />
-          <Route path="/b2c/:subPage" element={<B2CLeads />} />
-          <Route path="/b2b/:subPage" element={<B2BLeads />} />
-          <Route path="/shop/lead-kauf" element={<LeadKauf />} />
-          <Route path="/shop/merchandise" element={<MerchShop />} />
-          <Route path="/einstellungen" element={<Einstellungen />} />
-          <Route path="/auswertungen" element={<Auswertungen />} />
-          <Route path="/kontakte" element={<Kontakte />} />
-          <Route path="/inbox" element={<InboxPage />} />
-          <Route path="/academy" element={<Academy />} />
-          <Route path="/inserate" element={<Inserate />} />
-          <Route path="/entwickler-registrieren" element={<EntwicklerRegistrieren />} />
-          <Route path="/entwickler" element={<Entwickleruebersicht />} />
-          <Route path="/kalender" element={<Kalender />} />
-          <Route path="/nutzerverwaltung" element={<Nutzerverwaltung />} />
-          <Route path="/support-ki" element={<SupportKI />} />
-          <Route path="/email" element={<EmailPage />} />
-          <Route path="/rechner/wohnung" element={<RechnerWohnung />} />
-          <Route path="/rechner/grundstueck" element={<RechnerGrundstueck />} />
-          <Route path="/rechner/mfh" element={<RechnerMFH />} />
-          <Route path="/anrufe" element={<Anrufe />} />
-          <Route path="/helpdesk" element={<Helpdesk />} />
-          <Route path="/automations" element={<Automations />} />
-          <Route path="/immorechner" element={<Immorechner />} />
-          <Route path="/immorechner/:subPage" element={<Immorechner />} />
+          <Route path="/dialer" element={<P path="/dialer"><Dialer /></P>} />
+          <Route path="/chat" element={<P path="/chat"><Chat /></P>} />
+          <Route path="/abrechnungen" element={<P path="/abrechnungen"><Abrechnungen /></P>} />
+          <Route path="/news" element={<P path="/news"><News /></P>} />
+          <Route path="/presentation" element={<P path="/presentation"><Praesentation /></P>} />
+          <Route path="/unterlagen" element={<P path="/unterlagen"><Unterlagen /></P>} />
+          <Route path="/analysetool" element={<P path="/analysetool"><Analysetool /></P>} />
+          <Route path="/teampartner" element={<P path="/teampartner"><Teampartner /></P>} />
+          <Route path="/statistik" element={<P path="/statistik"><Statistik /></P>} />
+          <Route path="/ansprechpartner" element={<P path="/ansprechpartner"><Ansprechpartner /></P>} />
+          <Route path="/marketing-leads" element={<P path="/marketing-leads"><MarketingLeads /></P>} />
+          <Route path="/social-media-creator" element={<P path="/social-media-creator"><SocialMediaCreator /></P>} />
+          <Route path="/berater-microseite" element={<P path="/berater-microseite"><BeraterMicroseite /></P>} />
+          <Route path="/b2c/:subPage" element={<P path="/b2c"><B2CLeads /></P>} />
+          <Route path="/b2b/:subPage" element={<P path="/b2b"><B2BLeads /></P>} />
+          <Route path="/shop/lead-kauf" element={<P path="/shop"><LeadKauf /></P>} />
+          <Route path="/shop/merchandise" element={<P path="/shop"><MerchShop /></P>} />
+          <Route path="/einstellungen" element={<P path="/einstellungen"><Einstellungen /></P>} />
+          <Route path="/auswertungen" element={<P path="/auswertungen"><Auswertungen /></P>} />
+          <Route path="/kontakte" element={<P path="/kontakte"><Kontakte /></P>} />
+          <Route path="/inbox" element={<P path="/inbox"><InboxPage /></P>} />
+          <Route path="/academy" element={<P path="/academy"><Academy /></P>} />
+          <Route path="/inserate" element={<P path="/inserate"><Inserate /></P>} />
+          <Route path="/entwickler-registrieren" element={<P path="/entwickler-registrieren"><EntwicklerRegistrieren /></P>} />
+          <Route path="/entwickler" element={<P path="/entwickler"><Entwickleruebersicht /></P>} />
+          <Route path="/kalender" element={<P path="/kalender"><Kalender /></P>} />
+          <Route path="/nutzerverwaltung" element={<P path="/nutzerverwaltung"><Nutzerverwaltung /></P>} />
+          <Route path="/support-ki" element={<P path="/support-ki"><SupportKI /></P>} />
+          <Route path="/email" element={<P path="/email"><EmailPage /></P>} />
+          <Route path="/rechner/wohnung" element={<P path="/rechner"><RechnerWohnung /></P>} />
+          <Route path="/rechner/grundstueck" element={<P path="/rechner"><RechnerGrundstueck /></P>} />
+          <Route path="/rechner/mfh" element={<P path="/rechner"><RechnerMFH /></P>} />
+          <Route path="/anrufe" element={<P path="/anrufe"><Anrufe /></P>} />
+          <Route path="/helpdesk" element={<P path="/helpdesk"><Helpdesk /></P>} />
+          <Route path="/automations" element={<P path="/automations"><Automations /></P>} />
+          <Route path="/immorechner" element={<P path="/immorechner"><Immorechner /></P>} />
+          <Route path="/immorechner/:subPage" element={<P path="/immorechner"><Immorechner /></P>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
