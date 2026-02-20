@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,17 +23,51 @@ interface MonthGoal {
   b2bRegistrierungen: number;
 }
 
+const STORAGE_KEY = "imondu-zielplanung-v1";
+
 const emptyGoals = (): Record<number, MonthGoal> => {
   const g: Record<number, MonthGoal> = {};
   for (let i = 0; i < 12; i++) g[i] = { b2cInserate: 0, b2bRegistrierungen: 0 };
   return g;
 };
 
+function loadFromStorage(): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektassistent" };
+    }
+  } catch {}
+  return { goals: emptyGoals(), karriereStufeId: "projektassistent" };
+}
+
+// Career-level-specific minimum B2C provision & B2B provision adjustments
+function getEffectiveB2CProvision(baseProvision: number, karriereId: string): number {
+  if (karriereId === "projektleiter") return Math.max(baseProvision, 12);
+  if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 13.5);
+  return baseProvision; // projektassistent uses base staffel
+}
+
+function getEffectiveB2BProvision(baseProvision: number, karriereId: string): number {
+  if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 35);
+  if (karriereId === "projektleiter") return baseProvision; // 25-35% as normal
+  // projektassistent: 50/50 split means effectively half
+  if (karriereId === "projektassistent") return baseProvision * 0.5;
+  return baseProvision;
+}
+
 export default function Zielplanung() {
-  const [karriereStufeId, setKarriereStufeId] = useState("projektassistent");
-  const [goals, setGoals] = useState<Record<number, MonthGoal>>(emptyGoals);
+  const stored = loadFromStorage();
+  const [karriereStufeId, setKarriereStufeId] = useState(stored.karriereStufeId);
+  const [goals, setGoals] = useState<Record<number, MonthGoal>>(stored.goals);
 
   const karriere = KARRIERESTUFEN.find((k) => k.id === karriereStufeId) || KARRIERESTUFEN[0];
+
+  // Persist to localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ goals, karriereStufeId }));
+  }, [goals, karriereStufeId]);
 
   const updateGoal = (month: number, field: keyof MonthGoal, val: string) => {
     const num = Math.max(0, parseInt(val) || 0);
@@ -43,36 +77,40 @@ export default function Zielplanung() {
   const calculations = useMemo(() => {
     return Object.entries(goals).map(([mIdx, goal]) => {
       const monthIndex = parseInt(mIdx);
-      // B2C: quarterly calculation – sum up quarter
       const quarter = Math.floor(monthIndex / 3);
       const quarterMonths = [quarter * 3, quarter * 3 + 1, quarter * 3 + 2];
       const quarterB2C = quarterMonths.reduce((sum, m) => sum + (goals[m]?.b2cInserate || 0), 0);
       const b2cStufe = getB2CStufe(quarterB2C);
-      const b2cEarning = goal.b2cInserate * b2cStufe.provision;
+      const effectiveB2C = getEffectiveB2CProvision(b2cStufe.provision, karriereStufeId);
+      const b2cEarning = goal.b2cInserate * effectiveB2C;
       const quarterBonus = quarterB2C >= B2C_QUARTALSBONUS_SCHWELLE ? B2C_QUARTALSBONUS / 3 : 0;
 
-      // B2B
       const b2bUmsatz = goal.b2bRegistrierungen * B2B_MITGLIEDSCHAFT_PREIS;
       const b2bStufe = getB2BStufe(b2bUmsatz);
-      const b2bEarning = b2bUmsatz * (b2bStufe.provision / 100);
+      const effectiveB2B = getEffectiveB2BProvision(b2bStufe.provision, karriereStufeId);
+      const b2bEarning = b2bUmsatz * (effectiveB2B / 100);
 
-      const total = b2cEarning + quarterBonus + b2bEarning;
+      // Senior override on team (5% extra)
+      const overrideEarning = karriereStufeId === "senior_projektleiter" ? b2bUmsatz * 0.05 : 0;
+
+      const total = b2cEarning + quarterBonus + b2bEarning + overrideEarning;
 
       return {
         month: MONTHS[monthIndex],
         monthIndex,
         b2cInserate: goal.b2cInserate,
         b2bReg: goal.b2bRegistrierungen,
-        b2cProvision: b2cStufe.provision,
+        b2cProvision: effectiveB2C,
         b2cEarning,
         quarterBonus,
         b2bUmsatz,
-        b2bProvision: b2bStufe.provision,
+        b2bProvision: effectiveB2B,
         b2bEarning,
+        overrideEarning,
         total,
       };
     });
-  }, [goals]);
+  }, [goals, karriereStufeId]);
 
   const jahresTotal = calculations.reduce((s, c) => s + c.total, 0);
   const jahresB2C = calculations.reduce((s, c) => s + c.b2cEarning + c.quarterBonus, 0);
@@ -115,8 +153,8 @@ export default function Zielplanung() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
             <p className="text-xs text-muted-foreground mb-1">Karrierestufe</p>
-            <p className="text-lg font-bold text-foreground">{karriere.icon} {karriere.title}</p>
-            <p className="text-xs text-muted-foreground mt-1">{karriere.b2cMin}</p>
+            <p className="text-xs text-muted-foreground mt-1">B2C: {karriere.b2cMin}</p>
+            <p className="text-xs text-muted-foreground">B2B: {karriere.b2bRange}</p>
           </div>
           <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
             <p className="text-xs text-muted-foreground mb-1">Jahresprognose Gesamt</p>
