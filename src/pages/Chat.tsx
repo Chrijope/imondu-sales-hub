@@ -532,14 +532,22 @@ export default function Chat() {
                 onClick={() => { setActiveChatId(chat.id); markRead(chat.id); }}
                 className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-border/50 transition-colors group relative ${
                   activeChatId === chat.id ? "bg-background" : "hover:bg-background/60"
-                }`}
+                } ${chat.unread > 0 ? "bg-primary/[0.03]" : ""}`}
               >
-                <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
-                  {chat.initials}
+                {/* Avatar with pin indicator */}
+                <div className="relative shrink-0">
+                  <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
+                    {chat.initials}
+                  </div>
+                  {chat.pinned && (
+                    <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
+                      <Pin className="h-2.5 w-2.5 text-primary" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm font-semibold truncate ${chat.unread > 0 ? "text-accent" : "text-foreground"}`}>
+                    <span className={`text-sm truncate ${chat.unread > 0 ? "font-bold text-foreground" : "font-semibold text-foreground"}`}>
                       {chat.name}
                     </span>
                     <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{chat.time}</span>
@@ -548,9 +556,12 @@ export default function Chat() {
                     <p className={`text-xs truncate ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                       {chat.lastMessage}
                     </p>
-                    <div className="flex items-center gap-1 ml-2 shrink-0">
-                      {chat.muted && <BellOff className="h-3 w-3 text-muted-foreground" />}
-                      {chat.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
+                    <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                      {chat.muted && (
+                        <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center">
+                          <BellOff className="h-2.5 w-2.5 text-muted-foreground" />
+                        </div>
+                      )}
                       {chat.unread > 0 && (
                         <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] gradient-brand text-primary-foreground border-0">
                           {chat.unread}
