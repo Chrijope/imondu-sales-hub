@@ -35,7 +35,8 @@ import {
 const FUNNEL_STEPS = [
   { id: 1, label: "Profil" },
   { id: 2, label: "Leistung" },
-  { id: 3, label: "Zahlung" },
+  { id: 3, label: "Mitgliedschaft" },
+  { id: 4, label: "Bezahlung" },
 ];
 
 // Collapsible section
@@ -86,7 +87,7 @@ export default function EntwicklerRegistrieren() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     firma: true, profil: false, info: false, referenz: false,
     leistung: true, leistungDetail: false,
-    zahlung: true,
+    mitgliedschaft: true, zahlung: true,
   });
 
   const toggleSection = (key: string) =>
@@ -116,8 +117,11 @@ export default function EntwicklerRegistrieren() {
     zertifikate: "",
     // Zahlung
     iban: "", bic: "", kontoinhaber: "",
-    zahlungsplan: "monatlich",
-    agb: false, datenschutz: false,
+    mitgliedschaft: "premium" as "basis" | "premium",
+    zahlungsweise: "karte" as "paypal" | "karte" | "apple_pay",
+    gutscheinCode: "",
+    agb: false, datenschutz: false, widerruf: false,
+    email: "",
   });
 
   const update = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
@@ -129,18 +133,19 @@ export default function EntwicklerRegistrieren() {
     referenz: !!(form.refTitel),
     leistung: !!(form.leistungsTitel),
     leistungDetail: form.leistungsObjekttypen.length > 0,
-    zahlung: !!(form.iban && form.agb && form.datenschutz),
+    mitgliedschaft: !!(form.mitgliedschaft),
+    zahlung: !!(form.agb && form.datenschutz && form.widerruf),
   };
 
-  const goNext = () => { if (step < 3) setStep(step + 1); };
+  const goNext = () => { if (step < 4) setStep(step + 1); };
   const goBack = () => { if (step > 1) setStep(step - 1); };
 
   const handleSubmit = () => {
-    if (!form.agb || !form.datenschutz) {
-      toast({ title: "Zustimmung erforderlich", description: "Bitte AGB und Datenschutz akzeptieren.", variant: "destructive" });
+    if (!form.agb || !form.datenschutz || !form.widerruf) {
+      toast({ title: "Zustimmung erforderlich", description: "Bitte alle Zustimmungen erteilen.", variant: "destructive" });
       return;
     }
-    toast({ title: "Registrierung abgeschlossen ✓", description: `${form.firmenname || "Entwickler"} wurde erfolgreich registriert.` });
+    toast({ title: "Zahlungspflichtig bestellt ✓", description: `${form.firmenname || "Entwickler"} – ${form.mitgliedschaft === "premium" ? "Premium⁺" : "Basis"} Mitgliedschaft wurde gebucht.` });
   };
 
   const toggleTag = (field: string, value: string) => {
@@ -496,44 +501,175 @@ export default function EntwicklerRegistrieren() {
             )}
 
             {step === 3 && (
-              <AccordionSection title="Zahlungsdaten & Abschluss" done={sectionsDone.zahlung} open={openSections.zahlung} onToggle={() => toggleSection("zahlung")}>
-                <div className="space-y-4">
-                  <Field label="Kontoinhaber"><Input placeholder="Max Mustermann" value={form.kontoinhaber} onChange={(e) => update("kontoinhaber", e.target.value)} /></Field>
-                  <Field label="IBAN" required><Input placeholder="DE89 3704 0044 0532 0130 00" value={form.iban} onChange={(e) => update("iban", e.target.value)} /></Field>
-                  <Field label="BIC"><Input placeholder="COBADEFFXXX" value={form.bic} onChange={(e) => update("bic", e.target.value)} /></Field>
-                  <hr className="border-border" />
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Zahlungsplan</p>
-                    <div className="flex gap-3">
-                      {["monatlich", "jährlich"].map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => update("zahlungsplan", p)}
-                          className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${
-                            form.zahlungsplan === p
-                              ? "bg-primary/5 border-primary text-primary"
-                              : "bg-card border-border text-muted-foreground hover:border-primary/20"
-                          }`}
-                        >
-                          {p.charAt(0).toUpperCase() + p.slice(1)}
-                          {p === "jährlich" && <span className="block text-[10px] text-success mt-0.5">2 Monate gratis</span>}
-                        </button>
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-foreground">Wählen Sie Ihre Option:</h2>
+
+                {/* Plan cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Basis */}
+                  <button
+                    onClick={() => update("mitgliedschaft", "basis")}
+                    className={`text-left rounded-xl border-2 p-5 transition-all ${
+                      form.mitgliedschaft === "basis"
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border bg-card hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <p className="text-base font-bold text-foreground">Basis</p>
+                        <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">899,90 €</p>
+                        <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt.</p>
+                      </div>
+                    </div>
+                    <hr className="border-border my-3" />
+                    <ul className="space-y-2.5">
+                      {[
+                        "Unbegrenzte Anzahl der Kontaktanfragen von Immobilieneigentümern",
+                        "Identitätsprüfung für Transparenz und Sicherheit",
+                        "Support durch IMONDU für Hilfestellungen",
+                      ].map((t) => (
+                        <li key={t} className="flex items-start gap-2 text-xs text-foreground">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          {t}
+                        </li>
                       ))}
+                    </ul>
+                  </button>
+
+                  {/* Premium⁺ */}
+                  <button
+                    onClick={() => update("mitgliedschaft", "premium")}
+                    className={`text-left rounded-xl border-2 p-5 transition-all relative ${
+                      form.mitgliedschaft === "premium"
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border bg-card hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="absolute -top-3 right-4">
+                      <Badge className="gradient-brand text-primary-foreground text-[10px] border-0">Empfohlen</Badge>
+                    </div>
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <p className="text-base font-bold text-foreground">Premium<sup className="text-primary">+</sup></p>
+                        <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">1.249,90 €</p>
+                        <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt.</p>
+                      </div>
+                    </div>
+                    <hr className="border-border my-3" />
+                    <ul className="space-y-2.5">
+                      {[
+                        "Alle Basis-Vorteile",
+                        "Frühzeitiger Zugang zu neuen Eigentümer-Anfragen",
+                        "Frühzeitige Platzierung bei limitierten Kontakten",
+                        "Premium-Badge für mehr Vertrauen bei Eigentümern",
+                        "Ihre Kontaktanfrage landet immer oben in den Benachrichtigungen des Immobilienbesitzers",
+                        "IMONDU Premium⁺ Verifizierung wird in Ihrem Profil angezeigt",
+                        "Erweiterte Kontaktanfrage für höhere Abschlussquote",
+                        "Performance-Statistiken und Conversion-Insights",
+                        "Priorisierter Support",
+                        "Hervorgehobene & priorisierte Platzierung in deiner Region",
+                      ].map((t) => (
+                        <li key={t} className="flex items-start gap-2 text-xs text-foreground font-medium">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                </div>
+
+                {/* Gutschein-Code */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Sie haben einen Gutschein-Code? Bitte hier eintragen</p>
+                  <div className="flex gap-2">
+                    <Input placeholder="z.B. J9B3" value={form.gutscheinCode} onChange={(e) => update("gutscheinCode", e.target.value)} className="max-w-xs" />
+                    <Button size="sm" className="gradient-brand border-0 text-primary-foreground">Einlösen</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left: Payment method */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-foreground">Wählen Sie Ihre Bezahlmethode:</h2>
+                  {[
+                    { id: "paypal" as const, label: "PayPal", icon: "💳" },
+                    { id: "karte" as const, label: "Karte", icon: "💳" },
+                    { id: "apple_pay" as const, label: "Apple Pay", icon: "🍏" },
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => update("zahlungsweise", m.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 text-sm font-medium transition-all ${
+                        form.zahlungsweise === m.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:border-primary/20"
+                      }`}
+                    >
+                      <span className="text-lg">{m.icon}</span>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Right: Plan summary */}
+                <div className="space-y-5">
+                  <h2 className="text-lg font-semibold text-foreground">Dein Plan im Überblick</h2>
+                  <div className="rounded-xl border-2 border-primary bg-primary/5 p-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-base font-bold text-foreground">
+                          {form.mitgliedschaft === "premium" ? <>Premium<sup className="text-primary">+</sup></> : "Basis"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">{form.mitgliedschaft === "premium" ? "1.249,90 €" : "899,90 €"}</p>
+                        <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt.</p>
+                      </div>
                     </div>
                   </div>
+
+                  <Field label="E-Mail-Adresse">
+                    <Input placeholder="ihre@email.com" value={form.email} onChange={(e) => update("email", e.target.value)} />
+                  </Field>
+
                   <hr className="border-border" />
-                  <div className="space-y-3">
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-foreground">Summe</p>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-foreground">{form.mitgliedschaft === "premium" ? "1.249,90 €" : "899,90 €"}</p>
+                      <p className="text-[10px] text-muted-foreground">zzgl. 19% MwSt.</p>
+                    </div>
+                  </div>
+
+                  {/* Legal */}
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div className="flex items-start gap-2">
+                      <Checkbox checked={form.widerruf} onCheckedChange={(v) => update("widerruf", !!v)} className="mt-0.5" />
+                      <p>Hiermit stimme ich ausdrücklich zu, dass die Imondu GmbH mit der Erbringung der Dienstleistung bereits vor Ablauf der Widerrufsfrist beginnt. Mir ist bekannt, dass mein Widerrufsrecht mit vollständiger Vertragserfüllung durch die Imondu GmbH erlischt.</p>
+                    </div>
                     <div className="flex items-start gap-2">
                       <Checkbox checked={form.agb} onCheckedChange={(v) => update("agb", !!v)} className="mt-0.5" />
-                      <p className="text-xs text-muted-foreground">Ich akzeptiere die <strong className="text-foreground cursor-pointer hover:underline">AGB</strong> der imondu Plattform. *</p>
+                      <p>Durch ein Drücken der Schaltfläche "Zahlungspflichtig bestellen" erkläre ich mich mit der Geltung der <strong className="text-foreground underline cursor-pointer">B2B-AGB</strong> der Imondu GmbH einverstanden. Die <strong className="text-foreground underline cursor-pointer">Datenschutzerklärung</strong> und die <strong className="text-foreground underline cursor-pointer">Widerrufsbelehrung</strong> habe ich zur Kenntnis genommen.</p>
                     </div>
                     <div className="flex items-start gap-2">
                       <Checkbox checked={form.datenschutz} onCheckedChange={(v) => update("datenschutz", !!v)} className="mt-0.5" />
-                      <p className="text-xs text-muted-foreground">Ich stimme der <strong className="text-foreground cursor-pointer hover:underline">Datenschutzerklärung</strong> zu. *</p>
+                      <p>Ich stimme der <strong className="text-foreground underline cursor-pointer">Datenschutzerklärung</strong> zu. *</p>
                     </div>
                   </div>
                 </div>
-              </AccordionSection>
+              </div>
             )}
           </div>
 
@@ -562,9 +698,17 @@ export default function EntwicklerRegistrieren() {
               )}
               {step === 3 && (
                 <>
-                  <p className="text-sm font-semibold text-foreground">Zahlungsdaten</p>
+                  <p className="text-sm font-semibold text-foreground">Mitgliedschaft wählen</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Ihre Zahlungsdaten werden verschlüsselt gespeichert und nur für die Abrechnung der Plattformgebühren verwendet.
+                    Wählen Sie zwischen Basis und Premium⁺. Mit Premium⁺ erhalten Sie maximale Sichtbarkeit und priorisierten Zugang zu Eigentümer-Anfragen.
+                  </p>
+                </>
+              )}
+              {step === 4 && (
+                <>
+                  <p className="text-sm font-semibold text-foreground">Bezahlung</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Ihre Zahlungsdaten werden verschlüsselt verarbeitet. Nach Abschluss der Bestellung ist Ihr Profil sofort aktiv.
                   </p>
                 </>
               )}
@@ -578,16 +722,17 @@ export default function EntwicklerRegistrieren() {
             <ChevronLeft className="h-4 w-4" /> Zurück
           </Button>
           <div className="flex gap-3">
-            {step === 3 && (
-              <Button variant="outline">Vorschau</Button>
-            )}
             {step < 3 ? (
               <Button onClick={goNext} className="gap-2 gradient-brand border-0 text-primary-foreground">
                 Speichern und weiter <ChevronRight className="h-4 w-4" />
               </Button>
+            ) : step === 3 ? (
+              <Button onClick={goNext} className="gap-2 gradient-brand border-0 text-primary-foreground">
+                Weiter zur Bezahlung <ChevronRight className="h-4 w-4" />
+              </Button>
             ) : (
               <Button onClick={handleSubmit} className="gap-2 gradient-brand border-0 text-primary-foreground">
-                Veröffentlichen <CheckCircle2 className="h-4 w-4" />
+                Zahlungspflichtig bestellen <CreditCard className="h-4 w-4" />
               </Button>
             )}
           </div>
