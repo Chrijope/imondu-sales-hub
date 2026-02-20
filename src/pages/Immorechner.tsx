@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, Download, Calculator, TrendingUp, PiggyBank, BarChart3, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight, Download, Calculator } from "lucide-react";
 
 // ── Helpers ──
 const fmt = (n: number) =>
   n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const fmtShort = (n: number) =>
+  n.toLocaleString("de-DE", { maximumFractionDigits: 0 });
 const fmtInt = (n: number) => n.toLocaleString("de-DE", { maximumFractionDigits: 0 });
 const pct = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " %";
 
@@ -34,12 +37,116 @@ function StepDot({ active, completed }: { active: boolean; completed: boolean })
   );
 }
 
+// ── SVG Diagram Component (V-shape like reference images) ──
+function HebelDiagram({
+  kaufpreis, wertentwicklung, laufzeit, tilgung, immoWert, vermoegenswert, tilgungGesamt, eigenkapital,
+  showInputs, onKaufpreisChange, onEigenkapitalChange, onWertentwicklungChange, onLaufzeitChange, onTilgungChange,
+}: {
+  kaufpreis: number; wertentwicklung: number; laufzeit: number; tilgung: number;
+  immoWert: number; vermoegenswert: number; tilgungGesamt: number; eigenkapital: number;
+  showInputs?: boolean;
+  onKaufpreisChange?: (v: number) => void; onEigenkapitalChange?: (v: number) => void;
+  onWertentwicklungChange?: (v: number) => void; onLaufzeitChange?: (v: number) => void;
+  onTilgungChange?: (v: number) => void;
+}) {
+  return (
+    <div className="relative w-full" style={{ minHeight: 420 }}>
+      <svg viewBox="0 0 700 400" className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#9ca3af" />
+          </marker>
+          <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="hsl(35,95%,55%)" />
+          </marker>
+        </defs>
+
+        {/* Wertentwicklung line (going up-right) */}
+        <line x1="120" y1="230" x2="480" y2="60" stroke="#9ca3af" strokeWidth="2" markerEnd="url(#arrowGray)" />
+        {/* Wertentwicklung value */}
+        <text x="500" y="56" className="text-[15px] font-bold" fill="currentColor" fontFamily="inherit">{fmtShort(immoWert)} €</text>
+
+        {/* Wertentwicklung label */}
+        <foreignObject x="30" y="120" width="90" height="80">
+          <div className="flex flex-col items-center">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-foreground">{wertentwicklung}</span>
+              <span className="text-sm text-muted-foreground font-medium">%</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">Wertentwicklung<br/>p.A.</span>
+          </div>
+        </foreignObject>
+
+        {/* Vertical bar right */}
+        <line x1="490" y1="60" x2="490" y2="340" stroke="#d1d5db" strokeWidth="1.5" />
+
+        {/* Laufzeit line (horizontal, orange) */}
+        <line x1="120" y1="230" x2="500" y2="230" stroke="hsl(35,95%,55%)" strokeWidth="3" markerEnd="url(#arrowOrange)" />
+        {/* Vermögenswert */}
+        <text x="510" y="234" className="text-[15px] font-bold" fill="hsl(35,95%,55%)" fontFamily="inherit">{fmtShort(vermoegenswert)} €</text>
+
+        {/* Laufzeit label */}
+        <foreignObject x="240" y="192" width="120" height="36">
+          <div className="flex items-baseline gap-1 justify-center">
+            <span className="text-lg font-bold text-foreground">{laufzeit}</span>
+            <span className="text-sm text-muted-foreground font-medium">Jahre</span>
+          </div>
+        </foreignObject>
+
+        {/* Laufzeit sublabel */}
+        <text x="200" y="262" className="text-[10px]" fill="#9ca3af" fontFamily="inherit">→ Laufzeit</text>
+        <foreignObject x="270" y="248" width="130" height="22">
+          <div>
+            <span className="text-[10px] bg-[hsl(35,95%,55%)] text-white px-2 py-0.5 rounded font-medium">Laufzeit bis Abbezahlt</span>
+          </div>
+        </foreignObject>
+
+        {/* Tilgung line (going down-right) */}
+        <line x1="120" y1="230" x2="480" y2="340" stroke="#9ca3af" strokeWidth="2" markerEnd="url(#arrowGray)" />
+        {/* Tilgung value */}
+        <text x="500" y="344" className="text-[15px] font-bold" fill="currentColor" fontFamily="inherit">{fmtShort(tilgungGesamt)} €</text>
+
+        {/* Tilgung label */}
+        <foreignObject x="30" y="290" width="90" height="80">
+          <div className="flex flex-col items-center">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-foreground">{tilgung}</span>
+              <span className="text-sm text-muted-foreground font-medium">%</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">Tilgung<br/>p.A.</span>
+          </div>
+        </foreignObject>
+
+        {/* Kaufpreis + Eigenkapital (only on step 0) */}
+        {showInputs && (
+          <>
+            <text x="120" y="186" className="text-[10px]" fill="#9ca3af" fontFamily="inherit">→ Kaufpreis</text>
+            <foreignObject x="120" y="192" width="120" height="34">
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-foreground">{fmtShort(kaufpreis)}</span>
+                <span className="text-sm text-muted-foreground font-medium">€</span>
+              </div>
+            </foreignObject>
+            <text x="120" y="246" className="text-[10px]" fill="#9ca3af" fontFamily="inherit">→ Eigenkapital</text>
+            <foreignObject x="120" y="252" width="120" height="34">
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-foreground">{fmtShort(eigenkapital)}</span>
+                <span className="text-sm text-muted-foreground font-medium">€</span>
+              </div>
+            </foreignObject>
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
 const STEP_TITLES = [
-  "Grunddaten der Immobilie",
-  "Aufwendungen & Einnahmen",
-  "Fremdkapital-Hebel",
+  "Berechne Deinen Vermögensaufbau mit Immobilien",
+  "Monatlicher Eigenanteil für Vermögensaufbau",
+  "Der Fremdkapital-Hebel",
   "Steuerliche Auswertung",
-  "Vermögenswert & Ergebnis",
+  "Dein Immo-Wert",
 ];
 
 export default function Immorechner() {
@@ -82,30 +189,25 @@ export default function Immorechner() {
     const eigenanteilGesamt = eigenanteilMonat * laufzeit * 12;
 
     const immoWert = kaufpreis * Math.pow(1 + wertentwicklung / 100, laufzeit);
-    const restschuld = darlehen * Math.pow(1 + zinssatz / 100, laufzeit) -
-      (tilgungMonat * 12) * ((Math.pow(1 + zinssatz / 100, laufzeit) - 1) / (zinssatz / 100));
     const restschuldSimple = Math.max(0, darlehen - tilgungMonat * 12 * laufzeit);
-
     const vermoegenswert = immoWert - restschuldSimple;
+    const tilgungGesamt = tilgungMonat * 12 * laufzeit;
 
-    // Werttabelle
     const wertTabelle = [0, 1, 2, 3, 4, 5].map((p) => ({
       prozent: p,
       wert: kaufpreis * Math.pow(1 + p / 100, laufzeit),
     }));
 
-    // Eigenkapitalrendite
     const investition = eigenkapital + kaufnebenkosten + maklergebuehr + sonstigesEinmalig + eigenanteilGesamt;
     const gewinn = vermoegenswert - investition;
     const eigenkapitalRendite = investition > 0 ? (gewinn / investition) * 100 : 0;
 
-    // ── Steuerliche Berechnung ──
+    // Steuer
     const gebaeudeWert = kaufpreis * (gebaeudeanteil / 100);
     const afaJahr = gebaeudeWert * (abschreibungssatz / 100);
     const sonderAfaJahr = gebaeudeWert * (sonderabschreibung / 100);
     const afaGesamt = (afaJahr + sonderAfaJahr) * Math.min(laufzeit, 50);
     const zinsaufwandJahr = darlehen * (zinssatz / 100);
-    const werbungskostenGesamt = werbungskosten * laufzeit;
     const grundsteuerGesamt = grundsteuerJahr * laufzeit;
 
     const mieteinnahmenJahr = miete * 12;
@@ -118,11 +220,8 @@ export default function Immorechner() {
     const absetzbarJahr = afaJahr + sonderAfaJahr + zinsaufwandJahr + grundsteuerJahr + (werbungskosten || 0) + (verwaltung * 12);
     const steuerlichesErgebnisJahr = mieteinnahmenJahr - absetzbarJahr;
     const steuerersparnis = steuerlichesErgebnisJahr < 0 ? Math.abs(steuerlichesErgebnisJahr) * (persSteuersatz / 100) : 0;
-    const steuerlastJahr = steuerlichesErgebnisJahr > 0 ? steuerlichesErgebnisJahr * (persSteuersatz / 100) : 0;
     const steuerersparnisGesamt = steuerersparnis * laufzeit;
-    const nettovorteilGesamt = vermoegenswert - eigenanteilGesamt + steuerersparnisGesamt + mieteinnahmenGesamt;
 
-    // Spekulationssteuer (Verkauf < 10 Jahre)
     const spekulationssteuerRelevant = laufzeit < 10;
     const spekulationsgewinn = immoWert - kaufpreis;
     const spekulationssteuer = spekulationssteuerRelevant && spekulationsgewinn > 0 ? spekulationsgewinn * (persSteuersatz / 100) : 0;
@@ -130,12 +229,11 @@ export default function Immorechner() {
     return {
       darlehen, zinsMonat, tilgungMonat, aufwendungenMonatlich, einnahmenMonatlich,
       eigenanteilMonat, eigenanteilGesamt, immoWert, restschuldSimple, vermoegenswert,
-      wertTabelle, investition, gewinn, eigenkapitalRendite,
-      // Steuer
+      tilgungGesamt, wertTabelle, investition, gewinn, eigenkapitalRendite,
       gebaeudeWert, afaJahr, sonderAfaJahr, afaGesamt, zinsaufwandJahr, mieteinnahmenJahr,
       mieteinnahmenGesamt, absetzbarJahr, steuerlichesErgebnisJahr, steuerersparnis,
-      steuerlastJahr, steuerersparnisGesamt, nettovorteilGesamt, grundsteuerGesamt,
-      werbungskostenGesamt, spekulationssteuerRelevant, spekulationssteuer, spekulationsgewinn,
+      steuerersparnisGesamt, grundsteuerGesamt,
+      spekulationssteuerRelevant, spekulationssteuer, spekulationsgewinn,
     };
   }, [kaufpreis, eigenkapital, wertentwicklung, laufzeit, tilgung, zinssatz, kaufnebenkosten, maklergebuehr,
       sonstigesEinmalig, verwaltung, sonstigesMonatlich, miete, mietsteigerung, steuervorteilMonat,
@@ -144,75 +242,58 @@ export default function Immorechner() {
   const canNext = step < STEP_TITLES.length - 1;
   const canPrev = step > 0;
 
+  const diagramProps = {
+    kaufpreis, wertentwicklung, laufzeit, tilgung, eigenkapital,
+    immoWert: calc.immoWert, vermoegenswert: calc.vermoegenswert, tilgungGesamt: calc.tilgungGesamt,
+  };
+
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 animate-fade-in max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
-              <span className="text-primary">IMMO</span>RECHNER
+              <span className="text-[hsl(35,95%,55%)]">IMMO</span>RECHNER
             </h1>
             <div className="w-12 h-1 rounded-full bg-[hsl(35,95%,55%)] mt-1" />
           </div>
-          <Calculator className="h-8 w-8 text-muted-foreground/40" />
         </div>
 
-        <Separator className="mb-6" />
+        <Separator className="mb-4" />
 
         {/* Step Title */}
-        <h2 className="text-lg font-display font-bold text-foreground mb-6">
-          {STEP_TITLES[step]}
+        <h2 className="text-lg font-display font-bold text-foreground mb-2">
+          {STEP_TITLES[step]}{" "}
+          {(step >= 2) && <span className="text-[hsl(35,95%,55%)]">in {laufzeit} Jahren</span>}
         </h2>
 
         {/* ── STEP 0: Grunddaten ── */}
         {step === 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-5 max-w-md">
-              <Field label="Kaufpreis" suffix="€">
-                <Input type="number" value={kaufpreis} onChange={(e) => setKaufpreis(+e.target.value)} className="max-w-[180px]" />
-              </Field>
-              <Field label="Eigenkapital" suffix="€">
-                <Input type="number" value={eigenkapital} onChange={(e) => setEigenkapital(+e.target.value)} className="max-w-[180px]" />
-              </Field>
-              <Field label="Wertentwicklung p.A." suffix="%">
-                <Input type="number" value={wertentwicklung} onChange={(e) => setWertentwicklung(+e.target.value)} className="max-w-[100px]" step={0.5} />
-              </Field>
-              <Field label="Laufzeit" suffix="Jahre">
-                <Input type="number" value={laufzeit} onChange={(e) => setLaufzeit(+e.target.value)} className="max-w-[100px]" />
-              </Field>
-              <Field label="Tilgung p.A." suffix="%">
-                <Input type="number" value={tilgung} onChange={(e) => setTilgung(+e.target.value)} className="max-w-[100px]" step={0.5} />
-              </Field>
-              <Field label="Zinssatz p.A." suffix="%">
-                <Input type="number" value={zinssatz} onChange={(e) => setZinssatz(+e.target.value)} className="max-w-[100px]" step={0.1} />
-              </Field>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3">
+              <HebelDiagram {...diagramProps} showInputs />
             </div>
-
-            {/* Live-Vorschau */}
-            <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm space-y-4">
-              <h3 className="text-sm font-display font-bold text-foreground">Schnellübersicht</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Darlehen</p>
-                  <p className="text-lg font-bold text-foreground">{fmt(calc.darlehen)}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Immo-Wert nach {laufzeit}J</p>
-                  <p className="text-lg font-bold text-foreground">{fmt(calc.immoWert)}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Zins/Monat</p>
-                  <p className="text-lg font-bold text-foreground">{fmt(calc.zinsMonat)}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tilgung/Monat</p>
-                  <p className="text-lg font-bold text-foreground">{fmt(calc.tilgungMonat)}</p>
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-[hsl(35,95%,55%)]/10 border border-[hsl(35,95%,55%)]/20">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Vermögenswert nach {laufzeit} Jahren</p>
-                <p className="text-2xl font-display font-bold text-[hsl(35,95%,55%)]">{fmt(calc.vermoegenswert)}</p>
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-card rounded-xl border border-border p-5 shadow-crm-sm space-y-4">
+                <Field label="Kaufpreis" suffix="€">
+                  <Input type="number" value={kaufpreis} onChange={(e) => setKaufpreis(+e.target.value)} className="max-w-[160px]" />
+                </Field>
+                <Field label="Eigenkapital" suffix="€">
+                  <Input type="number" value={eigenkapital} onChange={(e) => setEigenkapital(+e.target.value)} className="max-w-[160px]" />
+                </Field>
+                <Field label="Wertentwicklung p.A." suffix="%">
+                  <Input type="number" value={wertentwicklung} onChange={(e) => setWertentwicklung(+e.target.value)} className="max-w-[80px]" step={0.5} />
+                </Field>
+                <Field label="Laufzeit" suffix="Jahre">
+                  <Input type="number" value={laufzeit} onChange={(e) => setLaufzeit(+e.target.value)} className="max-w-[80px]" />
+                </Field>
+                <Field label="Tilgung p.A." suffix="%">
+                  <Input type="number" value={tilgung} onChange={(e) => setTilgung(+e.target.value)} className="max-w-[80px]" step={0.5} />
+                </Field>
+                <Field label="Zinssatz p.A." suffix="%">
+                  <Input type="number" value={zinssatz} onChange={(e) => setZinssatz(+e.target.value)} className="max-w-[80px]" step={0.1} />
+                </Field>
               </div>
             </div>
           </div>
@@ -220,79 +301,90 @@ export default function Immorechner() {
 
         {/* ── STEP 1: Aufwendungen & Einnahmen ── */}
         {step === 1 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6 max-w-md">
-              <div>
-                <h3 className="text-sm font-bold text-foreground mb-3">Aufwendungen (einmalig)</h3>
-                <div className="space-y-3">
-                  <Field label="Eigenkapital" suffix="€">
-                    <Input type="number" value={eigenkapital} onChange={(e) => setEigenkapital(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                  <Field label="Kaufnebenkosten" suffix="€">
-                    <Input type="number" value={kaufnebenkosten} onChange={(e) => setKaufnebenkosten(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                  <Field label="Maklergebühr" suffix="€">
-                    <Input type="number" value={maklergebuehr} onChange={(e) => setMaklergebuehr(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                  <Field label="Sonstiges" suffix="€">
-                    <Input type="number" value={sonstigesEinmalig} onChange={(e) => setSonstigesEinmalig(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="text-sm font-bold text-foreground mb-3">Aufwendungen (monatlich)</h3>
-                <div className="space-y-3">
-                  <div className="flex items-end gap-3">
-                    <Field label="Zins" suffix="€">
-                      <Input type="number" value={Math.round(calc.zinsMonat)} readOnly className="max-w-[100px] bg-muted" />
-                    </Field>
-                    <span className="text-sm text-muted-foreground mb-2">{zinssatz} %</span>
-                  </div>
-                  <div className="flex items-end gap-3">
-                    <Field label="Tilgung" suffix="€">
-                      <Input type="number" value={Math.round(calc.tilgungMonat)} readOnly className="max-w-[100px] bg-muted" />
-                    </Field>
-                    <span className="text-sm text-muted-foreground mb-2">{tilgung} %</span>
-                  </div>
-                  <Field label="Verwaltung" suffix="€">
-                    <Input type="number" value={verwaltung} onChange={(e) => setVerwaltung(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                  <Field label="Sonstiges" suffix="€">
-                    <Input type="number" value={sonstigesMonatlich} onChange={(e) => setSonstigesMonatlich(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                </div>
-                <p className="text-sm font-bold text-foreground mt-3">Gesamt: {fmt(calc.aufwendungenMonatlich)}</p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="text-sm font-bold text-foreground mb-3">Einnahmen (monatlich)</h3>
-                <div className="space-y-3">
-                  <div className="flex items-end gap-3">
-                    <Field label="Miete" suffix="€">
-                      <Input type="number" value={miete} onChange={(e) => setMiete(+e.target.value)} className="max-w-[150px]" />
-                    </Field>
-                    <Field label="Steigerung alle 3 Jahre" suffix="%">
-                      <Input type="number" value={mietsteigerung} onChange={(e) => setMietsteigerung(+e.target.value)} className="max-w-[80px]" />
-                    </Field>
-                  </div>
-                  <Field label="Steuervorteil" suffix="€">
-                    <Input type="number" value={steuervorteilMonat} onChange={(e) => setSteuervorteilMonat(+e.target.value)} className="max-w-[150px]" />
-                  </Field>
-                </div>
-                <p className="text-sm font-bold text-foreground mt-3">Gesamt: {fmt(calc.einnahmenMonatlich)}</p>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3">
+              <HebelDiagram {...diagramProps} />
             </div>
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-card rounded-xl border border-border p-5 shadow-crm-sm space-y-4">
+                <h3 className="text-sm font-bold text-foreground">Aufwendungen (einmalig):</h3>
+                <div className="space-y-2">
+                  {[
+                    { l: "Eigenkapital:", v: eigenkapital, s: setEigenkapital },
+                    { l: "Kaufnebenkosten:", v: kaufnebenkosten, s: setKaufnebenkosten },
+                    { l: "Maklergebühr:", v: maklergebuehr, s: setMaklergebuehr },
+                    { l: "Sonstiges:", v: sonstigesEinmalig, s: setSonstigesEinmalig },
+                  ].map((f) => (
+                    <div key={f.l} className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">{f.l}</span>
+                      <div className="flex items-center gap-1">
+                        <Input type="number" value={f.v} onChange={(e) => f.s(+e.target.value)} className="w-[90px] h-8 text-right text-sm" />
+                        <span className="text-xs text-muted-foreground">€</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-            <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm">
-              <div className="p-4 rounded-lg bg-[hsl(35,95%,55%)]/10 border border-[hsl(35,95%,55%)]/20 text-center">
-                <p className="text-sm text-muted-foreground">Monatlicher Eigenanteil</p>
-                <p className="text-3xl font-display font-bold text-[hsl(35,95%,55%)]">{fmt(calc.eigenanteilMonat)}</p>
-                <p className="text-xs text-muted-foreground mt-1">für deinen Vermögensaufbau</p>
+                <h3 className="text-sm font-bold text-foreground pt-2">Aufwendungen (monatlich):</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Zins:</span>
+                    <div className="flex items-center gap-1">
+                      <Input type="number" value={Math.round(calc.zinsMonat)} readOnly className="w-[90px] h-8 text-right text-sm bg-muted" />
+                      <span className="text-xs text-muted-foreground">€</span>
+                      <span className="text-xs text-muted-foreground ml-1">{zinssatz} %</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Tilgung:</span>
+                    <div className="flex items-center gap-1">
+                      <Input type="number" value={Math.round(calc.tilgungMonat)} readOnly className="w-[90px] h-8 text-right text-sm bg-muted" />
+                      <span className="text-xs text-muted-foreground">€</span>
+                      <span className="text-xs text-muted-foreground ml-1">{tilgung} %</span>
+                    </div>
+                  </div>
+                  {[
+                    { l: "Verwaltung:", v: verwaltung, s: setVerwaltung },
+                    { l: "Sonstiges:", v: sonstigesMonatlich, s: setSonstigesMonatlich },
+                  ].map((f) => (
+                    <div key={f.l} className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">{f.l}</span>
+                      <div className="flex items-center gap-1">
+                        <Input type="number" value={f.v} onChange={(e) => f.s(+e.target.value)} className="w-[90px] h-8 text-right text-sm" />
+                        <span className="text-xs text-muted-foreground">€</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm font-bold text-foreground">Gesamt: {fmt(calc.aufwendungenMonatlich)}</p>
+
+                <Separator />
+
+                <h3 className="text-sm font-bold text-foreground">Einnahmen (monatlich):</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Miete:</span>
+                    <div className="flex items-center gap-1">
+                      <Input type="number" value={miete} onChange={(e) => setMiete(+e.target.value)} className="w-[90px] h-8 text-right text-sm" />
+                      <span className="text-xs text-muted-foreground">€</span>
+                      <Input type="number" value={mietsteigerung} onChange={(e) => setMietsteigerung(+e.target.value)} className="w-[50px] h-8 text-right text-sm ml-1" />
+                      <span className="text-[10px] text-muted-foreground">% Steigerung alle 3 Jahre</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Steuervorteil:</span>
+                    <div className="flex items-center gap-1">
+                      <Input type="number" value={steuervorteilMonat} onChange={(e) => setSteuervorteilMonat(+e.target.value)} className="w-[90px] h-8 text-right text-sm" />
+                      <span className="text-xs text-muted-foreground">€</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm font-bold text-foreground">Gesamt: {fmt(calc.einnahmenMonatlich)}</p>
+
+                <div className="p-3 rounded-lg bg-[hsl(35,95%,55%)]/10 border border-[hsl(35,95%,55%)]/20 text-center mt-2">
+                  <p className="text-2xl font-display font-bold text-[hsl(35,95%,55%)]">{fmt(calc.eigenanteilMonat)} Eigenanteil</p>
+                  <p className="text-xs text-muted-foreground">für deinen Vermögensaufbau</p>
+                </div>
               </div>
             </div>
           </div>
@@ -300,47 +392,32 @@ export default function Immorechner() {
 
         {/* ── STEP 2: Fremdkapital-Hebel ── */}
         {step === 2 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm space-y-4">
-              <h3 className="text-sm font-display font-bold text-foreground">
-                Der Fremdkapital-Hebel in <span className="text-[hsl(35,95%,55%)]">{laufzeit}</span> Jahren
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between p-3 rounded-lg bg-secondary/30">
-                  <span className="text-muted-foreground">Wertentwicklung {wertentwicklung}% p.A.</span>
-                  <span className="font-bold">{fmt(calc.immoWert)}</span>
-                </div>
-                <div className="flex justify-between p-3 rounded-lg bg-[hsl(35,95%,55%)]/10">
-                  <span className="text-muted-foreground">→ Laufzeit {laufzeit} Jahre</span>
-                  <span className="font-bold text-[hsl(35,95%,55%)]">{fmt(calc.vermoegenswert)}</span>
-                </div>
-                <div className="flex justify-between p-3 rounded-lg bg-secondary/30">
-                  <span className="text-muted-foreground">Tilgung {tilgung}% p.A.</span>
-                  <span className="font-bold">{fmt(calc.tilgungMonat * laufzeit * 12)}</span>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3">
+              <HebelDiagram {...diagramProps} />
             </div>
-
-            <div className="space-y-6">
-              <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm text-center">
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-card rounded-xl border border-border p-5 shadow-crm-sm text-center space-y-3">
                 <p className="text-sm text-muted-foreground">Eigenanteil</p>
                 <p className="text-xl font-bold">{fmt(calc.eigenanteilMonat)}</p>
-                <p className="text-xs text-muted-foreground">× {laufzeit * 12} Monate</p>
-                <Separator className="my-3" />
-                <p className="text-2xl font-display font-bold text-foreground">= {fmt(calc.eigenanteilGesamt)}</p>
+                <p className="text-xs text-muted-foreground">in <strong>{laufzeit}</strong> Jahren</p>
+                <Separator />
+                <p className="text-2xl font-display font-bold">= {fmt(calc.eigenanteilGesamt)}</p>
               </div>
 
-              <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm">
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Ergebnis Eigenanteil</span>
-                  <span className="text-sm text-muted-foreground">Ergebnis Vermögensaufbau</span>
+              <div className="bg-card rounded-xl border border-border p-5 shadow-crm-sm space-y-3">
+                <div className="flex justify-between text-sm">
+                  <div className="text-center">
+                    <p className="text-muted-foreground text-xs">Ergebnis Eigenanteil</p>
+                    <p className="text-lg font-bold">{fmt(calc.eigenanteilGesamt)}</p>
+                  </div>
+                  <span className="text-muted-foreground self-center">→</span>
+                  <div className="text-center">
+                    <p className="text-muted-foreground text-xs">Ergebnis Vermögensaufbau</p>
+                    <p className="text-lg font-bold">{fmt(calc.vermoegenswert)}</p>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold">{fmt(calc.eigenanteilGesamt)}</span>
-                  <span className="text-muted-foreground">→</span>
-                  <span className="text-lg font-bold">{fmt(calc.vermoegenswert)}</span>
-                </div>
-                <Separator className="my-3" />
+                <Separator />
                 <p className="text-center text-sm text-muted-foreground">Ergebnis Eigenkapitalrendite</p>
                 <p className="text-center text-3xl font-display font-bold text-[hsl(35,95%,55%)]">
                   {pct(calc.eigenkapitalRendite)}
@@ -457,15 +534,19 @@ export default function Immorechner() {
 
         {/* ── STEP 4: Ergebnis ── */}
         {step === 4 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm">
-                <h3 className="text-sm font-display font-bold text-foreground mb-4">Dein Immo-Wert nach {laufzeit} Jahren</h3>
-                <div className="space-y-2 text-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3">
+              <HebelDiagram {...diagramProps} />
+            </div>
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-card rounded-xl border border-border p-5 shadow-crm-sm">
+                <h3 className="text-sm font-display font-bold text-foreground mb-3">Dein Immo-Wert</h3>
+                <p className="text-xs text-muted-foreground mb-3">Dein Immobilienwert nach {laufzeit} Jahren mit gegebener Wertsteigerung:</p>
+                <div className="space-y-1.5 text-sm">
                   {calc.wertTabelle.map((w) => (
-                    <div key={w.prozent} className={`flex justify-between p-2 rounded-lg ${w.prozent === wertentwicklung ? "bg-[hsl(35,95%,55%)]/10 font-bold" : ""}`}>
+                    <div key={w.prozent} className={`flex justify-between px-2 py-1.5 rounded ${w.prozent === wertentwicklung ? "bg-[hsl(35,95%,55%)]/10 font-bold" : ""}`}>
                       <span className={w.prozent === wertentwicklung ? "text-foreground" : "text-muted-foreground"}>
-                        {w.prozent === wertentwicklung ? `Deine Angabe (${w.prozent}%):` : `${w.prozent} % Wertsteigerung:`}
+                        {w.prozent === wertentwicklung ? `Deine Angabe (${w.prozent} %):` : `${w.prozent} % Wertsteigerung:`}
                       </span>
                       <span>{fmt(w.wert)}</span>
                     </div>
@@ -473,58 +554,9 @@ export default function Immorechner() {
                 </div>
               </div>
 
-              <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm">
-                <h3 className="text-sm font-display font-bold text-foreground mb-4">Steuerliche Gesamtübersicht ({laufzeit} Jahre)</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">AfA-Absetzung gesamt</span>
-                    <span className="font-medium text-[hsl(var(--success))]">{fmt(calc.afaGesamt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Grundsteuer gesamt</span>
-                    <span className="font-medium">{fmt(calc.grundsteuerGesamt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Mieteinnahmen gesamt</span>
-                    <span className="font-medium">+ {fmt(calc.mieteinnahmenGesamt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Steuerersparnis gesamt</span>
-                    <span className="font-medium text-[hsl(var(--success))]">+ {fmt(calc.steuerersparnisGesamt)}</span>
-                  </div>
-                  {calc.spekulationssteuerRelevant && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Spekulationssteuer</span>
-                      <span className="font-medium text-destructive">- {fmt(calc.spekulationssteuer)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm text-center">
-                <p className="text-sm text-muted-foreground mb-1">Dein Immo-Sparschwein</p>
-                <div className="flex items-center justify-center gap-8 my-4">
-                  <div>
-                    <p className="text-2xl font-bold">{fmt(calc.eigenanteilGesamt)}</p>
-                    <p className="text-xs text-muted-foreground">Eigenanteil</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[hsl(var(--success))]">-{fmt(Math.abs(calc.eigenanteilGesamt - calc.vermoegenswert))}</p>
-                    <p className="text-xs text-muted-foreground">Mieteinnahmen, Wertzuwachs, Steuervorteile</p>
-                  </div>
-                </div>
-                <div className="p-4 rounded-xl bg-[hsl(35,95%,55%)]/10 border border-[hsl(35,95%,55%)]/20">
-                  <p className="text-3xl font-display font-bold text-[hsl(35,95%,55%)]">{fmt(calc.vermoegenswert)}</p>
-                  <p className="text-sm font-medium text-foreground mt-1">Vermögenswert</p>
-                  <p className="text-xs text-muted-foreground">{laufzeit} Jahre</p>
-                </div>
-              </div>
-
-              <div className="bg-card rounded-xl border border-border p-6 shadow-crm-sm text-center">
-                <p className="text-sm text-muted-foreground">Deine Immo-Investition</p>
-                <p className="text-xs text-muted-foreground mt-1">Dein Eigenanteil nach {laufzeit} Jahren:</p>
+              <div className="bg-card rounded-xl border border-border p-5 shadow-crm-sm text-center">
+                <h3 className="text-sm font-display font-bold text-foreground mb-2">Deine Immo-Investition</h3>
+                <p className="text-xs text-muted-foreground">Dein Eigenanteil nach {laufzeit} Jahren:</p>
                 <p className="text-3xl font-display font-bold text-[hsl(35,95%,55%)] mt-2">{fmt(calc.eigenanteilGesamt)}</p>
               </div>
 
