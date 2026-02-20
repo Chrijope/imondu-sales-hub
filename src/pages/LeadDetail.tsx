@@ -25,18 +25,33 @@ import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/c
 
 const sampleActivities = [
   { type: "call" as const, desc: "Erstgespräch geführt – Interesse an Sanierungspaket", time: "Heute 11:30", by: "Max Müller" },
+  {
+    type: "script" as const,
+    desc: 'Gesprächsskript "Standard B2C \u2013 Eigentümer" abgeschlossen (6 Schritte)',
+    time: "Heute 11:30",
+    by: "Max Müller",
+    scriptDetails: [
+      { step: "Begrüßung & Vorstellung", result: "Positiv – Kunde offen", note: "Freundlich empfangen" },
+      { step: "Bedarfsanalyse", result: "Interesse an Sanierung", note: "Dach undicht, Fenster alt" },
+      { step: "Nutzenargumentation", result: "Überzeugend", note: "Energieersparnis angesprochen" },
+      { step: "Einwandbehandlung", result: "Zu teuer → ROI-Rechnung", note: "Konnte überzeugt werden" },
+      { step: "Terminvereinbarung", result: "Termin am 25.02.", note: "Vor-Ort-Besichtigung" },
+      { step: "Verabschiedung", result: "Positiv", note: "Unterlagen per Mail nachgeschickt" },
+    ],
+  },
   { type: "email" as const, desc: "Objektunterlagen angefordert", time: "Gestern 16:00", by: "Max Müller" },
   { type: "note" as const, desc: "Kunde möchte Vor-Ort-Termin, Follow-Up am Freitag", time: "18.02.2026", by: "Max Müller" },
   { type: "status_change" as const, desc: "Status geändert: Neuer Lead → Kontaktversuch", time: "17.02.2026", by: "System" },
   { type: "call" as const, desc: "Nicht erreicht – AB besprochen", time: "16.02.2026", by: "Max Müller" },
 ];
 
-const activityIcons = {
+const activityIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   call: Phone,
   email: Mail,
   note: MessageSquare,
   status_change: Clock,
   meeting: CalendarDays,
+  script: FileText,
 };
 
 export default function LeadDetail() {
@@ -395,19 +410,44 @@ export default function LeadDetail() {
             <div className="space-y-0">
               {sampleActivities.map((act, i) => {
                 const Icon = activityIcons[act.type] || Clock;
+                const isScript = act.type === "script";
                 return (
                   <div key={i} className="flex gap-4 relative">
                     {i < sampleActivities.length - 1 && (
                       <div className="absolute left-[15px] top-9 bottom-0 w-px bg-border" />
                     )}
-                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0 z-10">
-                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 z-10 ${
+                      isScript ? "bg-primary/10" : "bg-secondary"
+                    }`}>
+                      <Icon className={`h-3.5 w-3.5 ${isScript ? "text-primary" : "text-muted-foreground"}`} />
                     </div>
-                    <div className="pb-6">
+                    <div className="pb-6 flex-1 min-w-0">
                       <p className="text-sm text-foreground">{act.desc}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {act.time} · {act.by}
                       </p>
+                      {isScript && act.scriptDetails && (
+                        <div className="mt-2 rounded-lg border border-primary/10 bg-primary/[0.02] overflow-hidden">
+                          <table className="w-full text-[11px]">
+                            <thead>
+                              <tr className="border-b border-primary/10 bg-primary/5">
+                                <th className="text-left px-2.5 py-1.5 font-semibold text-foreground">Schritt</th>
+                                <th className="text-left px-2.5 py-1.5 font-semibold text-foreground">Ergebnis</th>
+                                <th className="text-left px-2.5 py-1.5 font-semibold text-foreground">Notiz</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {act.scriptDetails.map((detail, j) => (
+                                <tr key={j} className="border-b border-border/50 last:border-0">
+                                  <td className="px-2.5 py-1.5 text-muted-foreground font-medium">{detail.step}</td>
+                                  <td className="px-2.5 py-1.5 text-foreground">{detail.result}</td>
+                                  <td className="px-2.5 py-1.5 text-muted-foreground">{detail.note}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
