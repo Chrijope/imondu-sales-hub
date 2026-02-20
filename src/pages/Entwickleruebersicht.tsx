@@ -247,8 +247,8 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
 
       {/* Profile Header */}
       <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
-        <div className="h-40 relative">
-          <img src={getFirmaBild(idx)} alt={entwickler.firmenname} className="w-full h-full object-cover" />
+        <div className="h-44 relative overflow-hidden">
+          <img src={getFirmaBild(idx)} alt={entwickler.firmenname} className="w-full h-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
         </div>
         <div className="px-6 pb-6 -mt-14">
