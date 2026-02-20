@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in" style={{ background: "linear-gradient(135deg, hsl(220 14% 96%) 0%, hsl(250 20% 95%) 50%, hsl(340 15% 96%) 100%)" }}>
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -82,7 +82,7 @@ export default function Dashboard() {
         {/* Row 1: Leadübersicht + Kundenübersicht + Mitteilungen */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Leadübersicht Chart */}
-          <div className="lg:col-span-5 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-5 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Leadübersicht</h2>
@@ -111,7 +111,7 @@ export default function Dashboard() {
           </div>
 
           {/* Kundenübersicht */}
-          <div className="lg:col-span-4 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Kundenübersicht</h2>
@@ -142,7 +142,7 @@ export default function Dashboard() {
           </div>
 
           {/* Mitteilungen */}
-          <div className="lg:col-span-3 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-3 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Mitteilungen</h2>
@@ -171,7 +171,7 @@ export default function Dashboard() {
         {/* Row 2: Eigenumsatz + Potenzial + News */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Eigenumsatz */}
-          <div className="lg:col-span-5 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-5 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Eigenumsatz (Provision)</h2>
@@ -189,7 +189,7 @@ export default function Dashboard() {
           </div>
 
           {/* Potenzial */}
-          <div className="lg:col-span-4 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Potenzial</h2>
@@ -224,7 +224,7 @@ export default function Dashboard() {
           </div>
 
           {/* News */}
-          <div className="lg:col-span-3 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-3 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">News</h2>
@@ -245,7 +245,7 @@ export default function Dashboard() {
         {/* Row 3: Social Media + Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Social Media Widget */}
-          <div className="lg:col-span-4 bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">imondu Social</h2>
@@ -287,7 +287,7 @@ export default function Dashboard() {
           <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-4 content-start">
             <Link
               to="/leads"
-              className="bg-card rounded-xl p-6 shadow-crm-sm border border-border flex flex-col items-center gap-3 hover:shadow-crm-md hover:border-accent/30 transition-all group"
+              className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <ClipboardList className="h-6 w-6 text-primary-foreground" />
@@ -297,7 +297,7 @@ export default function Dashboard() {
 
             <Link
               to="/b2c-bestand"
-              className="bg-card rounded-xl p-6 shadow-crm-sm border border-border flex flex-col items-center gap-3 hover:shadow-crm-md hover:border-accent/30 transition-all group"
+              className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <Building2 className="h-6 w-6 text-primary-foreground" />
@@ -307,7 +307,7 @@ export default function Dashboard() {
 
             <Link
               to="/b2b-bestand"
-              className="bg-card rounded-xl p-6 shadow-crm-sm border border-border flex flex-col items-center gap-3 hover:shadow-crm-md hover:border-accent/30 transition-all group"
+              className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <Briefcase className="h-6 w-6 text-primary-foreground" />
@@ -317,7 +317,7 @@ export default function Dashboard() {
 
             <Link
               to="/teampartner"
-              className="bg-card rounded-xl p-6 shadow-crm-sm border border-border flex flex-col items-center gap-3 hover:shadow-crm-md hover:border-accent/30 transition-all group"
+              className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <UserPlus className="h-6 w-6 text-primary-foreground" />
