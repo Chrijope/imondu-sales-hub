@@ -550,31 +550,62 @@ export default function Entwickleruebersicht() {
                       </div>
 
                       {/* Content */}
-                      <div className="pt-10 pb-5 px-4 text-center">
+                      <div className="pt-10 pb-4 px-4 text-center">
                         <h3 className="text-sm font-display font-semibold text-foreground group-hover:text-primary transition-colors">
                           {e.kontaktperson}
                         </h3>
-                        {e.premiumPartner && (
-                          <Badge variant="outline" className="text-[10px] mt-1.5 border-foreground/30 font-bold">
-                            <span className="text-primary">Premium</span>Partner
-                          </Badge>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1.5">{e.gewerk}</p>
-                        <p className="text-[11px] text-muted-foreground">{e.firmenname}</p>
-
-                        <div className="mt-4">
-                          <Button
-                            size="sm"
-                            className="gradient-brand border-0 text-primary-foreground text-xs"
-                            onClick={(ev) => { ev.stopPropagation(); setSelectedId(e.id); }}
-                          >
-                            Kontaktanfrage
-                          </Button>
+                        <p className="text-xs text-muted-foreground mt-0.5">{e.firmenname}</p>
+                        <div className="flex items-center justify-center gap-1.5 mt-1.5">
+                          <Badge variant="secondary" className="text-[10px]">{e.gewerk}</Badge>
+                          {e.premiumPartner && (
+                            <Badge variant="outline" className="text-[10px] border-foreground/30 font-bold">
+                              <span className="text-primary">Premium</span>
+                            </Badge>
+                          )}
                         </div>
 
-                        <p className="text-[10px] text-muted-foreground mt-3">
-                          IMONDU-ID: {e.imonduId}
-                        </p>
+                        {/* Key stats for property owners */}
+                        <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-border/60">
+                          <div>
+                            <p className="text-sm font-bold text-foreground">{e.projekte}</p>
+                            <p className="text-[10px] text-muted-foreground">Projekte</p>
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-center gap-0.5">
+                              <Star className="h-3 w-3 text-warning fill-warning" />
+                              <p className="text-sm font-bold text-foreground">{e.bewertung}</p>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">Bewertung</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-success">{e.erfolgsquote}%</p>
+                            <p className="text-[10px] text-muted-foreground">Erfolg</p>
+                          </div>
+                        </div>
+
+                        {/* Location & response time */}
+                        <div className="flex items-center justify-between mt-3 text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{e.ort}</span>
+                          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{e.antwortzeit}</span>
+                        </div>
+
+                        {/* Top sanierungsarten tags */}
+                        <div className="flex flex-wrap justify-center gap-1 mt-2.5">
+                          {e.sanierungsarten.slice(0, 2).map((s) => (
+                            <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{s}</span>
+                          ))}
+                          {e.sanierungsarten.length > 2 && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">+{e.sanierungsarten.length - 2}</span>
+                          )}
+                        </div>
+
+                        <Button
+                          size="sm"
+                          className="w-full mt-3 gradient-brand border-0 text-primary-foreground text-xs"
+                          onClick={(ev) => { ev.stopPropagation(); setSelectedId(e.id); }}
+                        >
+                          Profil ansehen
+                        </Button>
                       </div>
                     </div>
                   );
