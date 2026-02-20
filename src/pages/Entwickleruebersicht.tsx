@@ -552,13 +552,25 @@ export default function Entwickleruebersicht() {
                         {(() => {
                           const score = 65 + ((globalIdx * 17 + 3) % 30);
                           return (
-                            <div className={`absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm text-[11px] font-bold ${
-                              score >= 85 ? "bg-success/90 text-white" :
-                              score >= 70 ? "bg-warning/90 text-white" :
-                              "bg-muted/90 text-foreground"
-                            }`}>
-                              <Sparkles className="h-3 w-3" />
-                              {score}%
+                            <div className="absolute top-3 right-3 group/score">
+                              <div className={`flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm text-[11px] font-bold cursor-help ${
+                                score >= 85 ? "bg-success/90 text-white" :
+                                score >= 70 ? "bg-warning/90 text-white" :
+                                "bg-muted/90 text-foreground"
+                              }`}>
+                                <Sparkles className="h-3 w-3" />
+                                {score}%
+                              </div>
+                              <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg p-3 shadow-lg text-xs text-foreground opacity-0 pointer-events-none group-hover/score:opacity-100 group-hover/score:pointer-events-auto transition-opacity z-50">
+                                <p className="font-semibold mb-1">KI-Matching Score</p>
+                                <p className="text-muted-foreground leading-relaxed">
+                                  {score >= 85
+                                    ? "Sehr hohe Übereinstimmung mit aktuellen Inseraten basierend auf Gewerk, Region, Objekttyp und Sanierungsart."
+                                    : score >= 70
+                                    ? "Gute Übereinstimmung – mehrere Inserate passen zum Leistungsprofil dieses Entwicklers."
+                                    : "Moderate Übereinstimmung – wenige passende Inserate für dieses Profil verfügbar."}
+                                </p>
+                              </div>
                             </div>
                           );
                         })()}
