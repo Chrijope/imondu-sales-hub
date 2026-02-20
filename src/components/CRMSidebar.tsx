@@ -42,6 +42,7 @@ import {
   BotMessageSquare,
   Calculator,
   Zap,
+  HeadphonesIcon,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -115,7 +116,6 @@ const sectionTools = [
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/support-ki", icon: BotMessageSquare, label: "Support KI" },
-  { path: "/helpdesk", icon: Inbox, label: "Helpdesk" },
 ];
 
 const marketingSubItems = [
@@ -128,6 +128,7 @@ const sectionTeam = [
   { path: "/nutzerverwaltung", icon: UsersRound, label: "Nutzerverwaltung" },
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
   { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },
+  { path: "/helpdesk", icon: HeadphonesIcon, label: "Helpdesk" },
 ];
 
 // ── Components ──
