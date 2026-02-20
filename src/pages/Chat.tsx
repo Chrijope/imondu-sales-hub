@@ -30,6 +30,7 @@ import {
   MessageSquare,
   Archive,
   BellOff,
+  MicOff,
   Trash2,
   MoreVertical,
   Filter,
@@ -539,11 +540,15 @@ export default function Chat() {
                   <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
                     {chat.initials}
                   </div>
-                  {chat.pinned && (
+                  {chat.muted ? (
+                    <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
+                      <MicOff className="h-2.5 w-2.5 text-muted-foreground" />
+                    </div>
+                  ) : chat.pinned ? (
                     <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
                       <Pin className="h-2.5 w-2.5 text-primary" />
                     </div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -703,6 +708,10 @@ export default function Chat() {
                     <DropdownMenuItem onClick={() => toggleMute(activeChatId)}>
                       <BellOff className="h-4 w-4 mr-2" />
                       {activeChat.muted ? "Benachrichtigungen an" : "Stummschalten"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleUnread(activeChatId)}>
+                      {activeChat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                      {activeChat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => toggleArchive(activeChatId)}>
                       <Archive className="h-4 w-4 mr-2" />
