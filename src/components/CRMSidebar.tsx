@@ -34,6 +34,7 @@ import {
   Settings,
   GraduationCap,
   Home,
+  MapPin,
   HardHat,
   ClipboardList,
   UsersRound,
@@ -109,8 +110,12 @@ const sectionTools = [
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
-  { path: "/marketing-leads", icon: Megaphone, label: "Marketing" },
   { path: "/support-ki", icon: BotMessageSquare, label: "Support KI" },
+];
+
+const marketingSubItems = [
+  { path: "/marketing-leads", icon: MapPin, label: "DACH-Karte" },
+  { path: "/social-media-creator", icon: Sparkles, label: "Social Media Creator" },
 ];
 
 const sectionTeam = [
@@ -263,6 +268,7 @@ export default function CRMSidebar() {
           <SectionLabel>Tools & Wissen</SectionLabel>
           <div className="space-y-0.5">
             <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" />
+            <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" />
             {sectionTools.map((item) => (
               <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
             ))}

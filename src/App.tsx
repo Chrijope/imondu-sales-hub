@@ -38,6 +38,7 @@ import EmailPage from "./pages/Email";
 import RechnerWohnung from "./pages/RechnerWohnung";
 import RechnerGrundstueck from "./pages/RechnerGrundstueck";
 import RechnerMFH from "./pages/RechnerMFH";
+import SocialMediaCreator from "./pages/SocialMediaCreator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/statistik" element={<Statistik />} />
           <Route path="/ansprechpartner" element={<Ansprechpartner />} />
           <Route path="/marketing-leads" element={<MarketingLeads />} />
+          <Route path="/social-media-creator" element={<SocialMediaCreator />} />
           <Route path="/berater-microseite" element={<BeraterMicroseite />} />
           <Route path="/b2c/:subPage" element={<B2CLeads />} />
           <Route path="/b2b/:subPage" element={<B2BLeads />} />
