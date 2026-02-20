@@ -7,6 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Search,
   Send,
   Paperclip,
@@ -23,6 +28,11 @@ import {
   Home,
   Users,
   MessageSquare,
+  Archive,
+  BellOff,
+  Trash2,
+  MoreVertical,
+  Filter,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,6 +41,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -57,8 +74,10 @@ interface ChatThread {
   time: string;
   unread: number;
   pinned: boolean;
+  archived: boolean;
+  muted: boolean;
   category: "intern" | "entwickler" | "eigentuemer";
-  members: { name: string; initials: string; role: string }[];
+  members: { name: string; initials: string; role: string; firma?: string }[];
   messages: ChatMessage[];
 }
 
@@ -72,6 +91,8 @@ const initialChats: ChatThread[] = [
     time: "17:39",
     unread: 2,
     pinned: true,
+    archived: false,
+    muted: false,
     category: "intern",
     members: [
       { name: "Andreas Hub", initials: "AH", role: "Admin" },
@@ -92,6 +113,8 @@ const initialChats: ChatThread[] = [
     time: "09:45",
     unread: 5,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "intern",
     members: [
       { name: "Max Müller", initials: "MM", role: "Vertriebler" },
@@ -113,6 +136,8 @@ const initialChats: ChatThread[] = [
     time: "14:22",
     unread: 0,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "intern",
     members: [
       { name: "Oliver Gjorgijev", initials: "OG", role: "Teampartner" },
@@ -134,9 +159,11 @@ const initialChats: ChatThread[] = [
     time: "15:10",
     unread: 1,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "entwickler",
     members: [
-      { name: "Thomas Weber", initials: "TW", role: "Entwickler" },
+      { name: "Thomas Weber", initials: "TW", role: "Entwickler", firma: "Weber Bau GmbH" },
       { name: "Max Müller", initials: "MM", role: "Vertriebler" },
     ],
     messages: [
@@ -155,9 +182,11 @@ const initialChats: ChatThread[] = [
     time: "11:30",
     unread: 0,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "entwickler",
     members: [
-      { name: "Peter Schmitt", initials: "PS", role: "Entwickler" },
+      { name: "Peter Schmitt", initials: "PS", role: "Entwickler", firma: "Elektro Schmitt" },
       { name: "Max Müller", initials: "MM", role: "Vertriebler" },
     ],
     messages: [
@@ -174,9 +203,11 @@ const initialChats: ChatThread[] = [
     time: "Gestern",
     unread: 3,
     pinned: true,
+    archived: false,
+    muted: false,
     category: "entwickler",
     members: [
-      { name: "Hans Krüger", initials: "HK", role: "Entwickler" },
+      { name: "Hans Krüger", initials: "HK", role: "Entwickler", firma: "Dach & Fassade Krüger" },
       { name: "Max Müller", initials: "MM", role: "Vertriebler" },
       { name: "Sarah Klein", initials: "SK", role: "Admin" },
     ],
@@ -196,6 +227,8 @@ const initialChats: ChatThread[] = [
     time: "16:45",
     unread: 1,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "eigentuemer",
     members: [
       { name: "Anna Schmidt", initials: "AS", role: "Eigentümer" },
@@ -217,6 +250,8 @@ const initialChats: ChatThread[] = [
     time: "12:15",
     unread: 0,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "eigentuemer",
     members: [
       { name: "Klaus Meier", initials: "KM", role: "Eigentümer" },
@@ -236,6 +271,8 @@ const initialChats: ChatThread[] = [
     time: "10:00",
     unread: 2,
     pinned: false,
+    archived: false,
+    muted: false,
     category: "eigentuemer",
     members: [
       { name: "Petra Schulz", initials: "PS", role: "Eigentümer" },
@@ -280,14 +317,19 @@ export default function Chat() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteType, setInviteType] = useState<"admin" | "teampartner" | "entwickler" | "eigentuemer">("teampartner");
   const [activeCategory, setActiveCategory] = useState<"alle" | "intern" | "entwickler" | "eigentuemer">("alle");
+  const [showArchived, setShowArchived] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Handle deep-link from LeadDetail: ?newChat=Name&category=eigentuemer
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeChatId, chats]);
+
+  // Handle deep-link from LeadDetail
   useEffect(() => {
     const newChatName = searchParams.get("newChat");
     const category = searchParams.get("category") as "intern" | "entwickler" | "eigentuemer" | null;
     if (!newChatName) return;
 
-    // Check if chat with this name already exists
     const existing = chats.find((c) => c.name === newChatName);
     if (existing) {
       setActiveChatId(existing.id);
@@ -303,6 +345,8 @@ export default function Chat() {
         time: new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
         unread: 0,
         pinned: false,
+        archived: false,
+        muted: false,
         category: category || "intern",
         members: [
           { name: newChatName, initials, role },
@@ -316,13 +360,13 @@ export default function Chat() {
       setActiveChatId(newChat.id);
       setActiveCategory(category || "alle");
     }
-    // Clear the search params
     setSearchParams({}, { replace: true });
   }, []);
 
   const activeChat = chats.find((c) => c.id === activeChatId);
 
   const filteredChats = chats
+    .filter((c) => showArchived ? c.archived : !c.archived)
     .filter((c) => activeCategory === "alle" || c.category === activeCategory)
     .filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
@@ -359,6 +403,18 @@ export default function Chat() {
     setChats((prev) =>
       prev.map((c) => (c.id === chatId ? { ...c, unread: c.unread > 0 ? 0 : 1 } : c))
     );
+  };
+
+  const toggleArchive = (chatId: string) => {
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, archived: !c.archived } : c)));
+    if (activeChatId === chatId) {
+      const remaining = chats.filter((c) => c.id !== chatId && !c.archived);
+      setActiveChatId(remaining[0]?.id || "");
+    }
+  };
+
+  const toggleMute = (chatId: string) => {
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, muted: !c.muted } : c)));
   };
 
   const markRead = (chatId: string) => {
@@ -403,11 +459,21 @@ export default function Chat() {
         : tm.role === "Teampartner")
   );
 
+  const getCategoryCount = (catId: string) => {
+    if (catId === "alle") return chats.filter(c => !c.archived).length;
+    return chats.filter(c => c.category === catId && !c.archived).length;
+  };
+
+  const getUnreadCount = (catId: string) => {
+    if (catId === "alle") return chats.filter(c => c.unread > 0 && !c.archived).length;
+    return chats.filter(c => c.category === catId && c.unread > 0 && !c.archived).length;
+  };
+
   return (
     <CRMLayout>
       <div className="flex h-[calc(100vh-2rem)] bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
         {/* Chat List Sidebar */}
-        <div className="w-[300px] border-r border-border flex flex-col bg-muted/30">
+        <div className="w-[320px] border-r border-border flex flex-col bg-muted/30">
           <div className="p-3 border-b border-border space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -418,101 +484,117 @@ export default function Chat() {
                 className="pl-9 h-9 text-sm bg-background"
               />
             </div>
-            {/* Category Tabs */}
-            <div className="flex gap-1">
-              {CHAT_CATEGORIES.map(cat => {
-                const count = cat.id === "alle"
-                  ? chats.filter(c => c.unread > 0).length
-                  : chats.filter(c => c.category === cat.id && c.unread > 0).length;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors flex-1 justify-center ${
-                      activeCategory === cat.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    <cat.icon className="h-3 w-3" />
-                    {cat.label}
-                    {count > 0 && (
-                      <span className={`text-[9px] font-bold ml-0.5 ${activeCategory === cat.id ? "text-primary-foreground" : "text-primary"}`}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Category Filter as Dropdown + Archive toggle */}
+            <div className="flex items-center gap-2">
+              <Select value={activeCategory} onValueChange={(v) => setActiveCategory(v as typeof activeCategory)}>
+                <SelectTrigger className="h-8 text-xs flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <Filter className="h-3 w-3" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {CHAT_CATEGORIES.map(cat => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <div className="flex items-center gap-2">
+                        <cat.icon className="h-3.5 w-3.5" />
+                        <span>{cat.label}</span>
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 ml-1">{getCategoryCount(cat.id)}</Badge>
+                        {getUnreadCount(cat.id) > 0 && (
+                          <Badge className="gradient-brand border-0 text-white text-[9px] px-1.5 py-0">{getUnreadCount(cat.id)} neu</Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant={showArchived ? "default" : "outline"}
+                size="sm"
+                className={`h-8 text-xs px-2 ${showArchived ? "gradient-brand border-0 text-white" : ""}`}
+                onClick={() => setShowArchived(!showArchived)}
+              >
+                <Archive className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
 
           <ScrollArea className="flex-1">
+            {filteredChats.length === 0 && (
+              <div className="py-8 text-center text-muted-foreground">
+                <MessageSquare className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                <p className="text-xs">{showArchived ? "Keine archivierten Chats" : "Keine Chats gefunden"}</p>
+              </div>
+            )}
             {filteredChats.map((chat) => (
-              <DropdownMenu key={chat.id}>
-                <div
-                  onClick={() => { setActiveChatId(chat.id); markRead(chat.id); }}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    // Find and click the dropdown trigger
-                    const trigger = e.currentTarget.querySelector('[data-chat-trigger]') as HTMLElement;
-                    trigger?.click();
-                  }}
-                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-border/50 transition-colors group ${
-                    activeChatId === chat.id ? "bg-background" : "hover:bg-background/60"
-                  }`}
-                >
-                  <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
-                    {chat.initials}
+              <div
+                key={chat.id}
+                onClick={() => { setActiveChatId(chat.id); markRead(chat.id); }}
+                className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-border/50 transition-colors group relative ${
+                  activeChatId === chat.id ? "bg-background" : "hover:bg-background/60"
+                }`}
+              >
+                <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
+                  {chat.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-sm font-semibold truncate ${chat.unread > 0 ? "text-accent" : "text-foreground"}`}>
+                      {chat.name}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{chat.time}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-sm font-semibold truncate ${chat.unread > 0 ? "text-accent" : "text-foreground"}`}>
-                        {chat.name}
-                      </span>
-                      <div className="flex items-center gap-1 shrink-0 ml-2">
-                        <span className="text-xs text-muted-foreground">{chat.time}</span>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <button data-chat-trigger className="p-0.5 rounded hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                          </button>
-                        </DropdownMenuTrigger>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p className="text-xs text-muted-foreground truncate">{chat.lastMessage}</p>
-                      <div className="flex items-center gap-1 ml-2 shrink-0">
-                        {chat.category === "entwickler" && <Building2 className="h-3 w-3 text-[hsl(var(--info))]" />}
-                        {chat.category === "eigentuemer" && <Home className="h-3 w-3 text-[hsl(var(--success))]" />}
-                        {chat.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
-                        {chat.unread > 0 && (
-                          <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] gradient-brand text-primary-foreground border-0">
-                            {chat.unread}
-                          </Badge>
-                        )}
-                      </div>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <p className={`text-xs truncate ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                      {chat.lastMessage}
+                    </p>
+                    <div className="flex items-center gap-1 ml-2 shrink-0">
+                      {chat.muted && <BellOff className="h-3 w-3 text-muted-foreground" />}
+                      {chat.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
+                      {chat.unread > 0 && (
+                        <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] gradient-brand text-primary-foreground border-0">
+                          {chat.unread}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
-                <DropdownMenuContent align="end" className="w-48 z-50 bg-popover border border-border shadow-lg">
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePin(chat.id); }}>
-                    {chat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
-                    {chat.pinned ? "Lösen" : "Anpinnen"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUnread(chat.id); }}>
-                    {chat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-                    {chat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={(e) => { e.stopPropagation(); leaveChat(chat.id); }}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Chat verlassen
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+
+                {/* Dropdown arrow on each chat item */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <button className="absolute top-2 right-2 p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePin(chat.id); }}>
+                      {chat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
+                      {chat.pinned ? "Chat lösen" : "Chat anpinnen"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUnread(chat.id); }}>
+                      {chat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                      {chat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleMute(chat.id); }}>
+                      <BellOff className="h-4 w-4 mr-2" />
+                      {chat.muted ? "Benachrichtigungen an" : "Stummschalten"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleArchive(chat.id); }}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      {chat.archived ? "Aus Archiv holen" : "Archivieren"}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={(e) => { e.stopPropagation(); leaveChat(chat.id); }}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Chat löschen
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ))}
           </ScrollArea>
         </div>
@@ -521,84 +603,107 @@ export default function Chat() {
         {activeChat ? (
           <div className="flex-1 flex flex-col">
             {/* Chat Header */}
-            <div className="px-6 py-4 border-b border-border">
-              <div className="flex items-center gap-1 mb-1">
-                <div className="w-8 h-1 rounded-full gradient-brand" />
+            <div className="px-6 py-3 border-b border-border flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-sm font-bold text-primary-foreground shrink-0">
+                {activeChat.initials}
               </div>
-              <h2 className="text-lg font-display font-bold text-foreground">Chat</h2>
-
-              {/* Members */}
-              <div className="flex items-center gap-1 mt-3">
-                {activeChat.members.map((m) => (
-                  <div
-                    key={m.name}
-                    className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground border-2 border-card -ml-1 first:ml-0"
-                    title={`${m.name} (${m.role})`}
-                  >
-                    {m.initials}
-                  </div>
-                ))}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-display font-bold text-foreground truncate">{activeChat.name}</h2>
+                <p className="text-[11px] text-muted-foreground">
+                  {activeChat.members.length} Teilnehmer · {activeChat.category === "intern" ? "Interner Chat" : activeChat.category === "entwickler" ? "Entwickler-Chat" : "Eigentümer-Chat"}
+                </p>
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2 mt-3 flex-wrap">
-                {([
-                  { type: "admin" as const, label: "Admin" },
-                  { type: "teampartner" as const, label: "Teampartner" },
-                  { type: "entwickler" as const, label: "Entwickler" },
-                  { type: "eigentuemer" as const, label: "Eigentümer" },
-                ]).map(({ type, label }) => (
-                  <Dialog
-                    key={type}
-                    open={inviteDialogOpen && inviteType === type}
-                    onOpenChange={(o) => { setInviteDialogOpen(o); setInviteType(type); }}
-                  >
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10">
-                        <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                        {label} einladen
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>{label} einladen</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-2 mt-2">
-                        {availableInvites.length > 0 ? availableInvites.map((m) => (
-                          <button
-                            key={m.name}
-                            onClick={() => inviteMember(m)}
-                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
-                          >
-                            <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
-                              {m.initials}
-                            </div>
-                            <div className="text-left">
-                              <p className="text-sm font-medium text-foreground">{m.name}</p>
-                              <p className="text-xs text-muted-foreground">{m.role}</p>
-                            </div>
-                          </button>
-                        )) : (
-                          <p className="text-sm text-muted-foreground py-4 text-center">Keine {label} verfügbar</p>
-                        )}
+              {/* Member Avatars with Tooltip */}
+              <div className="flex items-center -space-x-2">
+                {activeChat.members.slice(0, 5).map((m) => (
+                  <Tooltip key={m.name}>
+                    <TooltipTrigger asChild>
+                      <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-[10px] font-bold text-primary-foreground border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform">
+                        {m.initials}
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs">
+                      <p className="font-semibold">{m.name}</p>
+                      {m.firma && <p className="text-muted-foreground">{m.firma}</p>}
+                      <p className="text-muted-foreground">{m.role}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
+                {activeChat.members.length > 5 && (
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground border-2 border-card">
+                    +{activeChat.members.length - 5}
+                  </div>
+                )}
+              </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs border-destructive/50 text-destructive hover:bg-destructive/10"
-                  onClick={() => leaveChat(activeChatId)}
-                >
-                  <LogOut className="h-3.5 w-3.5 mr-1.5" />
-                  Chat verlassen
-                </Button>
+              {/* Header actions */}
+              <div className="flex items-center gap-1">
+                <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setInviteType("teampartner")}>
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Teilnehmer einladen</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex gap-1 mb-3">
+                      {(["admin", "teampartner", "entwickler", "eigentuemer"] as const).map(t => (
+                        <Button key={t} variant={inviteType === t ? "default" : "outline"} size="sm" className={`text-xs ${inviteType === t ? "gradient-brand border-0 text-white" : ""}`} onClick={() => setInviteType(t)}>
+                          {t === "admin" ? "Admin" : t === "teampartner" ? "Teampartner" : t === "entwickler" ? "Entwickler" : "Eigentümer"}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      {availableInvites.length > 0 ? availableInvites.map((m) => (
+                        <button
+                          key={m.name}
+                          onClick={() => inviteMember(m)}
+                          className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
+                        >
+                          <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
+                            {m.initials}
+                          </div>
+                          <div className="text-left">
+                            <p className="text-sm font-medium text-foreground">{m.name}</p>
+                            <p className="text-xs text-muted-foreground">{m.role}</p>
+                          </div>
+                        </button>
+                      )) : (
+                        <p className="text-sm text-muted-foreground py-4 text-center">Keine Teilnehmer verfügbar</p>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
-                <Button variant="ghost" size="sm" className="ml-auto">
-                  <Search className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => togglePin(activeChatId)}>
+                      {activeChat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
+                      {activeChat.pinned ? "Chat lösen" : "Chat anpinnen"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleMute(activeChatId)}>
+                      <BellOff className="h-4 w-4 mr-2" />
+                      {activeChat.muted ? "Benachrichtigungen an" : "Stummschalten"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleArchive(activeChatId)}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archivieren
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => leaveChat(activeChatId)} className="text-destructive focus:text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Chat verlassen
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -621,9 +726,20 @@ export default function Chat() {
                   return (
                     <div key={msg.id} className={`flex gap-3 ${msg.isOwn ? "justify-end" : "justify-start"}`}>
                       {!msg.isOwn && (
-                        <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 mt-1">
-                          {msg.initials}
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 mt-1 cursor-pointer">
+                              {msg.initials}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="text-xs">
+                            <p className="font-semibold">{msg.sender}</p>
+                            {activeChat.members.find(m => m.name === msg.sender)?.firma && (
+                              <p className="text-muted-foreground">{activeChat.members.find(m => m.name === msg.sender)?.firma}</p>
+                            )}
+                            <p className="text-muted-foreground">{activeChat.members.find(m => m.name === msg.sender)?.role}</p>
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                       <div
                         className={`max-w-[70%] rounded-2xl px-4 py-3 ${
@@ -640,13 +756,22 @@ export default function Chat() {
                         </div>
                       </div>
                       {msg.isOwn && (
-                        <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 mt-1">
-                          {msg.initials}
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 mt-1 cursor-pointer">
+                              {msg.initials}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="text-xs">
+                            <p className="font-semibold">Max Müller</p>
+                            <p className="text-muted-foreground">Vertriebler</p>
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                   );
                 })}
+                <div ref={bottomRef} />
               </div>
             </ScrollArea>
 
