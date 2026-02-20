@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { LEXIKON_ENTRIES, LEXIKON_LETTERS } from "@/data/lexikon-data";
 import { Search, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
@@ -71,6 +71,16 @@ function LetterSection({ letter, entries, defaultOpen }: {
 export default function Lexikon() {
   const [search, setSearch] = useState("");
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  const suggestions = useMemo(() => {
+    if (!search.trim() || search.length < 1) return [];
+    const q = search.toLowerCase();
+    return LEXIKON_ENTRIES
+      .filter((e) => e.term.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [search]);
 
   const filtered = useMemo(() => {
     let entries = LEXIKON_ENTRIES;
@@ -115,15 +125,40 @@ export default function Lexikon() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Search with autocomplete */}
+        <div className="relative mb-4" ref={searchRef}>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
           <Input
             placeholder="Begriff suchen…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             className="pl-10"
           />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">
+              {suggestions.map((s) => {
+                const idx = s.term.toLowerCase().indexOf(search.toLowerCase());
+                const before = s.term.slice(0, idx);
+                const match = s.term.slice(idx, idx + search.length);
+                const after = s.term.slice(idx + search.length);
+                return (
+                  <button
+                    key={s.id}
+                    onMouseDown={(e) => { e.preventDefault(); setSearch(s.term); setShowSuggestions(false); setActiveLetter(null); }}
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2 border-b border-border/40 last:border-b-0"
+                  >
+                    <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-foreground">
+                      {before}<span className="font-bold text-primary">{match}</span>{after}
+                    </span>
+                    <Badge variant="outline" className="ml-auto text-[9px] shrink-0">{s.letter}</Badge>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Letter filter */}
