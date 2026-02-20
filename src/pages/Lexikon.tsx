@@ -72,6 +72,7 @@ export default function Lexikon() {
   const [search, setSearch] = useState("");
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<typeof LEXIKON_ENTRIES[0] | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const suggestions = useMemo(() => {
@@ -131,7 +132,7 @@ export default function Lexikon() {
           <Input
             placeholder="Begriff suchen…"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true); }}
+            onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true); setSelectedEntry(null); }}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             className="pl-10"
@@ -146,7 +147,7 @@ export default function Lexikon() {
                 return (
                   <button
                     key={s.id}
-                    onMouseDown={(e) => { e.preventDefault(); setSearch(s.term); setShowSuggestions(false); setActiveLetter(null); }}
+                    onMouseDown={(e) => { e.preventDefault(); setSearch(s.term); setShowSuggestions(false); setActiveLetter(null); setSelectedEntry(s); }}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2 border-b border-border/40 last:border-b-0"
                   >
                     <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -160,6 +161,27 @@ export default function Lexikon() {
             </div>
           )}
         </div>
+
+        {/* Selected entry detail */}
+        {selectedEntry && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-card p-5 shadow-crm-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="h-8 w-8 rounded-lg gradient-brand flex items-center justify-center text-primary-foreground font-bold text-sm">
+                  {selectedEntry.letter}
+                </span>
+                <h2 className="text-lg font-bold text-foreground">{selectedEntry.term}</h2>
+              </div>
+              <button
+                onClick={() => { setSelectedEntry(null); setSearch(""); }}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ✕ Schließen
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">{selectedEntry.description}</p>
+          </div>
+        )}
 
         {/* Letter filter */}
         <div className="flex flex-wrap gap-1.5 mb-6">
