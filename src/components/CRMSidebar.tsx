@@ -113,6 +113,7 @@ const sectionTools = [
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/support-ki", icon: BotMessageSquare, label: "Support KI" },
+  { path: "/helpdesk", icon: Inbox, label: "Helpdesk" },
 ];
 
 const marketingSubItems = [
