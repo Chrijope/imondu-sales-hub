@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User, Building, FileText, MapPin, Camera, Save, Info, Calendar, Mail, Key, Eye, EyeOff } from "lucide-react";
+import { User, Building, FileText, MapPin, Camera, Save, Info, Calendar, Mail, Key, Eye, EyeOff, RefreshCw, CheckCircle2, Edit3 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface ProfileData {
   vorname: string;
@@ -86,6 +87,17 @@ export default function Einstellungen() {
   const [emailPasswort, setEmailPasswort] = useState("");
   const [emailPasswortNeu, setEmailPasswortNeu] = useState("");
   const [emailPasswortNeuConfirm, setEmailPasswortNeuConfirm] = useState("");
+
+  // Signature state
+  const [signature, setSignature] = useState(`<p>Mit freundlichen Grüßen</p>
+<p><strong>${initialProfile.vorname} ${initialProfile.nachname}</strong><br/>
+Vertriebsberater | Imondu GmbH<br/>
+📞 ${initialProfile.mobilnummer}<br/>
+✉️ m.mueller@imondu.de<br/>
+🌐 www.imondu.de</p>
+<p style="color: #999; font-size: 11px;">Imondu GmbH | Musterstraße 1 | 10115 Berlin<br/>
+Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
+  const [signatureEnabled, setSignatureEnabled] = useState(true);
 
   const ionosEmail = `${profile.vorname.trim()[0]?.toLowerCase() || "x"}.${profile.nachname.trim().toLowerCase().replace(/\s+/g, "-").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")}@imondu.de`;
 
@@ -279,17 +291,37 @@ export default function Einstellungen() {
 
         {/* E-Mail-Konto (IONOS) */}
         <SectionCard icon={Mail} title="E-Mail-Konto (IONOS)">
-          <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-primary/5 border border-primary/15">
-              <p className="text-xs font-medium text-muted-foreground mb-1">Deine geschäftliche E-Mail-Adresse</p>
-              <p className="text-sm font-mono font-semibold text-primary">{ionosEmail}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Diese Adresse wird automatisch nach dem Schema v.nachname@imondu.de generiert und ist mit IONOS verknüpft.
-              </p>
+          <div className="space-y-5">
+            {/* Email address & server info */}
+            <div className="p-4 rounded-lg bg-secondary/30 border border-border space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Dein E-Mail-Konto</p>
+                <Badge variant="outline" className="text-[10px]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--success))] mr-1.5" />IONOS
+                </Badge>
+              </div>
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/15">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Deine geschäftliche E-Mail-Adresse</p>
+                <p className="text-sm font-mono font-semibold text-primary">{ionosEmail}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Schema: erster Buchstabe Vorname + Punkt + Nachname @imondu.de
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">IMAP Server</p>
+                  <p className="text-sm text-foreground">imap.ionos.de</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">SMTP Server</p>
+                  <p className="text-sm text-foreground">smtp.ionos.de</p>
+                </div>
+              </div>
             </div>
 
             <Separator />
 
+            {/* Password change */}
             <div>
               <p className="text-xs font-medium text-foreground mb-3 flex items-center gap-1.5">
                 <Key className="h-3.5 w-3.5 text-primary" /> E-Mail-Passwort ändern
@@ -338,6 +370,39 @@ export default function Einstellungen() {
                   <Key className="h-3.5 w-3.5 mr-1.5" /> Passwort ändern
                 </Button>
               </div>
+            </div>
+
+            <Separator />
+
+            {/* Signature */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Edit3 className="h-3.5 w-3.5 text-primary" /> E-Mail-Signatur
+                </p>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-xs text-muted-foreground">Aktiv</span>
+                  <button
+                    onClick={() => setSignatureEnabled(!signatureEnabled)}
+                    className={`h-5 w-9 rounded-full transition-colors ${signatureEnabled ? "bg-primary" : "bg-muted"}`}
+                  >
+                    <span className={`block h-4 w-4 rounded-full bg-white shadow transition-transform ${signatureEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                  </button>
+                </label>
+              </div>
+
+              <div className="p-3 rounded-lg bg-secondary/20 border border-border mb-3">
+                <p className="text-[10px] text-muted-foreground mb-2">Vorschau:</p>
+                <div className="text-xs text-foreground" dangerouslySetInnerHTML={{ __html: signature }} />
+              </div>
+
+              <Field label="HTML bearbeiten">
+                <Textarea
+                  value={signature}
+                  onChange={(e) => setSignature(e.target.value)}
+                  className="min-h-[120px] font-mono text-xs"
+                />
+              </Field>
             </div>
           </div>
         </SectionCard>

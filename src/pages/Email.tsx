@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 // ── Types ──
 interface EmailMessage {
@@ -104,7 +104,7 @@ export default function EmailPage() {
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [composeOpen, setComposeOpen] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<"signature" | "account" | null>(null);
+  // settingsTab removed – now in Einstellungen page
 
   // Compose state
   const [composeTo, setComposeTo] = useState("");
@@ -191,9 +191,11 @@ export default function EmailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setSettingsTab("signature")}>
-              <Settings2 className="h-3.5 w-3.5 mr-1.5" /> Signatur & Konto
-            </Button>
+            <a href="/einstellungen">
+              <Button variant="outline" size="sm">
+                <Settings2 className="h-3.5 w-3.5 mr-1.5" /> Signatur & Konto
+              </Button>
+            </a>
             <Button size="sm" onClick={() => setComposeOpen(true)}>
               <Plus className="h-3.5 w-3.5 mr-1.5" /> Verfassen
             </Button>
@@ -426,99 +428,6 @@ export default function EmailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Settings Dialog ── */}
-      <Dialog open={settingsTab !== null} onOpenChange={(v) => !v && setSettingsTab(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>E-Mail-Einstellungen</DialogTitle>
-            <DialogDescription>Konto & Signatur verwalten</DialogDescription>
-          </DialogHeader>
-          <Tabs defaultValue="account" className="mt-2">
-            <TabsList className="w-full">
-              <TabsTrigger value="account" className="flex-1">Konto</TabsTrigger>
-              <TabsTrigger value="signature" className="flex-1">Signatur</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="account" className="space-y-4 mt-4">
-              <div className="p-4 rounded-lg bg-secondary/30 border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Dein E-Mail-Konto</p>
-                  <Badge variant="outline" className="text-[10px]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--success))] mr-1.5" />IONOS
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">E-Mail-Adresse</p>
-                    <p className="text-sm font-medium text-foreground">{CURRENT_USER.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Name</p>
-                    <p className="text-sm font-medium text-foreground">{CURRENT_USER.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">IMAP Server</p>
-                    <p className="text-sm text-foreground">imap.ionos.de</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">SMTP Server</p>
-                    <p className="text-sm text-foreground">smtp.ionos.de</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 rounded-lg border border-border space-y-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">E-Mail-Adresse Konvention</p>
-                <p className="text-xs text-muted-foreground">
-                  Jeder Mitarbeiter erhält automatisch eine persönliche Imondu-E-Mail nach dem Schema:
-                </p>
-                <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-center">
-                  <code className="text-sm font-mono font-bold text-primary">
-                    v.nachname@imondu.de
-                  </code>
-                </div>
-                <p className="text-[10px] text-muted-foreground text-center">
-                  Erster Buchstabe Vorname + Punkt + Nachname
-                </p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full" disabled>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Konto verbinden (IONOS API – bald verfügbar)
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="signature" className="space-y-4 mt-4">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">E-Mail-Signatur</p>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-xs text-muted-foreground">Aktiv</span>
-                  <button
-                    onClick={() => setSignatureEnabled(!signatureEnabled)}
-                    className={`h-5 w-9 rounded-full transition-colors ${signatureEnabled ? "bg-primary" : "bg-muted"}`}
-                  >
-                    <span className={`block h-4 w-4 rounded-full bg-white shadow transition-transform ${signatureEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
-                  </button>
-                </label>
-              </div>
-
-              <div className="p-3 rounded-lg bg-secondary/20 border border-border">
-                <p className="text-[10px] text-muted-foreground mb-2">Vorschau:</p>
-                <div className="text-xs text-foreground" dangerouslySetInnerHTML={{ __html: signature }} />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">HTML bearbeiten</label>
-                <Textarea
-                  value={signature}
-                  onChange={e => setSignature(e.target.value)}
-                  className="mt-1 min-h-[120px] font-mono text-xs"
-                />
-              </div>
-              <Button size="sm" onClick={() => setSettingsTab(null)}>
-                <Save className="h-3.5 w-3.5 mr-1.5" /> Signatur speichern
-              </Button>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
     </CRMLayout>
   );
 }
