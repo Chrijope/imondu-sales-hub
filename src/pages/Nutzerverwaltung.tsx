@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
   Users, Search, Shield, Clock, ChevronRight, ChevronDown, CheckCircle2,
-  XCircle, UserPlus, Mail, Phone, MoreHorizontal, Eye, EyeOff,
+  XCircle, UserPlus, Mail, Phone, MoreHorizontal, Eye, EyeOff, Plus, Pencil, Trash2,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -54,7 +54,7 @@ export interface Role {
   menuItems: string[];
 }
 
-const ROLES: Role[] = [
+const DEFAULT_ROLES: Role[] = [
   {
     id: "admin",
     name: "Admin",
@@ -122,6 +122,17 @@ const ROLES: Role[] = [
   },
 ];
 
+const CUSTOM_ROLE_COLORS = [
+  "hsl(340, 65%, 47%)",
+  "hsl(190, 70%, 42%)",
+  "hsl(25, 85%, 50%)",
+  "hsl(160, 55%, 40%)",
+  "hsl(270, 50%, 55%)",
+  "hsl(200, 70%, 50%)",
+  "hsl(350, 60%, 55%)",
+  "hsl(80, 55%, 42%)",
+];
+
 // ── Sample users ──
 interface CRMUser {
   id: string;
@@ -158,12 +169,18 @@ function timeAgo(dateStr: string): string {
 
 export default function Nutzerverwaltung() {
   const { toast } = useToast();
+  const [roles, setRoles] = useState<Role[]>(DEFAULT_ROLES);
   const [users, setUsers] = useState<CRMUser[]>(SAMPLE_USERS);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("alle");
   const [selectedUser, setSelectedUser] = useState<CRMUser | null>(null);
   const [showRolesOverview, setShowRolesOverview] = useState(false);
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleMenuItems, setNewRoleMenuItems] = useState<string[]>(["dashboard", "inbox", "kalender"]);
+  const [showNewRoleForm, setShowNewRoleForm] = useState(false);
+  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [editRoleName, setEditRoleName] = useState("");
 
   const filtered = users.filter((u) => {
     if (roleFilter !== "alle" && u.roleId !== roleFilter) return false;
@@ -174,7 +191,7 @@ export default function Nutzerverwaltung() {
     return true;
   });
 
-  const getRole = (roleId: string) => ROLES.find((r) => r.id === roleId) || ROLES[ROLES.length - 1];
+  const getRole = (roleId: string) => roles.find((r) => r.id === roleId) || roles[roles.length - 1];
 
   const getUserMenuItems = (user: CRMUser) => {
     if (user.roleId === "individuell" && user.customMenuItems) return user.customMenuItems;
@@ -198,7 +215,7 @@ export default function Nutzerverwaltung() {
     setUsers((prev) =>
       prev.map((u) => {
         if (u.id !== userId) return u;
-        const role = ROLES.find((r) => r.id === newRoleId);
+        const role = roles.find((r) => r.id === newRoleId);
         return {
           ...u,
           roleId: newRoleId,
@@ -246,7 +263,7 @@ export default function Nutzerverwaltung() {
           {[
             { label: "Gesamt", value: users.length },
             { label: "Aktiv", value: activeCount },
-            { label: "Rollen", value: ROLES.length },
+            { label: "Rollen", value: roles.length },
             { label: "Heute online", value: users.filter((u) => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length },
           ].map((kpi) => (
             <div key={kpi.label} className="bg-card rounded-lg p-4 shadow-crm-sm border border-border text-center">
@@ -273,7 +290,7 @@ export default function Nutzerverwaltung() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="alle">Alle Rollen</SelectItem>
-              {ROLES.map((r) => (
+              {roles.map((r) => (
                 <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
               ))}
             </SelectContent>
@@ -386,12 +403,12 @@ export default function Nutzerverwaltung() {
                         value={selectedUser.roleId}
                         onValueChange={(v) => {
                           changeUserRole(selectedUser.id, v);
-                          setSelectedUser({ ...selectedUser, roleId: v, customMenuItems: ROLES.find((r) => r.id === v)?.fixed ? undefined : selectedUser.customMenuItems });
+                          setSelectedUser({ ...selectedUser, roleId: v, customMenuItems: roles.find((r) => r.id === v)?.fixed ? undefined : selectedUser.customMenuItems });
                         }}
                       >
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {ROLES.map((r) => (
+                          {roles.map((r) => (
                             <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -473,18 +490,67 @@ export default function Nutzerverwaltung() {
       </Dialog>
 
       {/* ── Roles Overview Dialog ── */}
-      <Dialog open={showRolesOverview} onOpenChange={setShowRolesOverview}>
+      <Dialog open={showRolesOverview} onOpenChange={(open) => { setShowRolesOverview(open); if (!open) { setShowNewRoleForm(false); setEditingRole(null); } }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" /> Rollen & Berechtigungen
             </DialogTitle>
-            <DialogDescription>Übersicht aller Rollen mit den zugewiesenen Menüpunkten</DialogDescription>
+            <DialogDescription>Übersicht aller Rollen – eigene Rollen können erstellt, umbenannt und angepasst werden</DialogDescription>
           </DialogHeader>
+
+          {/* New Role Form */}
+          {showNewRoleForm ? (
+            <div className="border border-border rounded-lg p-4 space-y-3 bg-secondary/20">
+              <p className="text-sm font-semibold text-foreground">Neue Rolle erstellen</p>
+              <Input
+                placeholder="Rollenname eingeben…"
+                value={newRoleName}
+                onChange={(e) => setNewRoleName(e.target.value)}
+                className="h-9"
+              />
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Menüpunkte auswählen ({newRoleMenuItems.length}/{ALL_MENU_ITEMS.length})</p>
+                <div className="grid grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto">
+                  {ALL_MENU_ITEMS.map((item) => {
+                    const isChecked = newRoleMenuItems.includes(item.id);
+                    return (
+                      <label key={item.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer hover:bg-secondary/50 transition-colors ${isChecked ? "bg-primary/5 border border-primary/15" : "border border-transparent"}`}>
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={() => setNewRoleMenuItems(prev => prev.includes(item.id) ? prev.filter(m => m !== item.id) : [...prev, item.id])}
+                        />
+                        <span className="text-foreground">{item.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" size="sm" onClick={() => { setShowNewRoleForm(false); setNewRoleName(""); setNewRoleMenuItems(["dashboard", "inbox", "kalender"]); }}>Abbrechen</Button>
+                <Button size="sm" className="gradient-brand border-0 text-white" disabled={!newRoleName.trim()} onClick={() => {
+                  const id = `custom-${Date.now()}`;
+                  const color = CUSTOM_ROLE_COLORS[roles.filter(r => !r.fixed && r.id !== "individuell").length % CUSTOM_ROLE_COLORS.length];
+                  setRoles(prev => [...prev.filter(r => r.id !== "individuell"), { id, name: newRoleName.trim(), color, fixed: false, menuItems: newRoleMenuItems }, prev.find(r => r.id === "individuell")!]);
+                  setNewRoleName("");
+                  setNewRoleMenuItems(["dashboard", "inbox", "kalender"]);
+                  setShowNewRoleForm(false);
+                  toast({ title: "Rolle erstellt", description: `"${newRoleName.trim()}" wurde hinzugefügt` });
+                }}>Rolle erstellen</Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="outline" size="sm" className="w-full" onClick={() => setShowNewRoleForm(true)}>
+              <Plus className="h-4 w-4 mr-1.5" /> Eigene Rolle erstellen
+            </Button>
+          )}
+
           <div className="space-y-2 mt-2">
-            {ROLES.map((role) => {
+            {roles.map((role) => {
               const isExpanded = expandedRole === role.id;
               const userCount = users.filter((u) => u.roleId === role.id).length;
+              const isCustom = !role.fixed && role.id !== "individuell";
+              const isEditing = editingRole === role.id;
               return (
                 <div key={role.id} className="border border-border rounded-lg overflow-hidden">
                   <button
@@ -492,7 +558,25 @@ export default function Nutzerverwaltung() {
                     className="w-full flex items-center gap-3 p-3 hover:bg-secondary/30 transition-colors"
                   >
                     <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: role.color }} />
-                    <span className="text-sm font-semibold text-foreground flex-1 text-left">{role.name}</span>
+                    {isEditing ? (
+                      <Input
+                        value={editRoleName}
+                        onChange={(e) => setEditRoleName(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            setRoles(prev => prev.map(r => r.id === role.id ? { ...r, name: editRoleName.trim() || r.name } : r));
+                            setEditingRole(null);
+                            toast({ title: "Rolle umbenannt" });
+                          }
+                          if (e.key === "Escape") setEditingRole(null);
+                        }}
+                        className="h-7 text-sm font-semibold flex-1"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="text-sm font-semibold text-foreground flex-1 text-left">{role.name}</span>
+                    )}
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
                       {userCount} Nutzer
                     </span>
@@ -501,27 +585,58 @@ export default function Nutzerverwaltung() {
                     </span>
                     {role.fixed ? (
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">fest</span>
-                    ) : (
+                    ) : role.id === "individuell" ? (
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">individuell</span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent-foreground">eigene</span>
+                    )}
+                    {isCustom && !isEditing && (
+                      <>
+                        <button onClick={(e) => { e.stopPropagation(); setEditingRole(role.id); setEditRoleName(role.name); }} className="p-1 hover:bg-muted rounded">
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); setRoles(prev => prev.filter(r => r.id !== role.id)); setUsers(prev => prev.map(u => u.roleId === role.id ? { ...u, roleId: "individuell", customMenuItems: role.menuItems } : u)); toast({ title: "Rolle gelöscht" }); }} className="p-1 hover:bg-destructive/10 rounded">
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </button>
+                      </>
                     )}
                     {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                   </button>
                   {isExpanded && (
                     <div className="px-3 pb-3 border-t border-border/50">
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {role.menuItems.map((menuId) => {
-                          const item = ALL_MENU_ITEMS.find((m) => m.id === menuId);
-                          return item ? (
-                            <span
-                              key={menuId}
-                              className="text-[10px] px-2 py-1 rounded-full border border-border bg-secondary/50 text-foreground"
-                            >
-                              {item.label}
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                      {!role.fixed && (
+                      {isCustom ? (
+                        <div className="grid grid-cols-2 gap-1.5 mt-3 max-h-[250px] overflow-y-auto">
+                          {ALL_MENU_ITEMS.map((item) => {
+                            const isChecked = role.menuItems.includes(item.id);
+                            return (
+                              <label key={item.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer hover:bg-secondary/50 transition-colors ${isChecked ? "bg-primary/5 border border-primary/15" : "border border-transparent"}`}>
+                                <Checkbox
+                                  checked={isChecked}
+                                  onCheckedChange={() => {
+                                    setRoles(prev => prev.map(r => r.id === role.id ? { ...r, menuItems: isChecked ? r.menuItems.filter(m => m !== item.id) : [...r.menuItems, item.id] } : r));
+                                  }}
+                                />
+                                <span className="text-foreground">{item.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {role.menuItems.map((menuId) => {
+                            const item = ALL_MENU_ITEMS.find((m) => m.id === menuId);
+                            return item ? (
+                              <span
+                                key={menuId}
+                                className="text-[10px] px-2 py-1 rounded-full border border-border bg-secondary/50 text-foreground"
+                              >
+                                {item.label}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                      {role.id === "individuell" && (
                         <p className="text-[10px] text-muted-foreground mt-2">
                           Bei dieser Rolle können Menüpunkte individuell pro Nutzer zugewiesen werden.
                         </p>
