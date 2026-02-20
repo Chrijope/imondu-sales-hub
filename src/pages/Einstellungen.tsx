@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Camera, Save, Key, Eye, EyeOff, Edit3 } from "lucide-react";
+import { Camera, Save, Key, Eye, EyeOff, Edit3, Upload, CheckCircle2, Clock, AlertCircle, FileText, X, ChevronRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 
 interface ProfileData {
   vorname: string;
@@ -60,6 +61,41 @@ const initialProfile: ProfileData = {
   bio: "Erfahrener Vertriebspartner mit Schwerpunkt auf Immobilien im Großraum München.",
 };
 
+// --- Required documents ---
+interface RequiredDoc {
+  id: string;
+  label: string;
+  description: string;
+  required: boolean;
+}
+
+const REQUIRED_DOCUMENTS: RequiredDoc[] = [
+  { id: "personalausweis", label: "Personalausweiskopie", description: "Vorder- und Rückseite deines gültigen Personalausweises oder Reisepasses", required: true },
+  { id: "gewerbeanmeldung", label: "Gewerbeanmeldung", description: "Aktuelle Gewerbeanmeldung deines Unternehmens", required: true },
+  { id: "fuehrungszeugnis", label: "Polizeiliches Führungszeugnis", description: "Aktuelles polizeiliches Führungszeugnis (nicht älter als 3 Monate)", required: true },
+  { id: "vp-vertrag", label: "Vertriebspartnervertrag", description: "Unterschriebener Vertriebspartnervertrag mit Imondu", required: true },
+  { id: "agb", label: "AGB", description: "Bestätigung der Allgemeinen Geschäftsbedingungen", required: true },
+  { id: "verschwiegenheit", label: "Verschwiegenheitsvereinbarung", description: "Unterschriebene Verschwiegenheitsvereinbarung (NDA)", required: true },
+  { id: "dsgvo", label: "DSGVO-Vereinbarung", description: "Datenschutz-Grundverordnung Einwilligung und Auftragsverarbeitung", required: true },
+];
+
+// --- Onboarding steps ---
+interface OnboardingStep {
+  id: string;
+  label: string;
+  description: string;
+  tab: string;
+}
+
+const ONBOARDING_STEPS: OnboardingStep[] = [
+  { id: "passwort", label: "Passwort ändern", description: "Ändere dein initiales Passwort", tab: "email" },
+  { id: "profil", label: "Profil ausfüllen", description: "Vervollständige deine persönlichen Daten", tab: "profil" },
+  { id: "email_setup", label: "E-Mail einrichten", description: "Richte deine geschäftliche E-Mail ein", tab: "email" },
+  { id: "kalender", label: "Kalender verbinden", description: "Verbinde deinen Kalender", tab: "kalender" },
+  { id: "gewerbe", label: "Gewerbedaten hinterlegen", description: "Trage deine Unternehmensdaten ein", tab: "gewerbe" },
+  { id: "unterlagen", label: "Unterlagen hochladen", description: "Lade alle Pflichtdokumente hoch", tab: "unterlagen" },
+];
+
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
@@ -91,6 +127,7 @@ export default function Einstellungen() {
   const [emailPasswort, setEmailPasswort] = useState("");
   const [emailPasswortNeu, setEmailPasswortNeu] = useState("");
   const [emailPasswortNeuConfirm, setEmailPasswortNeuConfirm] = useState("");
+  const [activeTab, setActiveTab] = useState("profil");
 
   const [signature, setSignature] = useState(`<p>Mit freundlichen Grüßen</p>
 <p><strong>${initialProfile.vorname} ${initialProfile.nachname}</strong><br/>
@@ -109,6 +146,16 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
     "Powerdialer-Termine": true,
     "Bidirektionale Sync": true,
   });
+
+  // Document upload state
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, { name: string; date: string; status: "uploaded" | "pending" | "rejected" }>>({});
+
+  // Onboarding state
+  const [completedSteps, setCompletedSteps] = useState<string[]>(["passwort"]);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+
+  const onboardingProgress = Math.round((completedSteps.length / ONBOARDING_STEPS.length) * 100);
+  const allOnboardingDone = completedSteps.length === ONBOARDING_STEPS.length;
 
   const ionosEmail = `${profile.vorname.trim()[0]?.toLowerCase() || "x"}.${profile.nachname.trim().toLowerCase().replace(/\s+/g, "-").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")}@imondu.de`;
 
@@ -139,6 +186,29 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
     toast({ title: "Einstellungen gespeichert ✓", description: "Deine Daten wurden aktualisiert." });
   };
 
+  const handleDocUpload = (docId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedDocs((prev) => ({
+        ...prev,
+        [docId]: { name: file.name, date: new Date().toLocaleDateString("de-DE"), status: "pending" },
+      }));
+      toast({ title: "Dokument hochgeladen", description: `„${file.name}" wurde erfolgreich hochgeladen und wird geprüft.` });
+    }
+  };
+
+  const handleRemoveDoc = (docId: string) => {
+    setUploadedDocs((prev) => {
+      const next = { ...prev };
+      delete next[docId];
+      return next;
+    });
+    toast({ title: "Dokument entfernt", description: "Das Dokument wurde entfernt." });
+  };
+
+  const uploadedCount = REQUIRED_DOCUMENTS.filter((d) => uploadedDocs[d.id]).length;
+  const allDocsUploaded = uploadedCount === REQUIRED_DOCUMENTS.length;
+
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 animate-fade-in max-w-4xl">
@@ -147,14 +217,86 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
           <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Allgemein</h1>
         </div>
 
-        <Tabs defaultValue="profil" className="w-full">
-          <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto gap-0">
+        {/* ── ONBOARDING BANNER ── */}
+        {!onboardingDismissed && !allOnboardingDone && (
+          <div className="mb-6 rounded-xl border border-primary/20 bg-card shadow-crm-md overflow-hidden">
+            <div className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg gradient-brand flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-display font-bold text-foreground">Willkommen bei Imondu!</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">Bitte vervollständige dein Profil, um das Backoffice nutzen zu können.</p>
+                  </div>
+                </div>
+                <button onClick={() => setOnboardingDismissed(true)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <Progress value={onboardingProgress} className="h-2 flex-1" />
+                <span className="text-xs font-semibold text-primary whitespace-nowrap">{completedSteps.length} / {ONBOARDING_STEPS.length}</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {ONBOARDING_STEPS.map((step) => {
+                  const done = completedSteps.includes(step.id);
+                  return (
+                    <button
+                      key={step.id}
+                      onClick={() => { setActiveTab(step.tab); }}
+                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                        done
+                          ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
+                          : "border-border hover:border-primary/30 hover:bg-primary/5"
+                      }`}
+                    >
+                      {done ? (
+                        <CheckCircle2 className="h-4.5 w-4.5 text-[hsl(var(--success))] shrink-0" />
+                      ) : (
+                        <div className="h-4.5 w-4.5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <p className={`text-xs font-semibold truncate ${done ? "text-[hsl(var(--success))]" : "text-foreground"}`}>{step.label}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{step.description}</p>
+                      </div>
+                      {!done && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground ml-auto shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Onboarding complete banner */}
+        {allOnboardingDone && !onboardingDismissed && (
+          <div className="mb-6 rounded-xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Einrichtung abgeschlossen!</p>
+                <p className="text-xs text-muted-foreground">Du kannst jetzt alle Funktionen des Backoffice nutzen.</p>
+              </div>
+            </div>
+            <button onClick={() => setOnboardingDismissed(true)} className="text-muted-foreground hover:text-foreground p-1">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto gap-0 flex-wrap">
             {[
               { value: "profil", label: "Profil" },
               { value: "email", label: "E-Mail" },
               { value: "kalender", label: "Kalender" },
               { value: "gewerbe", label: "Gewerbedaten" },
               { value: "finanzen", label: "Steuer & Bank" },
+              { value: "unterlagen", label: "Unterlagen" },
               { value: "benachrichtigungen", label: "Benachrichtigungen" },
               { value: "protokoll", label: "Protokoll" },
               { value: "sicherheit", label: "Sicherheit" },
@@ -165,6 +307,9 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2.5 text-sm font-medium text-muted-foreground data-[state=active]:text-foreground"
               >
                 {tab.label}
+                {tab.value === "unterlagen" && !allDocsUploaded && (
+                  <span className="ml-1.5 h-2 w-2 rounded-full bg-[hsl(var(--warning))] inline-block" />
+                )}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -253,7 +398,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             </SectionBlock>
 
             <div className="flex justify-end pt-2 pb-8">
-              <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+              <Button onClick={() => { handleSave(); if (!completedSteps.includes("profil")) setCompletedSteps((p) => [...p, "profil"]); }} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
                 <Save className="h-4 w-4" /> Speichern
               </Button>
             </div>
@@ -340,7 +485,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             </SectionBlock>
 
             <div className="flex justify-end pt-2 pb-8">
-              <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+              <Button onClick={() => { handleSave(); if (!completedSteps.includes("email_setup")) setCompletedSteps((p) => [...p, "email_setup"]); }} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
                 <Save className="h-4 w-4" /> Speichern
               </Button>
             </div>
@@ -365,8 +510,12 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                       variant={calendarConnected[cal.id] ? "outline" : "default"}
                       size="sm"
                       onClick={() => {
+                        const wasConnected = calendarConnected[cal.id];
                         setCalendarConnected((prev) => ({ ...prev, [cal.id]: !prev[cal.id] }));
-                        toast({ title: calendarConnected[cal.id] ? `${cal.name} getrennt` : `${cal.name} verbunden ✓` });
+                        toast({ title: wasConnected ? `${cal.name} getrennt` : `${cal.name} verbunden ✓` });
+                        if (!wasConnected && !completedSteps.includes("kalender")) {
+                          setCompletedSteps((p) => [...p, "kalender"]);
+                        }
                       }}
                     >
                       {calendarConnected[cal.id] ? "Trennen" : "Verbinden"}
@@ -424,7 +573,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             </SectionBlock>
 
             <div className="flex justify-end pt-2 pb-8">
-              <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+              <Button onClick={() => { handleSave(); if (!completedSteps.includes("gewerbe")) setCompletedSteps((p) => [...p, "gewerbe"]); }} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
                 <Save className="h-4 w-4" /> Speichern
               </Button>
             </div>
@@ -466,6 +615,125 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                 <Save className="h-4 w-4" /> Speichern
               </Button>
             </div>
+          </TabsContent>
+
+          {/* ── UNTERLAGEN ── */}
+          <TabsContent value="unterlagen" className="space-y-6 mt-0">
+            <Separator />
+
+            {/* Upload progress summary */}
+            <div className="rounded-lg border border-border bg-secondary/20 p-4 max-w-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-foreground">Pflichtdokumente</p>
+                <Badge variant={allDocsUploaded ? "default" : "outline"} className={allDocsUploaded ? "bg-[hsl(var(--success))] text-white border-0" : ""}>
+                  {uploadedCount} / {REQUIRED_DOCUMENTS.length} hochgeladen
+                </Badge>
+              </div>
+              <Progress value={(uploadedCount / REQUIRED_DOCUMENTS.length) * 100} className="h-2" />
+              {!allDocsUploaded && (
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  <AlertCircle className="h-3 w-3 inline mr-1 text-[hsl(var(--warning))]" />
+                  Bitte lade alle Pflichtdokumente hoch, um das Backoffice vollständig nutzen zu können.
+                </p>
+              )}
+            </div>
+
+            <SectionBlock title="Dokumente hochladen" description="Lade die folgenden Unterlagen hoch. Akzeptierte Formate: PDF, JPG, PNG (max. 10 MB).">
+              <div className="space-y-3 max-w-lg">
+                {REQUIRED_DOCUMENTS.map((doc) => {
+                  const uploaded = uploadedDocs[doc.id];
+                  return (
+                    <div
+                      key={doc.id}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        uploaded
+                          ? uploaded.status === "uploaded"
+                            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
+                            : uploaded.status === "rejected"
+                            ? "border-destructive/30 bg-destructive/5"
+                            : "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5"
+                          : "border-border bg-card hover:border-primary/20"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                            uploaded
+                              ? uploaded.status === "uploaded"
+                                ? "bg-[hsl(var(--success))]/10"
+                                : uploaded.status === "rejected"
+                                ? "bg-destructive/10"
+                                : "bg-[hsl(var(--warning))]/10"
+                              : "bg-secondary"
+                          }`}>
+                            {uploaded ? (
+                              uploaded.status === "uploaded" ? <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
+                              : uploaded.status === "rejected" ? <AlertCircle className="h-4 w-4 text-destructive" />
+                              : <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
+                            ) : (
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">{doc.label}</p>
+                              {doc.required && !uploaded && (
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-destructive/30 text-destructive">Pflicht</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{doc.description}</p>
+                            {uploaded && (
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <p className="text-[10px] text-muted-foreground">
+                                  📄 {uploaded.name} · {uploaded.date}
+                                </p>
+                                <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${
+                                  uploaded.status === "uploaded"
+                                    ? "border-[hsl(var(--success))]/30 text-[hsl(var(--success))]"
+                                    : uploaded.status === "rejected"
+                                    ? "border-destructive/30 text-destructive"
+                                    : "border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]"
+                                }`}>
+                                  {uploaded.status === "uploaded" ? "Bestätigt" : uploaded.status === "rejected" ? "Abgelehnt" : "In Prüfung"}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {uploaded && (
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveDoc(doc.id)}>
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          <label>
+                            <Button variant="outline" size="sm" className="pointer-events-none h-8 text-xs gap-1.5">
+                              <Upload className="h-3 w-3" />
+                              {uploaded ? "Ersetzen" : "Hochladen"}
+                            </Button>
+                            <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => handleDocUpload(doc.id, e)} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionBlock>
+
+            {allDocsUploaded && (
+              <div className="flex justify-end pt-2 pb-8">
+                <Button
+                  onClick={() => {
+                    if (!completedSteps.includes("unterlagen")) setCompletedSteps((p) => [...p, "unterlagen"]);
+                    toast({ title: "Unterlagen vollständig ✓", description: "Alle Pflichtdokumente wurden hochgeladen." });
+                  }}
+                  className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Unterlagen bestätigen
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           {/* ── BENACHRICHTIGUNGEN ── */}
