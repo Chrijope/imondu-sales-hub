@@ -1,50 +1,63 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Inbox,
-  Mail,
-  Newspaper,
-  Presentation,
-  BarChart3,
-  FileText,
-  Kanban,
-  MessageSquare,
-  Contact,
-  Building2,
-  Briefcase,
-  UserPlus,
-  Receipt,
-  TrendingUp,
-  Phone,
-  PhoneCall,
-  Megaphone,
-  ShoppingBag,
-  ShoppingCart,
-  Globe,
-  ChevronDown,
-  ChevronRight,
-  Flame,
-  RotateCcw,
-  CalendarCheck,
-  Calendar,
-  CalendarDays,
-  Trophy,
-  Archive,
-  Sparkles,
-  Settings,
-  GraduationCap,
-  Home,
-  MapPin,
-  HardHat,
-  ClipboardList,
-  UsersRound,
-  BotMessageSquare,
-  Calculator,
-  Zap,
-  HeadphonesIcon,
+  LayoutDashboard, Inbox, Mail, Newspaper, Presentation, BarChart3, FileText,
+  Kanban, MessageSquare, Contact, Building2, Briefcase, UserPlus, Receipt,
+  TrendingUp, Phone, PhoneCall, Megaphone, ShoppingBag, ShoppingCart, Globe,
+  ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar,
+  CalendarDays, Trophy, Archive, Sparkles, Settings, GraduationCap, Home,
+  MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
+  Zap, HeadphonesIcon, Shield,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+
+// ── Menu-ID mapping: each sidebar path → menu permission ID ──
+const PATH_TO_MENU_ID: Record<string, string> = {
+  "/": "dashboard",
+  "/inbox": "inbox",
+  "/anrufe": "anrufe",
+  "/email": "email",
+  "/kalender": "kalender",
+  "/news": "news",
+  "/kontakte": "kontakte",
+  "/pipeline": "pipeline",
+  "/automations": "automations",
+  "/dialer": "dialer",
+  "/inserate": "inserate",
+  "/entwickler": "entwickler",
+  "/entwickler-registrieren": "entwickler-registrieren",
+  "/auswertungen": "auswertungen",
+  "/statistik": "statistik",
+  "/analysetool": "analysetool",
+  "/abrechnungen": "abrechnungen",
+  "/academy": "academy",
+  "/presentation": "presentation",
+  "/unterlagen": "unterlagen",
+  "/chat": "chat",
+  "/support-ki": "support-ki",
+  "/teampartner": "teampartner",
+  "/nutzerverwaltung": "nutzerverwaltung",
+  "/ansprechpartner": "ansprechpartner",
+  "/berater-microseite": "berater-microseite",
+  "/helpdesk": "helpdesk",
+  "/einstellungen": "einstellungen",
+  "/marketing-leads": "marketing",
+  "/social-media-creator": "marketing",
+};
+
+// Collapsible group permission IDs
+const GROUP_MENU_ID: Record<string, string> = {
+  "B2C – Eigentümer": "b2c",
+  "B2B – Partner": "b2b",
+  "Immorechner": "immorechner",
+  "Entwicklungsrechner": "rechner",
+  "Marketing": "marketing",
+  "Shop": "shop",
+};
 
 // ── Sub-items for collapsible groups ──
 
@@ -79,6 +92,19 @@ const shopSubItems = [
   { path: "/shop/merchandise", icon: ShoppingBag, label: "Merchandise" },
 ];
 
+const immorechnerSubItems = [
+  { path: "/immorechner/grunddaten", icon: Calculator, label: "Grunddaten" },
+  { path: "/immorechner/aufwendungen", icon: Calculator, label: "Aufwendungen" },
+  { path: "/immorechner/hebel", icon: Calculator, label: "Hebel" },
+  { path: "/immorechner/steuer", icon: Calculator, label: "Steuer" },
+  { path: "/immorechner/ergebnis", icon: Calculator, label: "Ergebnis" },
+];
+
+const marketingSubItems = [
+  { path: "/marketing-leads", icon: MapPin, label: "DACH-Karte" },
+  { path: "/social-media-creator", icon: Sparkles, label: "Social Media Creator" },
+];
+
 // ── Sections ──
 
 const sectionOverview = [
@@ -109,25 +135,12 @@ const sectionAuswertung = [
   { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
 ];
 
-const immorechnerSubItems = [
-  { path: "/immorechner/grunddaten", icon: Calculator, label: "Grunddaten" },
-  { path: "/immorechner/aufwendungen", icon: Calculator, label: "Aufwendungen" },
-  { path: "/immorechner/hebel", icon: Calculator, label: "Hebel" },
-  { path: "/immorechner/steuer", icon: Calculator, label: "Steuer" },
-  { path: "/immorechner/ergebnis", icon: Calculator, label: "Ergebnis" },
-];
-
 const sectionTools = [
   { path: "/academy", icon: GraduationCap, label: "Academy" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/support-ki", icon: BotMessageSquare, label: "Support KI" },
-];
-
-const marketingSubItems = [
-  { path: "/marketing-leads", icon: MapPin, label: "DACH-Karte" },
-  { path: "/social-media-creator", icon: Sparkles, label: "Social Media Creator" },
 ];
 
 const sectionTeam = [
@@ -217,33 +230,33 @@ function CollapsibleGroup({ label, icon: Icon, items, color }: {
   );
 }
 
-function NavSection({ title, items, isActive }: {
-  title: string;
-  items: { path: string; icon: React.ComponentType<{ className?: string }>; label: string }[];
-  isActive: (path: string) => boolean;
-}) {
-  return (
-    <div>
-      <SectionLabel>{title}</SectionLabel>
-      <div className="space-y-0.5">
-        {items.map((item) => (
-          <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── Main Sidebar ──
 
 export default function CRMSidebar() {
   const location = useLocation();
+  const { currentRoleId, setCurrentRoleId, allowedMenuItems, roles } = useUserRole();
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    // Exact match or match with trailing slash/segment to avoid /entwickler matching /entwickler-registrieren
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
+
+  const canSee = (path: string) => {
+    const menuId = PATH_TO_MENU_ID[path];
+    if (!menuId) return true; // unmapped = always visible
+    return allowedMenuItems.includes(menuId);
+  };
+
+  const canSeeGroup = (groupLabel: string) => {
+    const menuId = GROUP_MENU_ID[groupLabel];
+    if (!menuId) return true;
+    return allowedMenuItems.includes(menuId);
+  };
+
+  const filterItems = (items: { path: string; icon: React.ComponentType<{ className?: string }>; label: string }[]) =>
+    items.filter((item) => canSee(item.path));
+
+  const currentRole = roles.find((r) => r.id === currentRoleId);
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[240px] bg-[hsl(220,14%,92%)] flex flex-col z-50 border-r border-border">
@@ -256,64 +269,143 @@ export default function CRMSidebar() {
       <nav className="flex-1 py-1 px-3 overflow-y-auto space-y-0.5">
         {/* ÜBERSICHT */}
         <div className="space-y-0.5">
-          {sectionOverview.map((item) => (
+          {filterItems(sectionOverview).map((item) => (
             <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
           ))}
         </div>
 
         {/* VERTRIEB */}
-        <div>
-          <SectionLabel>Vertrieb</SectionLabel>
-          <div className="space-y-0.5">
-            <NavItem path="/kontakte" icon={Contact} label="Kontakte" isActive={isActive("/kontakte")} />
-            <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />
-            <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />
-            {sectionVertrieb.map((item) => (
-              <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
-            ))}
-          </div>
-        </div>
+        {(() => {
+          const vertriebItems = filterItems(sectionVertrieb);
+          const showKontakte = canSee("/kontakte");
+          const showB2C = canSeeGroup("B2C – Eigentümer");
+          const showB2B = canSeeGroup("B2B – Partner");
+          if (!showKontakte && !showB2C && !showB2B && vertriebItems.length === 0) return null;
+          return (
+            <div>
+              <SectionLabel>Vertrieb</SectionLabel>
+              <div className="space-y-0.5">
+                {showKontakte && <NavItem path="/kontakte" icon={Contact} label="Kontakte" isActive={isActive("/kontakte")} />}
+                {showB2C && <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />}
+                {showB2B && <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />}
+                {vertriebItems.map((item) => (
+                  <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* IMMOBILIEN */}
-        <NavSection title="Immobilien" items={sectionImmobilien} isActive={isActive} />
+        {(() => {
+          const items = filterItems(sectionImmobilien);
+          if (items.length === 0) return null;
+          return (
+            <div>
+              <SectionLabel>Immobilien</SectionLabel>
+              <div className="space-y-0.5">
+                {items.map((item) => (
+                  <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* AUSWERTUNG */}
-        <NavSection title="Auswertung" items={sectionAuswertung} isActive={isActive} />
+        {(() => {
+          const items = filterItems(sectionAuswertung);
+          if (items.length === 0) return null;
+          return (
+            <div>
+              <SectionLabel>Auswertung</SectionLabel>
+              <div className="space-y-0.5">
+                {items.map((item) => (
+                  <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TOOLS & WISSEN */}
-        <div>
-          <SectionLabel>Tools & Wissen</SectionLabel>
-          <div className="space-y-0.5">
-            <CollapsibleGroup label="Immorechner" icon={Calculator} items={immorechnerSubItems} color="text-[hsl(35,95%,55%)]" />
-            <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" />
-            <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" />
-            {sectionTools.map((item) => (
-              <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
-            ))}
-          </div>
-        </div>
+        {(() => {
+          const toolItems = filterItems(sectionTools);
+          const showImmo = canSeeGroup("Immorechner");
+          const showRechner = canSeeGroup("Entwicklungsrechner");
+          const showMarketing = canSeeGroup("Marketing");
+          if (toolItems.length === 0 && !showImmo && !showRechner && !showMarketing) return null;
+          return (
+            <div>
+              <SectionLabel>Tools & Wissen</SectionLabel>
+              <div className="space-y-0.5">
+                {showImmo && <CollapsibleGroup label="Immorechner" icon={Calculator} items={immorechnerSubItems} color="text-[hsl(35,95%,55%)]" />}
+                {showRechner && <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" />}
+                {showMarketing && <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" />}
+                {toolItems.map((item) => (
+                  <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TEAM & ADMIN */}
-        <NavSection title="Team & Admin" items={sectionTeam} isActive={isActive} />
+        {(() => {
+          const items = filterItems(sectionTeam);
+          if (items.length === 0) return null;
+          return (
+            <div>
+              <SectionLabel>Team & Admin</SectionLabel>
+              <div className="space-y-0.5">
+                {items.map((item) => (
+                  <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* SHOP */}
-        <div>
-          <SectionLabel>Shop</SectionLabel>
-          <div className="space-y-0.5">
-            <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" />
+        {canSeeGroup("Shop") && (
+          <div>
+            <SectionLabel>Shop</SectionLabel>
+            <div className="space-y-0.5">
+              <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" />
+            </div>
           </div>
-        </div>
+        )}
       </nav>
 
-      {/* User */}
-      <div className="px-4 py-3 border-t border-border">
+      {/* User + Role Switcher */}
+      <div className="px-4 py-3 border-t border-border space-y-2">
+        {/* Role switcher (demo) */}
+        <div className="flex items-center gap-2">
+          <Shield className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Select value={currentRoleId} onValueChange={setCurrentRoleId}>
+            <SelectTrigger className="h-7 text-[11px] border-border/60 bg-background/50">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {roles.map((r) => (
+                <SelectItem key={r.id} value={r.id} className="text-xs">
+                  <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: r.color }} />
+                  {r.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Link to="/einstellungen" className="flex items-center gap-3 group">
-          <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
+          <div
+            className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-primary-foreground"
+            style={{ background: currentRole?.color || "hsl(var(--primary))" }}
+          >
             MM
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Max Müller</p>
-            <p className="text-xs text-muted-foreground">Vertriebler</p>
+            <p className="text-xs text-muted-foreground">{currentRole?.name || "Admin"}</p>
           </div>
           <Settings className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </Link>
