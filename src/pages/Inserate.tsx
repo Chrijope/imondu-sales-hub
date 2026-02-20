@@ -1,27 +1,11 @@
 import { useState, useMemo } from "react";
 import CRMLayout from "@/components/CRMLayout";
+import InseratFunnel from "@/components/InseratFunnel";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES } from "@/data/crm-data";
 import type { Lead, Objekttyp, Sanierungsstatus } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -35,12 +19,35 @@ import {
   Clock,
   XCircle,
   Filter,
-  Building,
   LayoutGrid,
   List,
+  Pencil,
 } from "lucide-react";
 
-// Inserat-specific types
+// Images
+import efh1 from "@/assets/inserate/einfamilienhaus-1.jpg";
+import efh2 from "@/assets/inserate/einfamilienhaus-2.jpg";
+import mfh1 from "@/assets/inserate/mehrfamilienhaus-1.jpg";
+import mfh2 from "@/assets/inserate/mehrfamilienhaus-2.jpg";
+import woh1 from "@/assets/inserate/wohnung-1.jpg";
+import woh2 from "@/assets/inserate/wohnung-2.jpg";
+
+const propertyImages: Record<string, string[]> = {
+  Einfamilienhaus: [efh1, efh2],
+  Mehrfamilienhaus: [mfh1, mfh2],
+  Wohnung: [woh1, woh2],
+  Gewerbeobjekt: [mfh1],
+  Grundstück: [efh2],
+  Mischobjekt: [mfh2],
+};
+
+const getImage = (typ: string, id: string) => {
+  const imgs = propertyImages[typ] || [efh1];
+  const idx = id.charCodeAt(id.length - 1) % imgs.length;
+  return imgs[idx];
+};
+
+// Types
 type InseratStatus = "aktiv" | "entwurf" | "pausiert" | "abgelaufen";
 
 interface Inserat {
@@ -48,21 +55,25 @@ interface Inserat {
   leadId: string;
   eigentuemerName: string;
   objekttyp: Objekttyp;
+  titel: string;
   adresse: string;
   baujahr: number;
   wohnflaeche: number;
   grundstuecksflaeche?: number;
   anzahlEinheiten?: number;
+  zimmer?: number;
+  vermietet?: boolean;
   sanierungsstatus: Sanierungsstatus;
   status: InseratStatus;
+  objektNr: string;
   erstelltAm: string;
   aktualisiertAm: string;
   aufrufe: number;
   anfragen: number;
   beschreibung: string;
+  tags: string[];
 }
 
-// Generate inserate from B2C leads that have inserat status or are registered
 const generateInserate = (): Inserat[] => {
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
   const inserate: Inserat[] = [];
@@ -74,126 +85,99 @@ const generateInserate = (): Inserat[] => {
         leadId: lead.id,
         eigentuemerName: `${lead.firstName} ${lead.lastName}`,
         objekttyp: lead.objekttyp || "Einfamilienhaus",
+        titel: lead.notes || "Immobilie mit Potenzial",
         adresse: lead.objektAdresse || lead.address || "",
         baujahr: lead.baujahr || 2000,
         wohnflaeche: lead.wohnflaeche || 100,
         grundstuecksflaeche: lead.grundstuecksflaeche,
         anzahlEinheiten: lead.anzahlEinheiten,
+        zimmer: Math.floor(Math.random() * 6) + 2,
+        vermietet: Math.random() > 0.5,
         sanierungsstatus: lead.sanierungsstatus || "Unsaniert",
         status: lead.status === "b2c_inserat" ? "aktiv" : "entwurf",
+        objektNr: `${4000000 + Math.floor(Math.random() * 100000)}`,
         erstelltAm: lead.createdAt,
         aktualisiertAm: lead.updatedAt,
         aufrufe: Math.floor(Math.random() * 500) + 50,
         anfragen: Math.floor(Math.random() * 20) + 1,
-        beschreibung: lead.notes || "Immobilie des Eigentümers – Details im Inserat.",
+        beschreibung: lead.notes || "Immobilie des Eigentümers.",
+        tags: [lead.objekttyp || "Haus", "Immobilienverkauf", "Immobilienbestand"],
       });
     }
   });
 
-  // Add some extra demo inserate
+  // Demo inserate
   inserate.push(
     {
-      id: "ins-demo-1",
-      leadId: "1",
-      eigentuemerName: "Anna Schmidt",
+      id: "ins-demo-1", leadId: "1", eigentuemerName: "Anna Schmidt",
       objekttyp: "Einfamilienhaus",
-      adresse: "Berliner Str. 12, 10115 Berlin",
-      baujahr: 1978,
-      wohnflaeche: 145,
-      grundstuecksflaeche: 420,
-      sanierungsstatus: "Unsaniert",
-      status: "aktiv",
-      erstelltAm: "2026-01-15",
-      aktualisiertAm: "2026-02-18",
-      aufrufe: 342,
-      anfragen: 12,
-      beschreibung: "Freistehendes EFH in ruhiger Lage. Sanierungsbedarf vorhanden, großes Grundstück.",
+      titel: "Bestandshaus mit großem Potenzial in zentraler Lage von Berlin",
+      adresse: "Berliner Str. 12, 10115 Berlin", baujahr: 1978, wohnflaeche: 145,
+      grundstuecksflaeche: 420, zimmer: 6, vermietet: false,
+      sanierungsstatus: "Unsaniert", status: "aktiv", objektNr: "4055299",
+      erstelltAm: "2026-01-15", aktualisiertAm: "2026-02-18",
+      aufrufe: 342, anfragen: 12,
+      beschreibung: "Freistehendes EFH in ruhiger Lage. Sanierungsbedarf vorhanden.",
+      tags: ["Haus", "Immobilienverkauf", "Immobilienbestand"],
     },
     {
-      id: "ins-demo-2",
-      leadId: "3",
-      eigentuemerName: "Peter Klein",
+      id: "ins-demo-2", leadId: "3", eigentuemerName: "Peter Klein",
       objekttyp: "Mehrfamilienhaus",
-      adresse: "Münchner Weg 5, 80331 München",
-      baujahr: 1965,
-      wohnflaeche: 480,
-      anzahlEinheiten: 6,
-      sanierungsstatus: "Teilsaniert",
-      status: "aktiv",
-      erstelltAm: "2026-01-22",
-      aktualisiertAm: "2026-02-17",
-      aufrufe: 518,
-      anfragen: 18,
-      beschreibung: "MFH mit 6 Einheiten, teilsaniert. Fenstertausch gewünscht.",
+      titel: "MFH mit 6 Einheiten, teilsaniert in München",
+      adresse: "Münchner Weg 5, 80331 München", baujahr: 1965, wohnflaeche: 480,
+      anzahlEinheiten: 6, zimmer: 11, vermietet: true,
+      sanierungsstatus: "Teilsaniert", status: "aktiv", objektNr: "4055300",
+      erstelltAm: "2026-01-22", aktualisiertAm: "2026-02-17",
+      aufrufe: 518, anfragen: 18,
+      beschreibung: "MFH mit 6 Einheiten, teilsaniert.",
+      tags: ["Mehrfamilienhaus", "Immobilienverkauf"],
     },
     {
-      id: "ins-demo-3",
-      leadId: "5",
-      eigentuemerName: "Maria Hoffmann",
+      id: "ins-demo-3", leadId: "5", eigentuemerName: "Maria Hoffmann",
       objekttyp: "Wohnung",
-      adresse: "Elbchaussee 88, 22763 Hamburg",
-      baujahr: 1992,
-      wohnflaeche: 95,
-      sanierungsstatus: "Teilsaniert",
-      status: "pausiert",
-      erstelltAm: "2026-02-01",
-      aktualisiertAm: "2026-02-10",
-      aufrufe: 89,
-      anfragen: 3,
-      beschreibung: "ETW in bester Lage. Heizungstausch steht an.",
+      titel: "ETW in bester Lage an der Elbchaussee",
+      adresse: "Elbchaussee 88, 22763 Hamburg", baujahr: 1992, wohnflaeche: 95,
+      zimmer: 3, vermietet: false,
+      sanierungsstatus: "Teilsaniert", status: "pausiert", objektNr: "4055301",
+      erstelltAm: "2026-02-01", aktualisiertAm: "2026-02-10",
+      aufrufe: 89, anfragen: 3,
+      beschreibung: "ETW in bester Lage.",
+      tags: ["Wohnung", "Immobilienbestand"],
     },
     {
-      id: "ins-demo-4",
-      leadId: "11",
-      eigentuemerName: "Thomas Meier",
+      id: "ins-demo-4", leadId: "11", eigentuemerName: "Thomas Meier",
       objekttyp: "Mehrfamilienhaus",
-      adresse: "Schillerstr. 15, 70173 Stuttgart",
-      baujahr: 1955,
-      wohnflaeche: 320,
-      anzahlEinheiten: 4,
-      sanierungsstatus: "Unsaniert",
-      status: "entwurf",
-      erstelltAm: "2026-02-17",
-      aktualisiertAm: "2026-02-19",
-      aufrufe: 0,
-      anfragen: 0,
-      beschreibung: "MFH im Zentrum, komplett unsaniert. Großes Sanierungspotenzial.",
+      titel: "MFH im Zentrum mit großem Sanierungspotenzial",
+      adresse: "Schillerstr. 15, 70173 Stuttgart", baujahr: 1955, wohnflaeche: 320,
+      anzahlEinheiten: 4, zimmer: 8, vermietet: true,
+      sanierungsstatus: "Unsaniert", status: "entwurf", objektNr: "4055302",
+      erstelltAm: "2026-02-17", aktualisiertAm: "2026-02-19",
+      aufrufe: 0, anfragen: 0,
+      beschreibung: "MFH im Zentrum, komplett unsaniert.",
+      tags: ["Mehrfamilienhaus", "Immobilienbestand"],
     },
     {
-      id: "ins-demo-5",
-      leadId: "9",
-      eigentuemerName: "Sophie Becker",
+      id: "ins-demo-5", leadId: "9", eigentuemerName: "Sophie Becker",
       objekttyp: "Wohnung",
-      adresse: "Venloer Str. 200, 50823 Köln",
-      baujahr: 2005,
-      wohnflaeche: 72,
-      sanierungsstatus: "Vollsaniert",
-      status: "abgelaufen",
-      erstelltAm: "2025-12-10",
-      aktualisiertAm: "2026-01-10",
-      aufrufe: 210,
-      anfragen: 7,
-      beschreibung: "Moderne ETW, vollsaniert. Energieberatung gewünscht.",
+      titel: "Moderne ETW, vollsaniert in Köln",
+      adresse: "Venloer Str. 200, 50823 Köln", baujahr: 2005, wohnflaeche: 72,
+      zimmer: 2, vermietet: false,
+      sanierungsstatus: "Vollsaniert", status: "abgelaufen", objektNr: "4055303",
+      erstelltAm: "2025-12-10", aktualisiertAm: "2026-01-10",
+      aufrufe: 210, anfragen: 7,
+      beschreibung: "Moderne ETW, vollsaniert.",
+      tags: ["Wohnung", "Energieberatung"],
     }
   );
 
   return inserate;
 };
 
-const statusConfig: Record<InseratStatus, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  aktiv: { label: "Aktiv", icon: CheckCircle2, color: "bg-success/10 text-success border-success/20" },
-  entwurf: { label: "Entwurf", icon: Clock, color: "bg-warning/10 text-warning border-warning/20" },
-  pausiert: { label: "Pausiert", icon: Clock, color: "bg-muted text-muted-foreground border-border" },
-  abgelaufen: { label: "Abgelaufen", icon: XCircle, color: "bg-destructive/10 text-destructive border-destructive/20" },
-};
-
-const objektIcons: Record<string, string> = {
-  Wohnung: "🏢",
-  Einfamilienhaus: "🏠",
-  Mehrfamilienhaus: "🏘️",
-  Gewerbeobjekt: "🏗️",
-  Grundstück: "🌍",
-  Mischobjekt: "🏛️",
+const statusConfig: Record<InseratStatus, { label: string; icon: React.ComponentType<{ className?: string }>; color: string; dotColor: string }> = {
+  aktiv: { label: "Aktiv", icon: CheckCircle2, color: "bg-success/10 text-success border-success/20", dotColor: "bg-success" },
+  entwurf: { label: "Entwurf", icon: Clock, color: "bg-warning/10 text-warning border-warning/20", dotColor: "bg-warning" },
+  pausiert: { label: "Pausiert", icon: Clock, color: "bg-muted text-muted-foreground border-border", dotColor: "bg-muted-foreground" },
+  abgelaufen: { label: "Abgelaufen", icon: XCircle, color: "bg-destructive/10 text-destructive border-destructive/20", dotColor: "bg-destructive" },
 };
 
 type StatusFilter = "alle" | InseratStatus;
@@ -201,12 +185,11 @@ type ViewMode = "grid" | "list";
 
 export default function Inserate() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [inserate] = useState<Inserat[]>(generateInserate);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [showCreate, setShowCreate] = useState(false);
+  const [showFunnel, setShowFunnel] = useState(false);
 
   const filtered = useMemo(() => {
     let list = inserate;
@@ -217,7 +200,8 @@ export default function Inserate() {
         (i) =>
           i.eigentuemerName.toLowerCase().includes(q) ||
           i.adresse.toLowerCase().includes(q) ||
-          i.objekttyp.toLowerCase().includes(q)
+          i.objekttyp.toLowerCase().includes(q) ||
+          i.titel.toLowerCase().includes(q)
       );
     }
     return list;
@@ -231,6 +215,15 @@ export default function Inserate() {
     abgelaufen: inserate.filter((i) => i.status === "abgelaufen").length,
   };
 
+  // Show funnel instead of listing
+  if (showFunnel) {
+    return (
+      <CRMLayout>
+        <InseratFunnel onClose={() => setShowFunnel(false)} />
+      </CRMLayout>
+    );
+  }
+
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
@@ -243,7 +236,7 @@ export default function Inserate() {
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Inserate</h1>
             <p className="text-sm text-muted-foreground mt-1">Alle Immobilien-Inserate deiner Eigentümer</p>
           </div>
-          <Button onClick={() => setShowCreate(true)} className="gap-2 gradient-brand border-0 text-primary-foreground shadow-crm-sm hover:opacity-90">
+          <Button onClick={() => setShowFunnel(true)} className="gap-2 gradient-brand border-0 text-primary-foreground shadow-crm-sm hover:opacity-90">
             <Plus className="h-4 w-4" /> Neues Inserat
           </Button>
         </div>
@@ -307,45 +300,96 @@ export default function Inserate() {
           </div>
         </div>
 
-        {/* Inserate Grid/List */}
+        {/* Grid View */}
         {viewMode === "grid" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             {filtered.map((ins) => {
               const sc = statusConfig[ins.status];
-              const StatusIcon = sc.icon;
               return (
                 <div
                   key={ins.id}
-                  onClick={() => navigate(`/lead/${ins.leadId}`)}
-                  className="bg-card rounded-xl shadow-crm-sm border border-border hover:shadow-crm-md hover:border-primary/20 transition-all cursor-pointer group overflow-hidden"
+                  className="bg-card rounded-xl shadow-crm-sm border border-border hover:shadow-crm-md hover:border-primary/20 transition-all group overflow-hidden"
                 >
-                  {/* Header with objekttyp visual */}
-                  <div className="h-28 gradient-brand-subtle flex items-center justify-center relative">
-                    <span className="text-5xl">{objektIcons[ins.objekttyp] || "🏠"}</span>
-                    <Badge variant="outline" className={`absolute top-3 right-3 text-[10px] gap-1 ${sc.color}`}>
-                      <StatusIcon className="h-3 w-3" />
-                      {sc.label}
-                    </Badge>
-                  </div>
-                  <div className="p-4 space-y-2">
-                    <div>
-                      <p className="text-sm font-display font-semibold text-foreground group-hover:text-primary transition-colors">{ins.objekttyp}</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <MapPin className="h-3 w-3 shrink-0" /> {ins.adresse}
-                      </p>
+                  <div className="flex flex-col sm:flex-row">
+                    {/* Image */}
+                    <div className="relative sm:w-[260px] h-[180px] sm:h-auto shrink-0">
+                      <img
+                        src={getImage(ins.objekttyp, ins.id)}
+                        alt={ins.titel}
+                        className="w-full h-full object-cover"
+                      />
+                      <Badge
+                        variant="outline"
+                        className={`absolute top-3 left-3 text-[10px] gap-1.5 backdrop-blur-sm bg-background/80 ${sc.color}`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${sc.dotColor}`} />
+                        {ins.status === "entwurf" ? "nicht veröffentlicht" : sc.label}
+                      </Badge>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Bj. {ins.baujahr}</span>
-                      <span className="flex items-center gap-1"><Ruler className="h-3 w-3" /> {ins.wohnflaeche} m²</span>
-                      {ins.anzahlEinheiten && <span>{ins.anzahlEinheiten} WE</span>}
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-border/60">
-                      <span className="text-xs text-muted-foreground">
-                        <Home className="h-3 w-3 inline mr-1 -mt-0.5" />{ins.eigentuemerName}
-                      </span>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {ins.aufrufe}</span>
-                        <span className="font-medium text-primary">{ins.anfragen} Anfragen</span>
+
+                    {/* Content */}
+                    <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="h-3 w-3" /> {ins.adresse}
+                          </p>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            Objekt-Nr.: {ins.objektNr}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-display font-semibold text-foreground mt-2 leading-snug group-hover:text-primary transition-colors">
+                          {ins.titel}
+                        </h3>
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {ins.tags.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-[10px] font-normal">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="flex items-center gap-6 text-sm">
+                          {ins.zimmer && (
+                            <div>
+                              <p className="font-bold text-foreground">{ins.zimmer}</p>
+                              <p className="text-[10px] text-muted-foreground">Zimmer</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-bold text-foreground">{ins.vermietet ? "Ja" : "Nein"}</p>
+                            <p className="text-[10px] text-muted-foreground">Vermietet</p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground">{ins.baujahr}</p>
+                            <p className="text-[10px] text-muted-foreground">Baujahr</p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground">{ins.wohnflaeche} m²</p>
+                            <p className="text-[10px] text-muted-foreground">Wohnfläche</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/60">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/lead/${ins.leadId}`); }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant={ins.status === "entwurf" ? "default" : "outline"}
+                            size="sm"
+                            className={ins.status === "entwurf" ? "gradient-brand border-0 text-primary-foreground" : ""}
+                            onClick={(e) => { e.stopPropagation(); navigate(`/lead/${ins.leadId}`); }}
+                          >
+                            {ins.status === "entwurf" ? "Veröffentlichen" : "Details"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -354,10 +398,12 @@ export default function Inserate() {
             })}
           </div>
         ) : (
+          /* List View */
           <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground w-16">Bild</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Status</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Objekttyp</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Adresse</th>
@@ -365,7 +411,6 @@ export default function Inserate() {
                   <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Fläche</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Aufrufe</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Anfragen</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Erstellt</th>
                 </tr>
               </thead>
               <tbody>
@@ -378,23 +423,20 @@ export default function Inserate() {
                       onClick={() => navigate(`/lead/${ins.leadId}`)}
                       className="border-b border-border/40 hover:bg-secondary/20 transition-colors cursor-pointer"
                     >
+                      <td className="py-2 px-4">
+                        <img src={getImage(ins.objekttyp, ins.id)} alt="" className="w-12 h-9 object-cover rounded-md" />
+                      </td>
                       <td className="py-3 px-4">
                         <Badge variant="outline" className={`text-[10px] gap-1 ${sc.color}`}>
                           <StatusIcon className="h-3 w-3" /> {sc.label}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 font-medium">
-                        <span className="mr-1.5">{objektIcons[ins.objekttyp] || "🏠"}</span>
-                        {ins.objekttyp}
-                      </td>
+                      <td className="py-3 px-4 font-medium">{ins.objekttyp}</td>
                       <td className="py-3 px-4 text-muted-foreground text-xs">{ins.adresse}</td>
                       <td className="py-3 px-4">{ins.eigentuemerName}</td>
                       <td className="py-3 px-4 text-muted-foreground">{ins.wohnflaeche} m²</td>
                       <td className="py-3 px-4 text-muted-foreground">{ins.aufrufe}</td>
                       <td className="py-3 px-4 font-medium text-primary">{ins.anfragen}</td>
-                      <td className="py-3 px-4 text-muted-foreground text-xs">
-                        {new Date(ins.erstelltAm).toLocaleDateString("de-DE")}
-                      </td>
                     </tr>
                   );
                 })}
@@ -409,105 +451,7 @@ export default function Inserate() {
             <p className="text-sm">Keine Inserate gefunden.</p>
           </div>
         )}
-
-        {/* Create Dialog */}
-        <CreateInseratDialog open={showCreate} onClose={() => setShowCreate(false)} />
       </div>
     </CRMLayout>
-  );
-}
-
-function CreateInseratDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { toast } = useToast();
-  const [form, setForm] = useState({
-    eigentuemerName: "",
-    objekttyp: "Einfamilienhaus" as Objekttyp,
-    adresse: "",
-    baujahr: "",
-    wohnflaeche: "",
-    grundstuecksflaeche: "",
-    anzahlEinheiten: "",
-    sanierungsstatus: "Unsaniert" as Sanierungsstatus,
-    beschreibung: "",
-  });
-
-  const handleSubmit = () => {
-    if (!form.eigentuemerName || !form.adresse) {
-      toast({ title: "Pflichtfelder fehlen", description: "Bitte Eigentümer und Adresse angeben.", variant: "destructive" });
-      return;
-    }
-    toast({ title: "Inserat erstellt ✓", description: `Inserat für ${form.eigentuemerName} wurde als Entwurf gespeichert.` });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-display">Neues Inserat erstellen</DialogTitle>
-          <DialogDescription>Erstelle ein neues Immobilien-Inserat für einen Eigentümer.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 mt-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Eigentümer *</Label>
-            <Input placeholder="Vor- und Nachname" value={form.eigentuemerName} onChange={(e) => setForm({ ...form, eigentuemerName: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Objekttyp</Label>
-              <Select value={form.objekttyp} onValueChange={(v) => setForm({ ...form, objekttyp: v as Objekttyp })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["Wohnung", "Einfamilienhaus", "Mehrfamilienhaus", "Gewerbeobjekt", "Grundstück", "Mischobjekt"].map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Sanierungsstatus</Label>
-              <Select value={form.sanierungsstatus} onValueChange={(v) => setForm({ ...form, sanierungsstatus: v as Sanierungsstatus })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["Unsaniert", "Teilsaniert", "Vollsaniert"].map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Adresse *</Label>
-            <Input placeholder="Straße, PLZ Ort" value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Baujahr</Label>
-              <Input type="number" placeholder="z.B. 1985" value={form.baujahr} onChange={(e) => setForm({ ...form, baujahr: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Wohnfläche (m²)</Label>
-              <Input type="number" placeholder="z.B. 120" value={form.wohnflaeche} onChange={(e) => setForm({ ...form, wohnflaeche: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Grundstück (m²)</Label>
-              <Input type="number" placeholder="optional" value={form.grundstuecksflaeche} onChange={(e) => setForm({ ...form, grundstuecksflaeche: e.target.value })} />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Anzahl Einheiten</Label>
-            <Input type="number" placeholder="nur bei MFH" value={form.anzahlEinheiten} onChange={(e) => setForm({ ...form, anzahlEinheiten: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Beschreibung</Label>
-            <Textarea placeholder="Kurzbeschreibung der Immobilie…" value={form.beschreibung} onChange={(e) => setForm({ ...form, beschreibung: e.target.value })} rows={3} className="resize-none" />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>Abbrechen</Button>
-            <Button onClick={handleSubmit} className="gradient-brand border-0 text-primary-foreground">Inserat erstellen</Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
