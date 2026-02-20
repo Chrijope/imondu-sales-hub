@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in" style={{ background: "linear-gradient(135deg, hsl(220 14% 96%) 0%, hsl(250 20% 95%) 50%, hsl(340 15% 96%) 100%)" }}>
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
