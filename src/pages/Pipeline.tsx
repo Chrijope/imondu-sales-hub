@@ -55,77 +55,37 @@ function LeadCard({ lead }: { lead: Lead }) {
 }
 
 function PipelineBoard({ stages, leads }: { stages: PipelineStage[]; leads: Lead[] }) {
-  // Exclude won/lost from main board display
-  const activeStages = stages.filter(
-    (s) => !s.id.endsWith("_lost") && !s.id.endsWith("_inserat") && !s.id.endsWith("_won")
-  );
-  const endStages = stages.filter(
-    (s) => s.id.endsWith("_lost") || s.id.endsWith("_inserat") || s.id.endsWith("_won")
-  );
-
   return (
-    <>
-      <div className="overflow-x-auto pb-4">
-        <div className="flex gap-4 min-w-max">
-          {activeStages.map((stage) => {
-            const stageLeads = leads.filter((l) => l.status === stage.id);
-            return (
-              <div key={stage.id} className="w-[250px] shrink-0">
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
-                    <span className="text-xs font-semibold text-foreground">{stage.name}</span>
-                    <span className="text-[11px] text-muted-foreground bg-secondary rounded-full px-1.5">
-                      {stageLeads.length}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-2 min-h-[200px] bg-secondary/30 rounded-lg p-2">
-                  {stageLeads.map((lead) => (
-                    <LeadCard key={lead.id} lead={lead} />
-                  ))}
-                  {stageLeads.length === 0 && (
-                    <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
-                      Keine Leads
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* End stages (won/inserat/lost) */}
-      {endStages.length > 0 && (
-        <div className="flex gap-4 mt-4">
-          {endStages.map((stage) => {
-            const stageLeads = leads.filter((l) => l.status === stage.id);
-            return (
-              <div key={stage.id} className="flex-1 min-w-[200px]">
-                <div className="flex items-center gap-2 mb-2 px-1">
+    <div className="overflow-x-auto pb-4">
+      <div className="flex gap-4 min-w-max">
+        {stages.map((stage) => {
+          const stageLeads = leads.filter((l) => l.status === stage.id);
+          return (
+            <div key={stage.id} className="w-[250px] shrink-0">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center gap-2">
                   <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
                   <span className="text-xs font-semibold text-foreground">{stage.name}</span>
                   <span className="text-[11px] text-muted-foreground bg-secondary rounded-full px-1.5">
                     {stageLeads.length}
                   </span>
                 </div>
-                <div className="space-y-2 bg-secondary/30 rounded-lg p-2 min-h-[80px]">
-                  {stageLeads.map((lead) => (
-                    <LeadCard key={lead.id} lead={lead} />
-                  ))}
-                  {stageLeads.length === 0 && (
-                    <div className="flex items-center justify-center h-16 text-xs text-muted-foreground">
-                      Keine Leads
-                    </div>
-                  )}
-                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
-    </>
+              <div className="space-y-2 min-h-[200px] bg-secondary/30 rounded-lg p-2">
+                {stageLeads.map((lead) => (
+                  <LeadCard key={lead.id} lead={lead} />
+                ))}
+                {stageLeads.length === 0 && (
+                  <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
+                    Keine Leads
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
