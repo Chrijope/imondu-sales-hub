@@ -480,13 +480,25 @@ export default function Inserate() {
                         {ins.status === "entwurf" ? "nicht veröffentlicht" : sc.label}
                       </Badge>
                       {ins.matchingScore && (
-                        <div className={`absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm text-[11px] font-bold ${
-                          ins.matchingScore >= 85 ? "bg-success/90 text-white" :
-                          ins.matchingScore >= 70 ? "bg-warning/90 text-white" :
-                          "bg-muted/90 text-foreground"
-                        }`}>
-                          <Sparkles className="h-3 w-3" />
-                          {ins.matchingScore}%
+                        <div className="absolute top-3 right-3 group/score">
+                          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm text-[11px] font-bold cursor-help ${
+                            ins.matchingScore >= 85 ? "bg-success/90 text-white" :
+                            ins.matchingScore >= 70 ? "bg-warning/90 text-white" :
+                            "bg-muted/90 text-foreground"
+                          }`}>
+                            <Sparkles className="h-3 w-3" />
+                            {ins.matchingScore}%
+                          </div>
+                          <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg p-3 shadow-lg text-xs text-foreground opacity-0 pointer-events-none group-hover/score:opacity-100 group-hover/score:pointer-events-auto transition-opacity z-50">
+                            <p className="font-semibold mb-1">KI-Matching Score</p>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {ins.matchingScore >= 85
+                                ? "Sehr hohe Übereinstimmung mit registrierten Entwicklern basierend auf Objekttyp, Region, Sanierungsbedarf und Gewerk."
+                                : ins.matchingScore >= 70
+                                ? "Gute Übereinstimmung – mehrere Entwickler decken Teile des Anforderungsprofils ab."
+                                : "Moderate Übereinstimmung – wenige passende Entwickler für dieses Profil verfügbar."}
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>

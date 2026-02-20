@@ -226,8 +226,11 @@ function NavSection({ title, items, isActive }: {
 export default function CRMSidebar() {
   const location = useLocation();
 
-  const isActive = (path: string) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+    if (path === "/") return location.pathname === "/";
+    // Exact match or match with trailing slash/segment to avoid /entwickler matching /entwickler-registrieren
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[240px] bg-[hsl(220,14%,92%)] flex flex-col z-50 border-r border-border">
