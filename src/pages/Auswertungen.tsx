@@ -12,8 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import {
   Trophy, Medal, Star, Zap, Target, TrendingUp, Crown,
-  Flame, Award, Gift, ChevronDown, Sparkles, Users, Building2, Briefcase, PackageCheck, MapPin
+  Flame, Award, Gift, ChevronDown, Sparkles, Users, Building2, Briefcase, PackageCheck, MapPin,
+  GraduationCap, ArrowUpRight, CheckCircle2, Euro, Info
 } from "lucide-react";
+import {
+  B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
+  KARRIERESTUFEN, getB2CStufe, getB2BStufe,
+} from "@/data/karriereplan";
 
 // ── Time filters ──
 const TIME_FILTERS = [
@@ -43,15 +48,13 @@ function generateRanking(count: number, min: number, max: number, isEuro = false
   return entries.map((e, i) => ({ ...e, pos: i + 1 }));
 }
 
-// ── B2C Rankings ──
+// ── Rankings ──
 const b2cRankings = {
   "Meiste angelegte Kontakte": generateRanking(10, 40, 380),
   "Meiste konvertierte Neukunden": generateRanking(10, 30, 380),
   "Meiste reservierte Kunden": generateRanking(10, 8, 30),
   "Meiste Inserate (kostenlos)": generateRanking(10, 5, 25),
 };
-
-// ── B2B Rankings ──
 const b2bRankings = {
   "Meiste B2B-Kontakte": generateRanking(10, 20, 200),
   "Meiste Verkäufe": generateRanking(10, 5, 18),
@@ -74,15 +77,9 @@ const currentLevel = [...LEVELS].reverse().find(l => MY_XP >= l.minXP)!;
 const nextLevel = LEVELS.find(l => l.minXP > MY_XP);
 const xpProgress = nextLevel ? ((MY_XP - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100 : 100;
 
-// ── Achievements / Badges ──
+// ── Achievements ──
 interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  unlocked: boolean;
-  xpReward: number;
-  bonusText?: string;
+  id: string; title: string; description: string; icon: React.ReactNode; unlocked: boolean; xpReward: number; bonusText?: string;
 }
 
 const ACHIEVEMENTS: Achievement[] = [
@@ -107,6 +104,10 @@ const BONUSES = [
 ];
 
 const MY_INSERATE = 12;
+
+// ── Demo values for current provision tier ──
+const MY_B2C_INSERATE_QUARTAL = 82;
+const MY_B2B_MONATSUMSATZ = 3750;
 
 // ── Components ──
 
@@ -205,6 +206,9 @@ export default function Auswertungen() {
   const rankings = tab === "b2c" ? b2cRankings : b2bRankings;
   const euroFmt = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2 }) + " €";
 
+  const currentB2CStufe = getB2CStufe(MY_B2C_INSERATE_QUARTAL);
+  const currentB2BStufe = getB2BStufe(MY_B2B_MONATSUMSATZ);
+
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -217,13 +221,195 @@ export default function Auswertungen() {
           </div>
         </div>
 
+        {/* ── Provisionsmodell Erklärung ── */}
+        <div className="gradient-brand-subtle border border-primary/15 rounded-xl p-5 flex items-start gap-4">
+          <div className="h-10 w-10 rounded-lg gradient-brand flex items-center justify-center shrink-0">
+            <Euro className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-display font-semibold text-foreground mb-1">So verdienst du bei Imondu</h3>
+            <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                <strong className="text-foreground">B2C:</strong> Du erhältst <strong className="text-foreground">ab 10 € netto</strong> pro qualifiziertem Inserat, wenn du Eigentümer zum <strong className="text-foreground">kostenlosen Inserieren</strong> ihrer Immobilie animierst. Je mehr Inserate du pro Quartal generierst, desto höher steigt deine Provisionsstufe (bis 15 €).
+              </p>
+              <p>
+                <strong className="text-foreground">B2B:</strong> Du erhältst <strong className="text-foreground">25 % netto Provision</strong> auf die 12-monatige Mitgliedschaft (1.250 € netto) eines Immobilienentwicklers. Bei höherem Monatsumsatz steigt deine Stufe auf bis zu 35 %.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Karriereplan ── */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <GraduationCap className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Karriereplan & Provisionsstaffeln</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-5">Dein Aufstieg bei Imondu – jede Stufe bringt dir mehr Provision und exklusive Vorteile.</p>
+
+          {/* Karrierestufen */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {KARRIERESTUFEN.map((stufe, i) => {
+              const isActive = i === 0; // demo: Projektassistent
+              return (
+                <div
+                  key={stufe.id}
+                  className={`rounded-xl p-5 border transition-all relative ${
+                    isActive
+                      ? "border-primary/40 bg-primary/5 shadow-crm-sm ring-2 ring-primary/20"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  {isActive && (
+                    <Badge className="absolute -top-2 left-4 gradient-brand border-0 text-white text-[8px] px-2 py-0">
+                      Deine Stufe
+                    </Badge>
+                  )}
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl">{stufe.icon}</span>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">{stufe.title}</p>
+                      {i > 0 && (
+                        <p className="text-[10px] text-muted-foreground">Aufstieg möglich</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">B2C Provision</span>
+                      <span className="font-semibold text-foreground">{stufe.b2cMin}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">B2B Provision</span>
+                      <span className="font-semibold text-foreground">{stufe.b2bRange}</span>
+                    </div>
+                    {stufe.overrideTeam && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Team-Override</span>
+                        <span className="font-semibold text-primary">{stufe.overrideTeam}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="border-t border-border pt-3 space-y-1">
+                    {stufe.vorteile.slice(0, 3).map((v, vi) => (
+                      <p key={vi} className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+                        <CheckCircle2 className={`h-3 w-3 mt-0.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                        {v}
+                      </p>
+                    ))}
+                    {stufe.vorteile.length > 3 && (
+                      <p className="text-[10px] text-primary font-medium">+{stufe.vorteile.length - 3} weitere Vorteile</p>
+                    )}
+                  </div>
+                  {stufe.voraussetzungen && (
+                    <div className="mt-3 pt-2 border-t border-border">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Voraussetzungen</p>
+                      {stufe.voraussetzungen.slice(0, 2).map((v, vi) => (
+                        <p key={vi} className="text-[10px] text-muted-foreground">• {v}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* B2C Provisionsstaffel */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">B2C Provisionsstaffel (Quartal)</h3>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Eigentümer zum <strong className="text-foreground">kostenlosen Inserieren</strong> animieren → du erhältst pro qualifiziertem Inserat:
+              </p>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-1.5 text-muted-foreground font-medium">Inserate / Quartal</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Provision / Inserat</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Mehrverdienst*</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {B2C_STAFFEL.map((s, i) => {
+                    const isCurrentTier = s.provision === currentB2CStufe.provision;
+                    const exampleInserate = s.min || 50;
+                    const mehrverdienst = exampleInserate * s.provision;
+                    return (
+                      <tr key={i} className={`border-b border-border/40 ${isCurrentTier ? "bg-primary/5" : ""}`}>
+                        <td className="py-2 font-medium text-foreground">
+                          {s.max ? `${s.min}–${s.max}` : `ab ${s.min}`}
+                          {isCurrentTier && <Badge className="ml-2 gradient-brand border-0 text-white text-[8px] px-1.5 py-0">Du</Badge>}
+                        </td>
+                        <td className="py-2 text-right font-bold text-foreground">{s.provision.toLocaleString("de-DE")} € netto</td>
+                        <td className="py-2 text-right font-semibold text-primary">{mehrverdienst.toLocaleString("de-DE")} €</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-[10px] text-muted-foreground mt-2">* Beispiel-Mehrverdienst pro Quartal bei Mindestanzahl</p>
+              <div className="mt-3 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[11px] text-foreground flex items-center gap-1.5">
+                  <Gift className="h-3 w-3 text-primary shrink-0" />
+                  <span><strong>Quartalsbonus:</strong> {B2C_QUARTALSBONUS} € netto bei {B2C_QUARTALSBONUS_SCHWELLE}+ Inseraten</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Briefcase className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">B2B Provisionsstaffel (Monat)</h3>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                25 % netto Provision auf die <strong className="text-foreground">12-monatige Mitgliedschaft</strong> (1.250 € netto) – steigerbar bis 35 %:
+              </p>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-1.5 text-muted-foreground font-medium">Monatsumsatz</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Provision</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Mehrverdienst*</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {B2B_STAFFEL.map((s, i) => {
+                    const isCurrentTier = s.provision === currentB2BStufe.provision;
+                    const exampleUmsatz = s.min || 2500;
+                    const mehrverdienst = exampleUmsatz * (s.provision / 100);
+                    return (
+                      <tr key={i} className={`border-b border-border/40 ${isCurrentTier ? "bg-primary/5" : ""}`}>
+                        <td className="py-2 font-medium text-foreground">
+                          {s.max ? `${s.min.toLocaleString("de-DE")}–${s.max.toLocaleString("de-DE")} €` : `ab ${s.min.toLocaleString("de-DE")} €`}
+                          {isCurrentTier && <Badge className="ml-2 gradient-brand border-0 text-white text-[8px] px-1.5 py-0">Du</Badge>}
+                        </td>
+                        <td className="py-2 text-right font-bold text-foreground">{s.provision} %</td>
+                        <td className="py-2 text-right font-semibold text-primary">{mehrverdienst.toLocaleString("de-DE")} €</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-[10px] text-muted-foreground mt-2">* Beispiel-Mehrverdienst bei Einstiegsumsatz der Stufe</p>
+              <div className="mt-3 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[11px] text-foreground flex items-center gap-1.5">
+                  <Info className="h-3 w-3 text-primary shrink-0" />
+                  <span><strong>Wiederkehrend:</strong> Bestandsprovision bei automatischer Vertragsverlängerung</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ── Gamification Hero ── */}
         <div className="gradient-brand rounded-2xl p-6 text-white shadow-crm-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
             <Trophy className="w-full h-full" />
           </div>
           <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
-            {/* Avatar + Level */}
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-4xl shadow-lg border border-white/20">
                 {currentLevel.icon}
@@ -242,8 +428,6 @@ export default function Auswertungen() {
                 )}
               </div>
             </div>
-
-            {/* Quick Stats */}
             <div className="md:ml-auto flex gap-4">
               <div className="bg-white/15 backdrop-blur-sm rounded-xl px-5 py-3 text-center border border-white/10">
                 <p className="text-2xl font-display font-bold">{ACHIEVEMENTS.filter(a => a.unlocked).length}/{ACHIEVEMENTS.length}</p>
@@ -271,20 +455,20 @@ export default function Auswertungen() {
           <p className="text-xs text-muted-foreground mb-5">Sammle XP durch B2C-Inserate, B2B-Verkäufe, Streaks und Achievements – je höher dein Level, desto größer die Prämie!</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {LEVELS.map((lvl) => {
-              const isCurrentLevel = lvl.level === currentLevel.level;
+              const isCurrentLevel2 = lvl.level === currentLevel.level;
               const isReached = MY_XP >= lvl.minXP;
               return (
                 <div
                   key={lvl.level}
                   className={`rounded-xl p-4 border text-center transition-all relative ${
-                    isCurrentLevel
+                    isCurrentLevel2
                       ? "border-primary/40 bg-primary/5 shadow-crm-sm ring-2 ring-primary/20"
                       : isReached
                       ? "border-success/30 bg-success/5"
                       : "border-border bg-muted/20 opacity-60"
                   }`}
                 >
-                  {isCurrentLevel && (
+                  {isCurrentLevel2 && (
                     <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 gradient-brand border-0 text-white text-[8px] px-2 py-0">
                       Aktuell
                     </Badge>
@@ -461,7 +645,6 @@ export default function Auswertungen() {
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
-            {/* Name */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Vorname *</Label>
@@ -472,8 +655,6 @@ export default function Auswertungen() {
                 <Input placeholder="Müller" value={claimForm.nachname} onChange={(e) => setClaimForm(p => ({ ...p, nachname: e.target.value }))} className="h-9 text-sm" />
               </div>
             </div>
-
-            {/* Contact */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">E-Mail</Label>
@@ -484,8 +665,6 @@ export default function Auswertungen() {
                 <Input placeholder="+49 170 ..." value={claimForm.telefon} onChange={(e) => setClaimForm(p => ({ ...p, telefon: e.target.value }))} className="h-9 text-sm" />
               </div>
             </div>
-
-            {/* Delivery address */}
             <div className="pt-2 border-t border-border">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
@@ -516,8 +695,6 @@ export default function Auswertungen() {
                 </div>
               </div>
             </div>
-
-            {/* Note */}
             <div className="space-y-1.5">
               <Label className="text-xs">Anmerkung (optional)</Label>
               <Textarea placeholder="z.B. bevorzugte Farbe, Größe, ..." value={claimForm.anmerkung} onChange={(e) => setClaimForm(p => ({ ...p, anmerkung: e.target.value }))} className="text-sm min-h-[60px]" rows={2} />
