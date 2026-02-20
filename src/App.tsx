@@ -46,6 +46,9 @@ import Helpdesk from "./pages/Helpdesk";
 import Automations from "./pages/Automations";
 import Immorechner from "./pages/Immorechner";
 import Lexikon from "./pages/Lexikon";
+import Zielplanung from "./pages/Zielplanung";
+import Kundenmaske from "./pages/Kundenmaske";
+import Wettbewerb from "./pages/Wettbewerb";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -104,6 +107,9 @@ const App = () => (
           <Route path="/immorechner" element={<P path="/immorechner"><Immorechner /></P>} />
           <Route path="/immorechner/:subPage" element={<P path="/immorechner"><Immorechner /></P>} />
           <Route path="/lexikon" element={<P path="/lexikon"><Lexikon /></P>} />
+          <Route path="/zielplanung" element={<P path="/zielplanung"><Zielplanung /></P>} />
+          <Route path="/kundenmaske" element={<P path="/kundenmaske"><Kundenmaske /></P>} />
+          <Route path="/wettbewerb" element={<P path="/wettbewerb"><Wettbewerb /></P>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

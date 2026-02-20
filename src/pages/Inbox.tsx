@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Inbox as InboxIcon,
   CheckCircle2,
@@ -14,6 +15,10 @@ import {
   Plus,
   Filter,
   ChevronRight,
+  Calendar,
+  ListTodo,
+  Sun,
+  LayoutList,
 } from "lucide-react";
 
 type TaskPriority = "high" | "medium" | "low";
@@ -28,47 +33,76 @@ interface InboxTask {
   time?: string;
   contact?: string;
   done: boolean;
+  day?: "mo" | "di" | "mi" | "do" | "fr"; // for weekly view
 }
 
 const INITIAL_TASKS: InboxTask[] = [
-  { id: "1", title: "Rückruf: Hr. Bauer (Architektur Bauer GmbH)", description: "B2B Partner – Interesse an Premium-Paket", type: "call", priority: "high", time: "09:30", contact: "Hr. Bauer", done: false },
-  { id: "2", title: "Online-Meeting: Fam. Schneider", description: "Inserat besprechen – MFH München", type: "meeting", priority: "high", time: "10:00", contact: "Fam. Schneider", done: false },
-  { id: "3", title: "Follow-Up E-Mail an Peter Klein", description: "Sanierungsanfrage nachfassen", type: "follow-up", priority: "medium", time: "11:00", contact: "Peter Klein", done: false },
-  { id: "4", title: "Neue B2C Leads qualifizieren", description: "5 neue Eigentümer-Anfragen prüfen", type: "todo", priority: "medium", time: "14:00", done: false },
-  { id: "5", title: "Vertrag an Malermeister Schulz senden", description: "B2B Partnervertrag vorbereiten", type: "deadline", priority: "high", time: "15:00", contact: "Schulz GmbH", done: false },
-  { id: "6", title: "Teammeeting Wochenplanung", description: "Weekly mit Vertriebsteam", type: "meeting", priority: "medium", time: "16:00", done: false },
-  { id: "7", title: "Provision Februar prüfen", description: "Gutschrift kontrollieren", type: "todo", priority: "low", done: false },
-  { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "Morgen 09:00", contact: "Fr. Müller", done: false },
+  { id: "1", title: "Rückruf: Hr. Bauer (Architektur Bauer GmbH)", description: "B2B Partner – Interesse an Premium-Paket", type: "call", priority: "high", time: "09:30", contact: "Hr. Bauer", done: false, day: "mo" },
+  { id: "2", title: "Online-Meeting: Fam. Schneider", description: "Inserat besprechen – MFH München", type: "meeting", priority: "high", time: "10:00", contact: "Fam. Schneider", done: false, day: "mo" },
+  { id: "3", title: "Follow-Up E-Mail an Peter Klein", description: "Sanierungsanfrage nachfassen", type: "follow-up", priority: "medium", time: "11:00", contact: "Peter Klein", done: false, day: "mo" },
+  { id: "4", title: "Neue B2C Leads qualifizieren", description: "5 neue Eigentümer-Anfragen prüfen", type: "todo", priority: "medium", time: "14:00", done: false, day: "di" },
+  { id: "5", title: "Vertrag an Malermeister Schulz senden", description: "B2B Partnervertrag vorbereiten", type: "deadline", priority: "high", time: "15:00", contact: "Schulz GmbH", done: false, day: "di" },
+  { id: "6", title: "Teammeeting Wochenplanung", description: "Weekly mit Vertriebsteam", type: "meeting", priority: "medium", time: "16:00", done: false, day: "mi" },
+  { id: "7", title: "Provision Februar prüfen", description: "Gutschrift kontrollieren", type: "todo", priority: "low", done: false, day: "do" },
+  { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "09:00", contact: "Fr. Müller", done: false, day: "fr" },
+  { id: "9", title: "Kaltakquise-Block: 10 Anrufe", description: "Neue Eigentümer aus Lead-Liste kontaktieren", type: "call", priority: "medium", time: "10:00", done: false, day: "mi" },
+  { id: "10", title: "Exposé für MFH Stuttgart erstellen", description: "Fotos + Daten aufbereiten", type: "todo", priority: "medium", time: "13:00", done: false, day: "do" },
 ];
 
 const typeIcons: Record<TaskType, React.ComponentType<{ className?: string }>> = {
-  call: Phone,
-  meeting: Video,
-  todo: CheckCircle2,
-  "follow-up": Clock,
-  deadline: AlertTriangle,
+  call: Phone, meeting: Video, todo: CheckCircle2, "follow-up": Clock, deadline: AlertTriangle,
 };
-
 const typeLabels: Record<TaskType, string> = {
-  call: "Anruf",
-  meeting: "Meeting",
-  todo: "Aufgabe",
-  "follow-up": "Follow-Up",
-  deadline: "Deadline",
+  call: "Anruf", meeting: "Meeting", todo: "Aufgabe", "follow-up": "Follow-Up", deadline: "Deadline",
 };
-
 const priorityStyles: Record<TaskPriority, string> = {
   high: "bg-destructive/10 text-destructive border-destructive/20",
   medium: "bg-warning/10 text-warning border-warning/20",
   low: "bg-muted text-muted-foreground border-border",
 };
 
+const DAYS = [
+  { key: "mo", label: "Montag" },
+  { key: "di", label: "Dienstag" },
+  { key: "mi", label: "Mittwoch" },
+  { key: "do", label: "Donnerstag" },
+  { key: "fr", label: "Freitag" },
+] as const;
+
 type FilterType = "alle" | TaskType;
+
+function TaskRow({ task, onToggle }: { task: InboxTask; onToggle: () => void }) {
+  const Icon = typeIcons[task.type];
+  return (
+    <div className="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/30 transition-colors group">
+      <Checkbox checked={task.done} onCheckedChange={onToggle} className="mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-sm font-medium ${task.done ? "line-through text-muted-foreground" : "text-foreground"}`}>{task.title}</span>
+          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityStyles[task.priority]}`}>
+            {task.priority === "high" ? "Dringend" : task.priority === "medium" ? "Mittel" : "Niedrig"}
+          </Badge>
+        </div>
+        {task.description && <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Badge variant="secondary" className="gap-1 text-[11px]">
+          <Icon className="h-3 w-3" /> {typeLabels[task.type]}
+        </Badge>
+        {task.time && (
+          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+            <CalendarDays className="h-3 w-3 inline mr-0.5 -mt-0.5" />{task.time}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Inbox() {
   const [tasks, setTasks] = useState<InboxTask[]>(() => {
     try {
-      const saved = localStorage.getItem("inbox-tasks");
+      const saved = localStorage.getItem("inbox-tasks-v2");
       if (saved) return JSON.parse(saved);
     } catch {}
     return INITIAL_TASKS;
@@ -76,17 +110,19 @@ export default function Inbox() {
   const [filter, setFilter] = useState<FilterType>("alle");
 
   useEffect(() => {
-    localStorage.setItem("inbox-tasks", JSON.stringify(tasks));
+    localStorage.setItem("inbox-tasks-v2", JSON.stringify(tasks));
   }, [tasks]);
 
   const toggleDone = (id: string) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
 
   const filtered = filter === "alle" ? tasks : tasks.filter((t) => t.type === filter);
-  const pending = filtered.filter((t) => !t.done);
-  const completed = filtered.filter((t) => t.done);
+  const todayTasks = filtered.filter((t) => t.day === "mo"); // simulate "today" = Monday
+  const pendingToday = todayTasks.filter((t) => !t.done);
+  const completedToday = todayTasks.filter((t) => t.done);
 
-  const todayCount = tasks.filter((t) => !t.done && t.time && !t.time.startsWith("Morgen")).length;
+  const todayCount = tasks.filter((t) => !t.done && t.day === "mo").length;
+  const weekCount = tasks.filter((t) => !t.done).length;
   const meetingCount = tasks.filter((t) => !t.done && t.type === "meeting").length;
   const highCount = tasks.filter((t) => !t.done && t.priority === "high").length;
 
@@ -107,15 +143,19 @@ export default function Inbox() {
           <div className="flex items-center gap-2 mb-1">
             <div className="w-10 h-1 rounded-full gradient-brand" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Inbox</h1>
-          <p className="text-sm text-muted-foreground mt-1">Deine tagesrelevanten Aufgaben, Meetings & Follow-Ups</p>
+          <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Inbox & Tagesplanung</h1>
+          <p className="text-sm text-muted-foreground mt-1">Deine tagesrelevanten Aufgaben, Meetings & Wochenübersicht</p>
         </div>
 
         {/* KPI row */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
             <p className="text-3xl font-display font-bold text-foreground">{todayCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">Heute fällig</p>
+            <p className="text-xs text-muted-foreground mt-1">Heute offen</p>
+          </div>
+          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+            <p className="text-3xl font-display font-bold text-foreground">{weekCount}</p>
+            <p className="text-xs text-muted-foreground mt-1">Diese Woche</p>
           </div>
           <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
             <p className="text-3xl font-display font-bold text-foreground">{meetingCount}</p>
@@ -143,81 +183,90 @@ export default function Inbox() {
           ))}
         </div>
 
-        {/* Pending tasks */}
-        <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
-          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <InboxIcon className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">Offen ({pending.length})</h2>
+        {/* Tabs: Heute / Woche */}
+        <Tabs defaultValue="heute">
+          <TabsList>
+            <TabsTrigger value="heute" className="gap-1.5 text-sm"><Sun className="h-3.5 w-3.5" /> Heute</TabsTrigger>
+            <TabsTrigger value="woche" className="gap-1.5 text-sm"><LayoutList className="h-3.5 w-3.5" /> Wochenübersicht</TabsTrigger>
+          </TabsList>
+
+          {/* TODAY VIEW */}
+          <TabsContent value="heute" className="mt-4 space-y-4">
+            <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sun className="h-4 w-4 text-warning" />
+                  <h2 className="text-sm font-semibold text-foreground">Heute – Montag ({pendingToday.length} offen)</h2>
+                </div>
+                <Button variant="ghost" size="sm" className="gap-1 text-xs text-muted-foreground">
+                  <Plus className="h-3.5 w-3.5" /> Aufgabe
+                </Button>
+              </div>
+              <div className="divide-y divide-border/60">
+                {pendingToday.length > 0 ? (
+                  pendingToday.map((task) => (
+                    <TaskRow key={task.id} task={task} onToggle={() => toggleDone(task.id)} />
+                  ))
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    🎉 Alles erledigt – keine offenen Aufgaben heute!
+                  </div>
+                )}
+              </div>
             </div>
-            <Button variant="ghost" size="sm" className="gap-1 text-xs text-muted-foreground">
-              <Plus className="h-3.5 w-3.5" /> Aufgabe
-            </Button>
-          </div>
-          <div className="divide-y divide-border/60">
-            {pending.map((task) => {
-              const Icon = typeIcons[task.type];
-              return (
-                <div key={task.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/30 transition-colors group">
-                  <Checkbox
-                    checked={task.done}
-                    onCheckedChange={() => toggleDone(task.id)}
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-foreground">{task.title}</span>
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityStyles[task.priority]}`}>
-                        {task.priority === "high" ? "Dringend" : task.priority === "medium" ? "Mittel" : "Niedrig"}
-                      </Badge>
+
+            {completedToday.length > 0 && (
+              <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden opacity-70">
+                <div className="px-5 py-3 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                    <h2 className="text-sm font-semibold text-muted-foreground">Erledigt ({completedToday.length})</h2>
+                  </div>
+                </div>
+                <div className="divide-y divide-border/40">
+                  {completedToday.map((task) => (
+                    <div key={task.id} className="flex items-center gap-3 px-5 py-3 hover:bg-secondary/20 transition-colors">
+                      <Checkbox checked onCheckedChange={() => toggleDone(task.id)} className="mt-0.5" />
+                      <span className="text-sm text-muted-foreground line-through">{task.title}</span>
                     </div>
-                    {task.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="secondary" className="gap-1 text-[11px]">
-                      <Icon className="h-3 w-3" />
-                      {typeLabels[task.type]}
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* WEEK VIEW */}
+          <TabsContent value="woche" className="mt-4 space-y-4">
+            {DAYS.map(({ key, label }) => {
+              const dayTasks = filtered.filter((t) => t.day === key);
+              const pending = dayTasks.filter((t) => !t.done);
+              const done = dayTasks.filter((t) => t.done);
+              const isToday = key === "mo";
+
+              return (
+                <div key={key} className={`bg-card rounded-xl shadow-crm-sm border overflow-hidden ${isToday ? "border-primary/40 ring-1 ring-primary/20" : "border-border"}`}>
+                  <div className="px-5 py-3 border-b border-border flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+                    {isToday && <Badge className="gradient-brand border-0 text-primary-foreground text-[10px]">Heute</Badge>}
+                    <Badge variant="secondary" className="ml-auto text-[10px]">
+                      {done.length}/{dayTasks.length} erledigt
                     </Badge>
-                    {task.time && (
-                      <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-                        <CalendarDays className="h-3 w-3 inline mr-0.5 -mt-0.5" />
-                        {task.time}
-                      </span>
-                    )}
-                    <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
+                  {dayTasks.length > 0 ? (
+                    <div className="divide-y divide-border/40">
+                      {[...pending, ...done].map((task) => (
+                        <TaskRow key={task.id} task={task} onToggle={() => toggleDone(task.id)} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center text-muted-foreground text-xs">Keine Aufgaben</div>
+                  )}
                 </div>
               );
             })}
-            {pending.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground text-sm">
-                🎉 Alles erledigt – keine offenen Aufgaben!
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Completed */}
-        {completed.length > 0 && (
-          <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden opacity-70">
-            <div className="px-5 py-3 border-b border-border">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-sm font-semibold text-muted-foreground">Erledigt ({completed.length})</h2>
-              </div>
-            </div>
-            <div className="divide-y divide-border/40">
-              {completed.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 px-5 py-3 hover:bg-secondary/20 transition-colors">
-                  <Checkbox checked onCheckedChange={() => toggleDone(task.id)} className="mt-0.5" />
-                  <span className="text-sm text-muted-foreground line-through">{task.title}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </CRMLayout>
   );

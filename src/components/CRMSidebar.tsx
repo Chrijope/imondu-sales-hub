@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar,
   CalendarDays, Trophy, Archive, Sparkles, Settings, GraduationCap, Home,
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
-  Zap, HeadphonesIcon, Shield, BookOpen,
+  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -24,6 +24,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/kalender": "kalender",
   "/news": "news",
   "/kontakte": "kontakte",
+  "/kundenmaske": "kundenmaske",
   "/pipeline": "pipeline",
   "/automations": "automations",
   "/dialer": "dialer",
@@ -34,8 +35,10 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/statistik": "statistik",
   "/analysetool": "analysetool",
   "/abrechnungen": "abrechnungen",
+  "/wettbewerb": "wettbewerb",
   "/academy": "academy",
   "/lexikon": "lexikon",
+  "/zielplanung": "zielplanung",
   "/presentation": "presentation",
   "/unterlagen": "unterlagen",
   "/chat": "chat",
@@ -118,6 +121,7 @@ const sectionOverview = [
 ];
 
 const sectionVertrieb = [
+  { path: "/kundenmaske", icon: User, label: "Kundenmaske 360°" },
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/automations", icon: Zap, label: "Automations & Workflows" },
   { path: "/dialer", icon: Phone, label: "Powerdialer" },
@@ -134,9 +138,11 @@ const sectionAuswertung = [
   { path: "/statistik", icon: TrendingUp, label: "Statistik" },
   { path: "/analysetool", icon: BarChart3, label: "Analysetool" },
   { path: "/abrechnungen", icon: Receipt, label: "Abrechnungen" },
+  { path: "/wettbewerb", icon: Medal, label: "Wettbewerb" },
 ];
 
 const sectionTools = [
+  { path: "/zielplanung", icon: Target, label: "Zielplanung" },
   { path: "/academy", icon: GraduationCap, label: "Academy" },
   { path: "/lexikon", icon: BookOpen, label: "Immobilien-Lexikon" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
