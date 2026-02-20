@@ -84,6 +84,7 @@ const shopSubItems = [
 const sectionOverview = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/inbox", icon: Inbox, label: "Inbox" },
+  { path: "/anrufe", icon: PhoneCall, label: "Anrufe" },
   { path: "/email", icon: Mail, label: "E-Mail" },
   { path: "/kalender", icon: CalendarDays, label: "Kalender" },
   { path: "/news", icon: Newspaper, label: "News" },
@@ -93,7 +94,6 @@ const sectionVertrieb = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/automations", icon: Zap, label: "Automations & Workflows" },
   { path: "/dialer", icon: Phone, label: "Powerdialer" },
-  { path: "/anrufe", icon: PhoneCall, label: "Anrufe" },
   { path: "/kontakte", icon: Contact, label: "Kontakte" },
 ];
 
