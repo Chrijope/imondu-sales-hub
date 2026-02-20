@@ -6,12 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Tooltip, TooltipContent, TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
   HeadphonesIcon, MessageSquare, Clock, CheckCircle2, AlertCircle, Search,
   Send, Bot, User, Building2, HardHat, TrendingUp, Timer, XCircle,
-  RotateCcw, ChevronLeft, Inbox, BarChart3, Zap, Filter,
+  RotateCcw, ChevronLeft, Inbox, BarChart3, Zap, Filter, UserPlus,
 } from "lucide-react";
 
 /* ── Types ───────────────────────────────────── */
@@ -25,6 +31,12 @@ interface TicketMessage {
   role: "kunde" | "support" | "ki" | "system";
   text: string;
   time: string;
+}
+
+interface TicketTeilnehmer {
+  name: string;
+  initials: string;
+  role: string;
 }
 
 interface Ticket {
@@ -41,7 +53,17 @@ interface Ticket {
   zugewiesen?: string;
   messages: TicketMessage[];
   tags: string[];
+  teilnehmer: TicketTeilnehmer[];
 }
+
+const AVAILABLE_ADMINS: TicketTeilnehmer[] = [
+  { name: "Max Müller", initials: "MM", role: "Support-Admin" },
+  { name: "Lisa Schmidt", initials: "LS", role: "Support-Admin" },
+  { name: "Sarah Klein", initials: "SK", role: "Teamleiterin" },
+  { name: "Jan Weber", initials: "JW", role: "Technik-Admin" },
+  { name: "Christian Peetz", initials: "CP", role: "Support-Admin" },
+  { name: "Tobias Fritz", initials: "TF", role: "Backoffice" },
+];
 
 /* ── Status Config ───────────────────────────── */
 const STATUS_CFG: Record<TicketStatus, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -67,6 +89,7 @@ const SAMPLE_TICKETS: Ticket[] = [
     name: "Hans Müller", email: "h.mueller@mail.de", status: "neu", prioritaet: "hoch",
     erstelltAm: "2026-02-20T08:14:00", zuletztAktualisiert: "2026-02-20T08:14:00",
     tags: ["Förderung", "KfW"],
+    teilnehmer: [{ name: "Max Müller", initials: "MM", role: "Support-Admin" }],
     messages: [
       { id: "m1", sender: "Hans Müller", role: "kunde", text: "Hallo, ich habe eine Frage zur KfW-Förderung für die Dachsanierung. Welche Unterlagen benötige ich und wie läuft der Antragsprozess ab?", time: "08:14" },
       { id: "m2", sender: "Support-KI", role: "ki", text: "Hallo Hans! Für die KfW-Förderung einer Dachsanierung benötigst du: 1) Einen individuellen Sanierungsfahrplan (iSFP), 2) Angebote von Fachbetrieben, 3) Einen Energieeffizienz-Experten. Der Antrag muss VOR Beginn der Maßnahme gestellt werden. Soll ich dich mit einem unserer Energieberater verbinden?", time: "08:14" },
@@ -77,6 +100,7 @@ const SAMPLE_TICKETS: Ticket[] = [
     name: "Sandra Meier", firma: "FensterPro AG", email: "meier@fensterpro.de", status: "offen", prioritaet: "mittel",
     erstelltAm: "2026-02-19T14:30:00", zuletztAktualisiert: "2026-02-19T16:45:00", zugewiesen: "Lisa Schmidt",
     tags: ["Profil", "Technik"],
+    teilnehmer: [{ name: "Lisa Schmidt", initials: "LS", role: "Support-Admin" }, { name: "Jan Weber", initials: "JW", role: "Technik-Admin" }],
     messages: [
       { id: "m1", sender: "Sandra Meier", role: "kunde", text: "Seit gestern kann ich mein Firmenprofil nicht mehr aktualisieren. Beim Speichern erscheint eine Fehlermeldung.", time: "14:30" },
       { id: "m2", sender: "Support-KI", role: "ki", text: "Entschuldige die Unannehmlichkeiten! Ich leite das an unser technisches Team weiter. Kannst du mir einen Screenshot der Fehlermeldung schicken?", time: "14:31" },
@@ -89,6 +113,7 @@ const SAMPLE_TICKETS: Ticket[] = [
     name: "Frank Weber", firma: "SHK Meisterbetrieb Weber", email: "weber@shk-weber.de", status: "in_bearbeitung", prioritaet: "niedrig",
     erstelltAm: "2026-02-18T10:00:00", zuletztAktualisiert: "2026-02-19T09:15:00", zugewiesen: "Max Müller",
     tags: ["Mitgliedschaft", "Premium"],
+    teilnehmer: [{ name: "Max Müller", initials: "MM", role: "Support-Admin" }],
     messages: [
       { id: "m1", sender: "Frank Weber", role: "kunde", text: "Ich interessiere mich für ein Upgrade auf Premium. Was sind die genauen Vorteile und Kosten?", time: "10:00" },
       { id: "m2", sender: "Support-KI", role: "ki", text: "Premium-Partner genießen: ✅ Bevorzugte Platzierung bei Matching, ✅ Erweiterte Statistiken, ✅ Premium-Badge auf dem Profil, ✅ Vorrang-Support. Kosten: 149€/Monat bei 12 Monaten Laufzeit. Soll ich einen Berater für ein persönliches Gespräch vermitteln?", time: "10:01" },
@@ -101,6 +126,7 @@ const SAMPLE_TICKETS: Ticket[] = [
     name: "Maria Schneider", email: "m.schneider@web.de", status: "geloest", prioritaet: "hoch",
     erstelltAm: "2026-02-17T11:20:00", zuletztAktualisiert: "2026-02-18T13:00:00", zugewiesen: "Lisa Schmidt",
     tags: ["Inserat", "Anzeige"],
+    teilnehmer: [{ name: "Lisa Schmidt", initials: "LS", role: "Support-Admin" }],
     messages: [
       { id: "m1", sender: "Maria Schneider", role: "kunde", text: "Mein Inserat für die Wohnung in der Hauptstr. 12 wird nicht mehr in der Suche angezeigt. Können Sie das prüfen?", time: "11:20" },
       { id: "m2", sender: "Lisa Schmidt", role: "support", text: "Hallo Maria, das Inserat war vorübergehend deaktiviert weil die Laufzeit abgelaufen war. Ich habe es wieder aktiviert. Es sollte jetzt sichtbar sein.", time: "13:00" },
@@ -112,6 +138,7 @@ const SAMPLE_TICKETS: Ticket[] = [
     name: "Andreas Krause", firma: "Maler Krause & Söhne", email: "krause@maler-krause.de", status: "geschlossen", prioritaet: "niedrig",
     erstelltAm: "2026-02-15T09:00:00", zuletztAktualisiert: "2026-02-16T10:30:00", zugewiesen: "Max Müller",
     tags: ["Rabattcode", "Registrierung"],
+    teilnehmer: [{ name: "Max Müller", initials: "MM", role: "Support-Admin" }],
     messages: [
       { id: "m1", sender: "Andreas Krause", role: "kunde", text: "Der Rabattcode PARTNER2026 wird bei mir nicht akzeptiert.", time: "09:00" },
       { id: "m2", sender: "Max Müller", role: "support", text: "Hallo Andreas, der Code war leider am 31.01. abgelaufen. Ich habe dir einen neuen Code PARTNER-FEB26 erstellt. Gültig bis 28.02.", time: "10:30" },
@@ -123,13 +150,13 @@ const SAMPLE_TICKETS: Ticket[] = [
     name: "Peter König", email: "p.koenig@gmx.de", status: "offen", prioritaet: "mittel",
     erstelltAm: "2026-02-20T07:50:00", zuletztAktualisiert: "2026-02-20T07:51:00",
     tags: ["Energieausweis", "Beratung"],
+    teilnehmer: [],
     messages: [
       { id: "m1", sender: "Peter König", role: "kunde", text: "Ich brauche dringend einen Energieausweis für den Verkauf meiner Immobilie. Können Sie mir dabei helfen?", time: "07:50" },
       { id: "m2", sender: "Support-KI", role: "ki", text: "Selbstverständlich! Wir können Sie mit einem zertifizierten Energieberater in Ihrer Region verbinden. Darf ich Ihre PLZ und den Gebäudetyp wissen?", time: "07:51" },
     ],
   },
 ];
-
 /* ── Dashboard Stats ─────────────────────────── */
 function HelpdeskDashboard({ tickets }: { tickets: Ticket[] }) {
   const neu = tickets.filter(t => t.status === "neu").length;
@@ -226,13 +253,15 @@ function HelpdeskDashboard({ tickets }: { tickets: Ticket[] }) {
 }
 
 /* ── Ticket Detail ───────────────────────────── */
-function TicketDetail({ ticket, onBack, onStatusChange }: {
+function TicketDetail({ ticket, onBack, onStatusChange, onAddTeilnehmer }: {
   ticket: Ticket;
   onBack: () => void;
   onStatusChange: (id: string, status: TicketStatus) => void;
+  onAddTeilnehmer: (ticketId: string, member: TicketTeilnehmer) => void;
 }) {
   const [reply, setReply] = useState("");
   const [messages, setMessages] = useState(ticket.messages);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -248,6 +277,19 @@ function TicketDetail({ ticket, onBack, onStatusChange }: {
     setReply("");
     if (ticket.status === "neu") onStatusChange(ticket.id, "in_bearbeitung");
   };
+
+  const handleInvite = (member: TicketTeilnehmer) => {
+    onAddTeilnehmer(ticket.id, member);
+    setMessages(prev => [...prev, {
+      id: crypto.randomUUID(), sender: "", role: "system" as const,
+      text: `${member.name} (${member.role}) wurde zum Ticket hinzugefügt`, time: now(),
+    }]);
+    setInviteOpen(false);
+  };
+
+  const availableAdmins = AVAILABLE_ADMINS.filter(
+    a => !ticket.teilnehmer.some(t => t.name === a.name)
+  );
 
   const stCfg = STATUS_CFG[ticket.status];
   const StIcon = stCfg.icon;
@@ -273,7 +315,60 @@ function TicketDetail({ ticket, onBack, onStatusChange }: {
             <h2 className="text-lg font-bold text-foreground mt-1">{ticket.betreff}</h2>
             <p className="text-xs text-muted-foreground">{ticket.name}{ticket.firma ? ` · ${ticket.firma}` : ""} · {ticket.email}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* Teilnehmer Avatare */}
+            <div className="flex items-center -space-x-2">
+              {ticket.teilnehmer.map((t) => (
+                <Tooltip key={t.name}>
+                  <TooltipTrigger asChild>
+                    <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-[10px] font-bold text-primary-foreground border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform">
+                      {t.initials}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p className="font-semibold">{t.name}</p>
+                    <p className="text-muted-foreground">{t.role}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+
+            {/* Teilnehmer hinzufügen */}
+            <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                  <UserPlus className="h-3.5 w-3.5" /> Admin hinzufügen
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-base">
+                    <UserPlus className="h-4 w-4 text-primary" />
+                    Teilnehmer hinzufügen
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-1.5 mt-2">
+                  {availableAdmins.length > 0 ? availableAdmins.map(admin => (
+                    <button
+                      key={admin.name}
+                      onClick={() => handleInvite(admin)}
+                      className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
+                        {admin.initials}
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-foreground">{admin.name}</p>
+                        <p className="text-xs text-muted-foreground">{admin.role}</p>
+                      </div>
+                    </button>
+                  )) : (
+                    <p className="text-sm text-muted-foreground py-4 text-center">Alle Admins sind bereits hinzugefügt</p>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Select value={ticket.status} onValueChange={(v) => onStatusChange(ticket.id, v as TicketStatus)}>
               <SelectTrigger className="w-[170px] text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -364,10 +459,16 @@ export default function Helpdesk() {
     return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
   };
 
+  const handleAddTeilnehmer = (ticketId: string, member: TicketTeilnehmer) => {
+    setTickets(prev => prev.map(t =>
+      t.id === ticketId ? { ...t, teilnehmer: [...t.teilnehmer, member] } : t
+    ));
+  };
+
   return (
     <CRMLayout>
       {selected ? (
-        <TicketDetail ticket={selected} onBack={() => setSelectedId(null)} onStatusChange={handleStatusChange} />
+        <TicketDetail ticket={selected} onBack={() => setSelectedId(null)} onStatusChange={handleStatusChange} onAddTeilnehmer={handleAddTeilnehmer} />
       ) : (
         <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
           {/* Header */}
