@@ -1,7 +1,7 @@
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download } from "lucide-react";
 
 const B2C_PROVISION_PER_INSERAT = 10; // €
 const B2B_MITGLIEDSCHAFT = 1250; // €
@@ -9,11 +9,11 @@ const B2B_PROVISION_RATE = 0.25; // 25%
 const B2B_PROVISION = B2B_MITGLIEDSCHAFT * B2B_PROVISION_RATE; // 312,50€
 
 const abrechnungsHistorie = [
-  { monat: "Februar 2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProv: 80, b2bProv: 937.5, status: "ausstehend" },
-  { monat: "Januar 2026", b2cAnzahl: 6, b2bAnzahl: 4, b2cProv: 60, b2bProv: 1250, status: "ausgezahlt" },
-  { monat: "Dezember 2025", b2cAnzahl: 7, b2bAnzahl: 2, b2cProv: 70, b2bProv: 625, status: "ausgezahlt" },
-  { monat: "November 2025", b2cAnzahl: 4, b2bAnzahl: 3, b2cProv: 40, b2bProv: 937.5, status: "ausgezahlt" },
-  { monat: "Oktober 2025", b2cAnzahl: 5, b2bAnzahl: 2, b2cProv: 50, b2bProv: 625, status: "ausgezahlt" },
+  { monat: "Februar 2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProv: 80, b2bProv: 937.5, status: "ausstehend", gutschriftNr: "GS-2026-02-0041" },
+  { monat: "Januar 2026", b2cAnzahl: 6, b2bAnzahl: 4, b2cProv: 60, b2bProv: 1250, status: "ausgezahlt", gutschriftNr: "GS-2026-01-0041" },
+  { monat: "Dezember 2025", b2cAnzahl: 7, b2bAnzahl: 2, b2cProv: 70, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-12-0041" },
+  { monat: "November 2025", b2cAnzahl: 4, b2bAnzahl: 3, b2cProv: 40, b2bProv: 937.5, status: "ausgezahlt", gutschriftNr: "GS-2025-11-0041" },
+  { monat: "Oktober 2025", b2cAnzahl: 5, b2bAnzahl: 2, b2cProv: 50, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-10-0041" },
 ];
 
 export default function Abrechnungen() {
@@ -185,27 +185,43 @@ export default function Abrechnungen() {
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Prov.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Mitgl.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Prov.</th>
-                  <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Gesamt</th>
-                  <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Gutschrift</th>
-                </tr>
-              </thead>
-              <tbody>
-                {abrechnungsHistorie.map((row) => (
-                  <tr key={row.monat} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                    <td className="py-3 font-medium text-foreground">{row.monat}</td>
-                    <td className="text-right py-3 text-muted-foreground">{row.b2cAnzahl}</td>
-                    <td className="text-right py-3 text-b2c font-medium">{row.b2cProv.toLocaleString("de-DE")} €</td>
-                    <td className="text-right py-3 text-muted-foreground">{row.b2bAnzahl}</td>
-                    <td className="text-right py-3 text-b2b font-medium">{row.b2bProv.toLocaleString("de-DE")} €</td>
-                    <td className="text-right py-3 font-bold text-foreground">{(row.b2cProv + row.b2bProv).toLocaleString("de-DE")} €</td>
-                    <td className="text-right py-3">
-                      <Badge variant={row.status === "ausgezahlt" ? "default" : "secondary"} className={row.status === "ausgezahlt" ? "bg-success text-success-foreground" : ""}>
-                        {row.status === "ausgezahlt" ? "Gutschrift erteilt" : "In Bearbeitung"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Gesamt</th>
+                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Gutschrift</th>
+                   <th className="text-center py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">PDF</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {abrechnungsHistorie.map((row) => (
+                   <tr key={row.monat} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
+                     <td className="py-3 font-medium text-foreground">{row.monat}</td>
+                     <td className="text-right py-3 text-muted-foreground">{row.b2cAnzahl}</td>
+                     <td className="text-right py-3 text-b2c font-medium">{row.b2cProv.toLocaleString("de-DE")} €</td>
+                     <td className="text-right py-3 text-muted-foreground">{row.b2bAnzahl}</td>
+                     <td className="text-right py-3 text-b2b font-medium">{row.b2bProv.toLocaleString("de-DE")} €</td>
+                     <td className="text-right py-3 font-bold text-foreground">{(row.b2cProv + row.b2bProv).toLocaleString("de-DE")} €</td>
+                     <td className="text-right py-3">
+                       <Badge variant={row.status === "ausgezahlt" ? "default" : "secondary"} className={row.status === "ausgezahlt" ? "bg-success text-success-foreground" : ""}>
+                         {row.status === "ausgezahlt" ? "Gutschrift erteilt" : "In Bearbeitung"}
+                       </Badge>
+                     </td>
+                     <td className="text-center py-3">
+                       {row.status === "ausgezahlt" ? (
+                         <button
+                           className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                           onClick={() => {/* Mock PDF download */}}
+                           title={`${row.gutschriftNr}.pdf herunterladen`}
+                         >
+                           <Download className="h-3.5 w-3.5" />
+                           <span className="hidden sm:inline">{row.gutschriftNr}.pdf</span>
+                           <span className="sm:hidden">PDF</span>
+                         </button>
+                       ) : (
+                         <span className="text-xs text-muted-foreground">–</span>
+                       )}
+                     </td>
+                   </tr>
+                 ))}
+               </tbody>
             </table>
           </div>
         </div>
