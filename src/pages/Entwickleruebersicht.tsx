@@ -247,14 +247,16 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
 
       {/* Profile Header */}
       <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
-        <div className="h-44 relative overflow-hidden">
+        <div className="h-48 relative overflow-hidden">
           <img src={getFirmaBild(idx)} alt={entwickler.firmenname} className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
         </div>
-        <div className="px-6 pb-6 -mt-14">
-          <div className="flex items-end gap-4 flex-wrap">
+        <div className="px-6 pb-6 relative">
+          {/* Profile photo overlapping cover */}
+          <div className="absolute -top-12 left-6">
             <img src={getProfilBild(idx)} alt={entwickler.kontaktperson} className="h-24 w-24 rounded-full border-4 border-card shadow-crm-md object-cover" />
-            <div className="flex-1 pb-1 min-w-0">
+          </div>
+          <div className="pt-14 flex items-start justify-between flex-wrap gap-4">
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-display font-bold text-foreground">{entwickler.kontaktperson}</h1>
                 {entwickler.premiumPartner && (
