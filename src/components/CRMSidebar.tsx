@@ -41,6 +41,7 @@ import {
   UsersRound,
   BotMessageSquare,
   Calculator,
+  Zap,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -89,6 +90,7 @@ const sectionOverview = [
 
 const sectionVertrieb = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
+  { path: "/automations", icon: Zap, label: "Automations & Workflows" },
   { path: "/dialer", icon: Phone, label: "Powerdialer" },
   { path: "/anrufe", icon: PhoneCall, label: "Anrufe" },
   { path: "/kontakte", icon: Contact, label: "Kontakte" },
