@@ -3,9 +3,16 @@ import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Trophy, Medal, Star, Zap, Target, TrendingUp, Crown,
-  Flame, Award, Gift, ChevronDown, Sparkles, Users, Building2, Briefcase
+  Flame, Award, Gift, ChevronDown, Sparkles, Users, Building2, Briefcase, PackageCheck, MapPin
 } from "lucide-react";
 
 // ── Time filters ──
@@ -170,8 +177,30 @@ function RankingTable({ title, data, valueLabel = "Anzahl", formatValue }: {
 }
 
 export default function Auswertungen() {
+  const { toast } = useToast();
   const [timeFilter, setTimeFilter] = useState("Seit Anfang");
   const [tab, setTab] = useState<"b2c" | "b2b">("b2c");
+  const [claimDialogOpen, setClaimDialogOpen] = useState(false);
+  const [claimReward, setClaimReward] = useState<{ level: number; title: string; reward: string; rewardLabel: string } | null>(null);
+  const [claimForm, setClaimForm] = useState({
+    vorname: "", nachname: "", email: "", telefon: "",
+    strasse: "", hausnummer: "", plz: "", ort: "", land: "Deutschland", anmerkung: "",
+  });
+
+  const openClaimDialog = (lvl: typeof LEVELS[0]) => {
+    setClaimReward({ level: lvl.level, title: lvl.title, reward: lvl.reward!, rewardLabel: lvl.rewardLabel! });
+    setClaimDialogOpen(true);
+  };
+
+  const submitClaim = () => {
+    if (!claimForm.vorname || !claimForm.nachname || !claimForm.strasse || !claimForm.plz || !claimForm.ort) {
+      toast({ title: "Bitte alle Pflichtfelder ausfüllen", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Prämie angefordert! 🎉", description: `${claimReward?.rewardLabel} wird an deine Adresse versendet.` });
+    setClaimDialogOpen(false);
+    setClaimForm({ vorname: "", nachname: "", email: "", telefon: "", strasse: "", hausnummer: "", plz: "", ort: "", land: "Deutschland", anmerkung: "" });
+  };
 
   const rankings = tab === "b2c" ? b2cRankings : b2bRankings;
   const euroFmt = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2 }) + " €";
@@ -274,6 +303,15 @@ export default function Auswertungen() {
                         <Badge variant="outline" className="text-[8px] mt-1 border-success/30 text-success bg-success/10">
                           ✓ Freigeschaltet
                         </Badge>
+                      )}
+                      {isReached && (
+                        <Button
+                          size="sm"
+                          className="mt-2 h-6 text-[9px] px-2 gradient-brand border-0 text-white w-full"
+                          onClick={() => openClaimDialog(lvl)}
+                        >
+                          <PackageCheck className="h-3 w-3 mr-1" /> Anfordern
+                        </Button>
                       )}
                     </div>
                   )}
@@ -402,6 +440,98 @@ export default function Auswertungen() {
           ))}
         </div>
       </div>
+
+      {/* ── Prämie anfordern Dialog ── */}
+      <Dialog open={claimDialogOpen} onOpenChange={setClaimDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PackageCheck className="h-5 w-5 text-primary" />
+              Sachprämie anfordern
+            </DialogTitle>
+            <DialogDescription>
+              {claimReward && (
+                <span className="flex items-center gap-2 mt-1">
+                  <span className="text-xl">{claimReward.reward}</span>
+                  <span className="font-semibold text-foreground">{claimReward.rewardLabel}</span>
+                  <Badge variant="secondary" className="text-[9px]">Level {claimReward.level} – {claimReward.title}</Badge>
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            {/* Name */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Vorname *</Label>
+                <Input placeholder="Max" value={claimForm.vorname} onChange={(e) => setClaimForm(p => ({ ...p, vorname: e.target.value }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Nachname *</Label>
+                <Input placeholder="Müller" value={claimForm.nachname} onChange={(e) => setClaimForm(p => ({ ...p, nachname: e.target.value }))} className="h-9 text-sm" />
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">E-Mail</Label>
+                <Input type="email" placeholder="max@email.de" value={claimForm.email} onChange={(e) => setClaimForm(p => ({ ...p, email: e.target.value }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Telefon</Label>
+                <Input placeholder="+49 170 ..." value={claimForm.telefon} onChange={(e) => setClaimForm(p => ({ ...p, telefon: e.target.value }))} className="h-9 text-sm" />
+              </div>
+            </div>
+
+            {/* Delivery address */}
+            <div className="pt-2 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                <p className="text-xs font-semibold text-foreground">Lieferadresse</p>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2 space-y-1.5">
+                  <Label className="text-xs">Straße *</Label>
+                  <Input placeholder="Musterstraße" value={claimForm.strasse} onChange={(e) => setClaimForm(p => ({ ...p, strasse: e.target.value }))} className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Hausnr.</Label>
+                  <Input placeholder="12a" value={claimForm.hausnummer} onChange={(e) => setClaimForm(p => ({ ...p, hausnummer: e.target.value }))} className="h-9 text-sm" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mt-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">PLZ *</Label>
+                  <Input placeholder="10115" value={claimForm.plz} onChange={(e) => setClaimForm(p => ({ ...p, plz: e.target.value }))} className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Ort *</Label>
+                  <Input placeholder="Berlin" value={claimForm.ort} onChange={(e) => setClaimForm(p => ({ ...p, ort: e.target.value }))} className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Land</Label>
+                  <Input value={claimForm.land} onChange={(e) => setClaimForm(p => ({ ...p, land: e.target.value }))} className="h-9 text-sm" />
+                </div>
+              </div>
+            </div>
+
+            {/* Note */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Anmerkung (optional)</Label>
+              <Textarea placeholder="z.B. bevorzugte Farbe, Größe, ..." value={claimForm.anmerkung} onChange={(e) => setClaimForm(p => ({ ...p, anmerkung: e.target.value }))} className="text-sm min-h-[60px]" rows={2} />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setClaimDialogOpen(false)}>Abbrechen</Button>
+            <Button className="gradient-brand border-0 text-white" onClick={submitClaim}>
+              <PackageCheck className="h-4 w-4 mr-1.5" /> Prämie anfordern
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </CRMLayout>
   );
 }
