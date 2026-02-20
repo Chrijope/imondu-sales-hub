@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +20,16 @@ const PROVIDERS: CalendarProvider[] = [
 
 export default function Kalender() {
   const { toast } = useToast();
-  const [connected, setConnected] = useState<Record<string, boolean>>({});
+  const [connected, setConnected] = useState<Record<string, boolean>>(() => {
+    try { const s = localStorage.getItem("kalender-connected"); if (s) return JSON.parse(s); } catch {} return {};
+  });
+  const [syncOptions, setSyncOptions] = useState<Record<string, boolean>>(() => {
+    try { const s = localStorage.getItem("kalender-sync-options"); if (s) return JSON.parse(s); } catch {}
+    return { "Gebuchte Termine automatisch eintragen": true, "Follow-up Erinnerungen": true, "Powerdialer-Termine": true, "Bidirektionale Sync": true };
+  });
+
+  useEffect(() => { localStorage.setItem("kalender-connected", JSON.stringify(connected)); }, [connected]);
+  useEffect(() => { localStorage.setItem("kalender-sync-options", JSON.stringify(syncOptions)); }, [syncOptions]);
 
   const handleConnect = (provider: CalendarProvider) => {
     setConnected((prev) => ({ ...prev, [provider.id]: !prev[provider.id] }));
@@ -125,7 +134,12 @@ export default function Kalender() {
               { label: "Bidirektionale Sync", desc: "Änderungen im Kalender werden ins CRM übernommen" },
             ].map((opt) => (
               <label key={opt.label} className="flex items-start gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
-                <input type="checkbox" defaultChecked className="mt-0.5 rounded border-border text-primary focus:ring-primary" />
+                <input
+                  type="checkbox"
+                  checked={syncOptions[opt.label] ?? true}
+                  onChange={() => setSyncOptions(prev => ({ ...prev, [opt.label]: !(prev[opt.label] ?? true) }))}
+                  className="mt-0.5 rounded border-border text-primary focus:ring-primary"
+                />
                 <div>
                   <p className="text-sm font-medium text-foreground">{opt.label}</p>
                   <p className="text-xs text-muted-foreground">{opt.desc}</p>
