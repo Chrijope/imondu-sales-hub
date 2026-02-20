@@ -54,12 +54,12 @@ const b2bRankings = {
 
 // ── Gamification: Levels ──
 const LEVELS = [
-  { level: 1, title: "Rookie", minXP: 0, icon: "🌱" },
-  { level: 2, title: "Aufsteiger", minXP: 500, icon: "⚡" },
-  { level: 3, title: "Profi", minXP: 1500, icon: "🔥" },
-  { level: 4, title: "Experte", minXP: 3500, icon: "💎" },
-  { level: 5, title: "Elite", minXP: 7000, icon: "👑" },
-  { level: 6, title: "Legende", minXP: 12000, icon: "🏆" },
+  { level: 1, title: "Rookie", minXP: 0, icon: "🌱", reward: null, rewardLabel: null },
+  { level: 2, title: "Aufsteiger", minXP: 500, icon: "⚡", reward: null, rewardLabel: null },
+  { level: 3, title: "Profi", minXP: 1500, icon: "🔥", reward: "🖊️", rewardLabel: "Montblanc Kugelschreiber" },
+  { level: 4, title: "Experte", minXP: 3500, icon: "💎", reward: "📱", rewardLabel: "Apple iPhone 16 Pro" },
+  { level: 5, title: "Elite", minXP: 7000, icon: "👑", reward: "💻", rewardLabel: "Apple MacBook Pro" },
+  { level: 6, title: "Legende", minXP: 12000, icon: "🏆", reward: "🏖️", rewardLabel: "Luxus-Incentive-Reise" },
 ];
 
 const MY_XP = 4200;
@@ -229,6 +229,68 @@ export default function Auswertungen() {
                 <p className="text-[11px] text-white/70">Tage-Streak</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ── Level-Übersicht mit Sachprämien ── */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Crown className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Level-Übersicht & Sachprämien</h2>
+            <Badge variant="secondary" className="text-[10px]">B2C + B2B kombiniert</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mb-5">Sammle XP durch B2C-Inserate, B2B-Verkäufe, Streaks und Achievements – je höher dein Level, desto größer die Prämie!</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {LEVELS.map((lvl) => {
+              const isCurrentLevel = lvl.level === currentLevel.level;
+              const isReached = MY_XP >= lvl.minXP;
+              return (
+                <div
+                  key={lvl.level}
+                  className={`rounded-xl p-4 border text-center transition-all relative ${
+                    isCurrentLevel
+                      ? "border-primary/40 bg-primary/5 shadow-crm-sm ring-2 ring-primary/20"
+                      : isReached
+                      ? "border-success/30 bg-success/5"
+                      : "border-border bg-muted/20 opacity-60"
+                  }`}
+                >
+                  {isCurrentLevel && (
+                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 gradient-brand border-0 text-white text-[8px] px-2 py-0">
+                      Aktuell
+                    </Badge>
+                  )}
+                  <div className="text-3xl mb-1">{lvl.icon}</div>
+                  <p className="text-xs font-bold text-foreground">Level {lvl.level}</p>
+                  <p className="text-[11px] font-semibold text-foreground">{lvl.title}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{lvl.minXP.toLocaleString("de-DE")} XP</p>
+                  {lvl.reward && (
+                    <div className={`mt-2 pt-2 border-t ${isReached ? "border-success/20" : "border-border"}`}>
+                      <div className="text-xl mb-0.5">{lvl.reward}</div>
+                      <p className={`text-[10px] font-bold leading-tight ${isReached ? "text-success" : "text-muted-foreground"}`}>
+                        {lvl.rewardLabel}
+                      </p>
+                      {isReached && (
+                        <Badge variant="outline" className="text-[8px] mt-1 border-success/30 text-success bg-success/10">
+                          ✓ Freigeschaltet
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  {!lvl.reward && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <p className="text-[10px] text-muted-foreground italic">Keine Sachprämie</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
+            <p className="text-xs text-foreground flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span><strong>So sammelst du XP:</strong> B2C-Inserat erstellt (+50 XP) · B2B-Mitgliedschaft verkauft (+200 XP) · Tages-Streak (+10 XP/Tag) · Achievement freigeschaltet (bis zu +1.000 XP) · Top-3-Ranking (+100 XP)</span>
+            </p>
           </div>
         </div>
 
