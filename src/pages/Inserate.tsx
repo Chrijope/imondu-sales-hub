@@ -25,6 +25,7 @@ import {
   List,
   Pencil,
   Map,
+  Sparkles,
 } from "lucide-react";
 
 // Images
@@ -77,6 +78,7 @@ interface Inserat {
   tags: string[];
   lat: number;
   lng: number;
+  matchingScore?: number;
 }
 // City coordinates for DACH region
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -124,6 +126,7 @@ const generateInserate = (): Inserat[] => {
         anfragen: Math.floor(Math.random() * 20) + 1,
         beschreibung: lead.notes || "Immobilie des Eigentümers.",
         tags: [lead.objekttyp || "Haus", "Immobilienverkauf", "Immobilienbestand"],
+        matchingScore: Math.floor(Math.random() * 35) + 60,
         lat, lng,
       });
     }
@@ -142,6 +145,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 342, anfragen: 12,
       beschreibung: "Freistehendes EFH in ruhiger Lage. Sanierungsbedarf vorhanden.",
       tags: ["Haus", "Immobilienverkauf", "Immobilienbestand"],
+      matchingScore: 92,
       lat: 52.52, lng: 13.405,
     },
     {
@@ -155,6 +159,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 518, anfragen: 18,
       beschreibung: "MFH mit 6 Einheiten, teilsaniert.",
       tags: ["Mehrfamilienhaus", "Immobilienverkauf"],
+      matchingScore: 87,
       lat: 48.137, lng: 11.576,
     },
     {
@@ -168,6 +173,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 89, anfragen: 3,
       beschreibung: "ETW in bester Lage.",
       tags: ["Wohnung", "Immobilienbestand"],
+      matchingScore: 74,
       lat: 53.551, lng: 9.994,
     },
     {
@@ -181,6 +187,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 0, anfragen: 0,
       beschreibung: "MFH im Zentrum, komplett unsaniert.",
       tags: ["Mehrfamilienhaus", "Immobilienbestand"],
+      matchingScore: 95,
       lat: 48.776, lng: 9.183,
     },
     {
@@ -194,6 +201,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 210, anfragen: 7,
       beschreibung: "Moderne ETW, vollsaniert.",
       tags: ["Wohnung", "Energieberatung"],
+      matchingScore: 63,
       lat: 50.938, lng: 6.96,
     },
     {
@@ -207,6 +215,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 420, anfragen: 15,
       beschreibung: "Bürogebäude in bester Lage.",
       tags: ["Gewerbeobjekt", "Immobilienverkauf"],
+      matchingScore: 81,
       lat: 48.208, lng: 16.373,
     },
     {
@@ -220,6 +229,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 680, anfragen: 22,
       beschreibung: "Exklusives Baugrundstück am See.",
       tags: ["Grundstück", "Immobilienverkauf"],
+      matchingScore: 70,
       lat: 47.377, lng: 8.542,
     }
   );
@@ -469,6 +479,16 @@ export default function Inserate() {
                         <span className={`w-2 h-2 rounded-full ${sc.dotColor}`} />
                         {ins.status === "entwurf" ? "nicht veröffentlicht" : sc.label}
                       </Badge>
+                      {ins.matchingScore && (
+                        <div className={`absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm text-[11px] font-bold ${
+                          ins.matchingScore >= 85 ? "bg-success/90 text-white" :
+                          ins.matchingScore >= 70 ? "bg-warning/90 text-white" :
+                          "bg-muted/90 text-foreground"
+                        }`}>
+                          <Sparkles className="h-3 w-3" />
+                          {ins.matchingScore}%
+                        </div>
+                      )}
                     </div>
 
                     {/* Content */}

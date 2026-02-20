@@ -35,6 +35,7 @@ import {
   Briefcase,
   Target,
   ThumbsUp,
+  Sparkles,
 } from "lucide-react";
 
 // Profile images
@@ -547,6 +548,20 @@ export default function Entwickleruebersicht() {
                             className="h-16 w-16 rounded-full border-4 border-card shadow-md object-cover"
                           />
                         </div>
+                        {/* Matching Score */}
+                        {(() => {
+                          const score = 65 + ((globalIdx * 17 + 3) % 30);
+                          return (
+                            <div className={`absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm text-[11px] font-bold ${
+                              score >= 85 ? "bg-success/90 text-white" :
+                              score >= 70 ? "bg-warning/90 text-white" :
+                              "bg-muted/90 text-foreground"
+                            }`}>
+                              <Sparkles className="h-3 w-3" />
+                              {score}%
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Content */}

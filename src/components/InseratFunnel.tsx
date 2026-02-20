@@ -27,13 +27,15 @@ import {
   Zap,
   ClipboardList,
   BookOpen,
+  Lightbulb,
 } from "lucide-react";
 
 const STEPS = [
   { id: 1, label: "Objektbeschreibung", icon: Home },
   { id: 2, label: "Angaben zum Objekt", icon: ClipboardList },
-  { id: 3, label: "Bilder", icon: Camera },
-  { id: 4, label: "Dokumente", icon: FileText },
+  { id: 3, label: "Entwicklungsplanung", icon: Lightbulb },
+  { id: 4, label: "Bilder", icon: Camera },
+  { id: 5, label: "Dokumente", icon: FileText },
 ];
 
 interface FunnelForm {
@@ -64,9 +66,17 @@ interface FunnelForm {
   mieteinnahmen: string;
   sanierungsstatus: Sanierungsstatus;
   anzahlEinheiten: string;
-  // Step 3 – images (just filenames for UI)
+  // Step 3 – Entwicklungsplanung
+  entwicklungsabsicht: string;
+  geplanteEntwicklung: string[];
+  zeitrahmen: string;
+  budgetRange: string;
+  finanzierungGesichert: string;
+  eigenkapitalVorhanden: string;
+  entwicklungsNotizen: string;
+  // Step 4 – images
   bilder: string[];
-  // Step 4 – documents
+  // Step 5 – documents
   dokumente: { typ: string; name: string }[];
 }
 
@@ -78,6 +88,21 @@ const DOKUMENT_TYPEN = [
   { typ: "Wohnflächenberechnung", icon: File },
   { typ: "Lageplan", icon: MapIcon },
   { typ: "Sonstiges", icon: FileText },
+];
+
+const ENTWICKLUNGS_OPTIONEN = [
+  "Kernsanierung",
+  "Teilsanierung",
+  "Aufstockung",
+  "Anbau / Erweiterung",
+  "Abriss & Neubau",
+  "Umnutzung",
+  "Energetische Sanierung",
+  "Fassadensanierung",
+  "Dachsanierung",
+  "Heizungstausch",
+  "Fenstertausch",
+  "Badsanierung",
 ];
 
 export default function InseratFunnel({ onClose }: { onClose: () => void }) {
@@ -110,11 +135,26 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     mieteinnahmen: "",
     sanierungsstatus: "Unsaniert",
     anzahlEinheiten: "",
+    entwicklungsabsicht: "",
+    geplanteEntwicklung: [],
+    zeitrahmen: "",
+    budgetRange: "",
+    finanzierungGesichert: "",
+    eigenkapitalVorhanden: "",
+    entwicklungsNotizen: "",
     bilder: [],
     dokumente: [],
   });
 
   const update = (patch: Partial<FunnelForm>) => setForm((f) => ({ ...f, ...patch }));
+
+  const toggleEntwicklung = (val: string) => {
+    update({
+      geplanteEntwicklung: form.geplanteEntwicklung.includes(val)
+        ? form.geplanteEntwicklung.filter((v) => v !== val)
+        : [...form.geplanteEntwicklung, val],
+    });
+  };
 
   const goNext = () => {
     if (step === 1 && (!form.titel || !form.adresse || !form.eigentuemerName)) {
@@ -122,7 +162,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
       return;
     }
     setCompletedSteps((prev) => (prev.includes(step) ? prev : [...prev, step]));
-    if (step < 4) setStep(step + 1);
+    if (step < 5) setStep(step + 1);
   };
 
   const goBack = () => {
@@ -130,7 +170,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   const handleSubmit = () => {
-    setCompletedSteps((prev) => (prev.includes(4) ? prev : [...prev, 4]));
+    setCompletedSteps((prev) => (prev.includes(5) ? prev : [...prev, 5]));
     toast({ title: "Inserat erstellt ✓", description: `"${form.titel}" wurde als Entwurf gespeichert.` });
     onClose();
   };
@@ -189,8 +229,9 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
         <div className="bg-card rounded-xl border border-border p-6 space-y-5">
           {step === 1 && <Step1 form={form} update={update} />}
           {step === 2 && <Step2 form={form} update={update} />}
-          {step === 3 && <Step3 form={form} onUpload={simulateImageUpload} />}
-          {step === 4 && <Step4 form={form} onUpload={simulateDocUpload} />}
+          {step === 3 && <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />}
+          {step === 4 && <StepBilder form={form} onUpload={simulateImageUpload} />}
+          {step === 5 && <StepDokumente form={form} onUpload={simulateDocUpload} />}
         </div>
         <HintSidebar step={step} />
       </div>
@@ -200,7 +241,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
         <Button variant="outline" onClick={goBack} disabled={step === 1} className="gap-2">
           <ChevronLeft className="h-4 w-4" /> Zurück
         </Button>
-        {step < 4 ? (
+        {step < 5 ? (
           <Button onClick={goNext} className="gap-2 gradient-brand border-0 text-primary-foreground">
             Speichern und weiter <ChevronRight className="h-4 w-4" />
           </Button>
@@ -423,8 +464,149 @@ function Step2({ form, update }: { form: FunnelForm; update: (p: Partial<FunnelF
   );
 }
 
-/* ── Step 3: Bilder ── */
-function Step3({ form, onUpload }: { form: FunnelForm; onUpload: () => void }) {
+/* ── Step 3: Entwicklungsplanung (NEW) ── */
+function Step3Entwicklung({
+  form,
+  update,
+  toggleEntwicklung,
+}: {
+  form: FunnelForm;
+  update: (p: Partial<FunnelForm>) => void;
+  toggleEntwicklung: (val: string) => void;
+}) {
+  return (
+    <>
+      <h2 className="text-lg font-display font-semibold text-foreground">Entwicklungsplanung</h2>
+      <p className="text-sm text-muted-foreground">
+        Diese Angaben helfen Entwicklungspartnern einzuschätzen, ob Ihr Objekt zu ihrem Profil passt.
+      </p>
+      <div className="space-y-5">
+        {/* Entwicklungsabsicht */}
+        <div className="space-y-2">
+          <Label className="text-xs font-medium text-muted-foreground">Haben Sie schon Pläne für die Entwicklung Ihrer Immobilie? *</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { value: "konkrete_plaene", label: "Ja, konkrete Pläne", desc: "Ich weiß was ich möchte" },
+              { value: "offen", label: "Offen für Vorschläge", desc: "Ich möchte beraten werden" },
+              { value: "keine", label: "Noch keine Pläne", desc: "Erst mal informieren" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => update({ entwicklungsabsicht: opt.value })}
+                className={`text-left p-4 rounded-xl border-2 transition-all ${
+                  form.entwicklungsabsicht === opt.value
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border bg-card hover:border-primary/20"
+                }`}
+              >
+                <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Geplante Maßnahmen */}
+        {form.entwicklungsabsicht !== "keine" && (
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground">Geplante Maßnahmen (Mehrfachauswahl möglich)</Label>
+            <div className="flex flex-wrap gap-2">
+              {ENTWICKLUNGS_OPTIONEN.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => toggleEntwicklung(opt)}
+                  className={`px-3 py-1.5 rounded-full text-xs border transition-all ${
+                    form.geplanteEntwicklung.includes(opt)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <hr className="border-border" />
+
+        {/* Zeitrahmen & Budget */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Gewünschter Start der Umsetzung</Label>
+            <Select value={form.zeitrahmen} onValueChange={(v) => update({ zeitrahmen: v })}>
+              <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sofort">Sofort / schnellstmöglich</SelectItem>
+                <SelectItem value="3-6">In 3–6 Monaten</SelectItem>
+                <SelectItem value="6-12">In 6–12 Monaten</SelectItem>
+                <SelectItem value="12+">In mehr als 12 Monaten</SelectItem>
+                <SelectItem value="unklar">Noch unklar</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Budget-Rahmen</Label>
+            <Select value={form.budgetRange} onValueChange={(v) => update({ budgetRange: v })}>
+              <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="<50k">Bis 50.000 €</SelectItem>
+                <SelectItem value="50-100k">50.000 – 100.000 €</SelectItem>
+                <SelectItem value="100-250k">100.000 – 250.000 €</SelectItem>
+                <SelectItem value="250-500k">250.000 – 500.000 €</SelectItem>
+                <SelectItem value=">500k">Über 500.000 €</SelectItem>
+                <SelectItem value="unklar">Noch unklar</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Finanzierung */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Finanzierung gesichert?</Label>
+            <Select value={form.finanzierungGesichert} onValueChange={(v) => update({ finanzierungGesichert: v })}>
+              <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ja">Ja, Finanzierung steht</SelectItem>
+                <SelectItem value="in_klaerung">In Klärung</SelectItem>
+                <SelectItem value="nein">Nein, noch offen</SelectItem>
+                <SelectItem value="foerderung">Über Fördermittel geplant</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Eigenkapital vorhanden?</Label>
+            <Select value={form.eigenkapitalVorhanden} onValueChange={(v) => update({ eigenkapitalVorhanden: v })}>
+              <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ja">Ja</SelectItem>
+                <SelectItem value="teilweise">Teilweise</SelectItem>
+                <SelectItem value="nein">Nein</SelectItem>
+                <SelectItem value="keine_angabe">Keine Angabe</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Notizen */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium text-muted-foreground">Weitere Anmerkungen zur Entwicklung (optional)</Label>
+          <Textarea
+            placeholder="z.B. Wir möchten das Gebäude energetisch sanieren und zwei Einheiten im Dachgeschoss ausbauen…"
+            value={form.entwicklungsNotizen}
+            onChange={(e) => update({ entwicklungsNotizen: e.target.value })}
+            rows={3}
+            className="resize-none"
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── Step 4: Bilder ── */
+function StepBilder({ form, onUpload }: { form: FunnelForm; onUpload: () => void }) {
   return (
     <>
       <h2 className="text-lg font-display font-semibold text-foreground">Bilder</h2>
@@ -466,8 +648,8 @@ function Step3({ form, onUpload }: { form: FunnelForm; onUpload: () => void }) {
   );
 }
 
-/* ── Step 4: Dokumente ── */
-function Step4({ form, onUpload }: { form: FunnelForm; onUpload: (typ: string) => void }) {
+/* ── Step 5: Dokumente ── */
+function StepDokumente({ form, onUpload }: { form: FunnelForm; onUpload: (typ: string) => void }) {
   return (
     <>
       <h2 className="text-lg font-display font-semibold text-foreground">Dokumente</h2>
@@ -520,10 +702,14 @@ function HintSidebar({ step }: { step: number }) {
       text: "Detaillierte Angaben helfen potenziellen Interessenten bei der Bewertung. Je mehr Informationen, desto qualifizierter die Anfragen.",
     },
     3: {
+      title: "Matching mit Entwicklern",
+      text: "Diese Angaben werden für das KI-gestützte Matching mit registrierten Entwicklungspartnern verwendet. Je detaillierter Ihre Angaben, desto passendere Partner können wir Ihnen vorschlagen.",
+    },
+    4: {
       title: "Bilderupload",
       text: "Sie können bis zu 10 Bilder hochladen. Das Bild Nr. 1 wird dann zum Titelbild. Verwenden Sie hochwertige Fotos für bessere Ergebnisse.",
     },
-    4: {
+    5: {
       title: "Optionale Dokumente",
       text: "Um ein Inserat optimal zu beschreiben, benötigt es Dokumente wie z.B. einen Grundriss, Energieausweis oder Lageplan.",
     },
