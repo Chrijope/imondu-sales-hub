@@ -42,6 +42,7 @@ import SocialMediaCreator from "./pages/SocialMediaCreator";
 import Anrufe from "./pages/Anrufe";
 import Helpdesk from "./pages/Helpdesk";
 import Automations from "./pages/Automations";
+import Immorechner from "./pages/Immorechner";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,7 @@ const App = () => (
           <Route path="/anrufe" element={<Anrufe />} />
           <Route path="/helpdesk" element={<Helpdesk />} />
           <Route path="/automations" element={<Automations />} />
+          <Route path="/immorechner" element={<Immorechner />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
