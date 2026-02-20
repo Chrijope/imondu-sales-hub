@@ -2,23 +2,21 @@ import { Link } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-
-const B2C_PROVISION_PER_INSERAT = 10;
-const B2B_MITGLIEDSCHAFT = 1250;
-const B2B_PROVISION_RATE = 0.25;
-const B2B_PROVISION = B2B_MITGLIEDSCHAFT * B2B_PROVISION_RATE;
+import {
+  B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
+  KARRIERESTUFEN, getB2CStufe, getB2BStufe,
+} from "@/data/karriereplan";
 
 const abrechnungsHistorie = [
-  { monat: "Februar 2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProv: 80, b2bProv: 937.5, status: "ausstehend", gutschriftNr: "GS-2026-02-0041", auszahlungsDatum: null },
-  { monat: "Januar 2026", b2cAnzahl: 6, b2bAnzahl: 4, b2cProv: 60, b2bProv: 1250, status: "ausgezahlt", gutschriftNr: "GS-2026-01-0041", auszahlungsDatum: "15.01.2026" },
-  { monat: "Dezember 2025", b2cAnzahl: 7, b2bAnzahl: 2, b2cProv: 70, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-12-0041", auszahlungsDatum: "15.12.2025" },
-  { monat: "November 2025", b2cAnzahl: 4, b2bAnzahl: 3, b2cProv: 40, b2bProv: 937.5, status: "ausgezahlt", gutschriftNr: "GS-2025-11-0041", auszahlungsDatum: "15.11.2025" },
-  { monat: "Oktober 2025", b2cAnzahl: 5, b2bAnzahl: 2, b2cProv: 50, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-10-0041", auszahlungsDatum: "15.10.2025" },
+  { monat: "Februar 2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 80, b2bProv: 937.5, status: "ausstehend", gutschriftNr: "GS-2026-02-0041", auszahlungsDatum: null },
+  { monat: "Januar 2026", b2cAnzahl: 6, b2bAnzahl: 4, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 60, b2bProv: 1250, status: "ausgezahlt", gutschriftNr: "GS-2026-01-0041", auszahlungsDatum: "15.01.2026" },
+  { monat: "Dezember 2025", b2cAnzahl: 7, b2bAnzahl: 2, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 70, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-12-0041", auszahlungsDatum: "15.12.2025" },
+  { monat: "November 2025", b2cAnzahl: 4, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 40, b2bProv: 937.5, status: "ausgezahlt", gutschriftNr: "GS-2025-11-0041", auszahlungsDatum: "15.11.2025" },
+  { monat: "Oktober 2025", b2cAnzahl: 5, b2bAnzahl: 2, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 50, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-10-0041", auszahlungsDatum: "15.10.2025" },
 ];
 
-// Monthly chart data (12 months)
 const monthlyChartData = [
   { monat: "Mär 25", b2c: 30, b2b: 312.5 },
   { monat: "Apr 25", b2c: 40, b2b: 625 },
@@ -34,23 +32,36 @@ const monthlyChartData = [
   { monat: "Feb 26", b2c: 80, b2b: 937.5 },
 ];
 
+// Demo values
+const MY_B2C_INSERATE_QUARTAL = 82;
+const MY_B2B_MONATSUMSATZ = 3750;
+
 export default function Abrechnungen() {
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
   const b2bLeads = SAMPLE_LEADS.filter((l) => l.type === "b2b");
   const b2cBestand = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
   const b2bBestand = b2bLeads.filter((l) => l.status === "b2b_won").length;
 
-  const b2cProvisionAktuell = b2cBestand * B2C_PROVISION_PER_INSERAT;
-  const b2bProvisionAktuell = b2bBestand * B2B_PROVISION;
+  const currentB2CStufe = getB2CStufe(MY_B2C_INSERATE_QUARTAL);
+  const currentB2BStufe = getB2BStufe(MY_B2B_MONATSUMSATZ);
+
+  const b2cProvisionAktuell = b2cBestand * currentB2CStufe.provision;
+  const b2bProvisionAktuell = b2bBestand * (B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100));
   const gesamtProvision = b2cProvisionAktuell + b2bProvisionAktuell;
 
-  const b2cPotenzial = b2cLeads.length * B2C_PROVISION_PER_INSERAT;
-  const b2bPotenzial = b2bLeads.length * B2B_PROVISION;
+  const b2cPotenzial = b2cLeads.length * currentB2CStufe.provision;
+  const b2bPotenzial = b2bLeads.length * (B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100));
   const gesamtPotenzial = b2cPotenzial + b2bPotenzial;
 
-  const b2bBestandsprovisionJahr = b2bBestand * B2B_PROVISION;
+  const b2bBestandsprovisionJahr = b2bBestand * (B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100));
 
   const gesamtJahr = monthlyChartData.reduce((s, m) => s + m.b2c + m.b2b, 0);
+
+  // Mehrverdienst: what you'd earn at next tier
+  const nextB2CStufe = B2C_STAFFEL.find(s => s.provision > currentB2CStufe.provision);
+  const nextB2BStufe = B2B_STAFFEL.find(s => s.provision > currentB2BStufe.provision);
+  const b2cMehrverdienst = nextB2CStufe ? (nextB2CStufe.provision - currentB2CStufe.provision) * b2cBestand : 0;
+  const b2bMehrverdienst = nextB2BStufe ? ((nextB2BStufe.provision - currentB2BStufe.provision) / 100) * B2B_MITGLIEDSCHAFT_PREIS * b2bBestand : 0;
 
   return (
     <CRMLayout>
@@ -60,7 +71,7 @@ export default function Abrechnungen() {
             <div className="w-8 h-1 rounded-full gradient-brand" />
           </div>
           <h1 className="text-2xl font-display font-bold text-foreground">Abrechnungen</h1>
-          <p className="text-sm text-muted-foreground mt-1">Provisionsübersicht und Abrechnungspotenzial</p>
+          <p className="text-sm text-muted-foreground mt-1">Provisionsübersicht, Karriereplan und Abrechnungspotenzial</p>
         </div>
 
         {/* Gutschrift-Hinweis */}
@@ -71,7 +82,7 @@ export default function Abrechnungen() {
           <div>
             <h3 className="text-sm font-display font-semibold text-foreground mb-1">Auszahlung per Gutschrift</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Deine Provisionen werden von Imondu als <strong className="text-foreground">Gutschriften</strong> ausgestellt und direkt an dich ausgezahlt. 
+              Deine Provisionen werden von Imondu als <strong className="text-foreground">Gutschriften</strong> ausgestellt und direkt an dich ausgezahlt.
               Du musst <strong className="text-foreground">keine eigene Rechnung</strong> schreiben – die Gutschrift ersetzt die Rechnung und wird dir automatisch als PDF bereitgestellt.
             </p>
             <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
@@ -88,7 +99,7 @@ export default function Abrechnungen() {
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Aktuelle Provision</span>
               <Euro className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-display font-bold text-foreground">{gesamtProvision.toLocaleString("de-DE")} €</p>
+            <p className="text-2xl font-display font-bold text-foreground">{gesamtProvision.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</p>
             <p className="text-xs text-muted-foreground mt-1">Aus {b2cBestand + b2bBestand} Bestandskunden</p>
           </div>
 
@@ -97,7 +108,7 @@ export default function Abrechnungen() {
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Potenzial gesamt</span>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-display font-bold text-foreground">{gesamtPotenzial.toLocaleString("de-DE")} €</p>
+            <p className="text-2xl font-display font-bold text-foreground">{gesamtPotenzial.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</p>
             <p className="text-xs text-muted-foreground mt-1">Wenn alle {b2cLeads.length + b2bLeads.length} Leads konvertieren</p>
           </div>
 
@@ -106,8 +117,8 @@ export default function Abrechnungen() {
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Bestandsprov. / Jahr</span>
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-display font-bold text-b2b">{b2bBestandsprovisionJahr.toLocaleString("de-DE")} €</p>
-            <p className="text-xs text-muted-foreground mt-1">Wiederkehrend aus {b2bBestand} Partnern</p>
+            <p className="text-2xl font-display font-bold text-b2b">{b2bBestandsprovisionJahr.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</p>
+            <p className="text-xs text-muted-foreground mt-1">Wiederkehrend aus {b2bBestand} Partnern ({currentB2BStufe.provision} %)</p>
           </div>
 
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
@@ -115,8 +126,166 @@ export default function Abrechnungen() {
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Inserat-Provision</span>
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-display font-bold text-b2c">{b2cProvisionAktuell.toLocaleString("de-DE")} €</p>
-            <p className="text-xs text-muted-foreground mt-1">Aus {b2cBestand} Inseraten à 10 € netto</p>
+            <p className="text-2xl font-display font-bold text-b2c">{b2cProvisionAktuell.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €</p>
+            <p className="text-xs text-muted-foreground mt-1">Aus {b2cBestand} Inseraten à {currentB2CStufe.provision} € netto</p>
+          </div>
+        </div>
+
+        {/* Deine aktuelle Provisionsstufe + Mehrverdienst */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <GraduationCap className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Deine aktuelle Provisionsstufe & Mehrverdienst</h2>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* B2C Stufe */}
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">B2C – Eigentümer</h3>
+                </div>
+                <Badge className="gradient-brand border-0 text-white text-[9px]">{currentB2CStufe.provision} € / Inserat</Badge>
+              </div>
+              <table className="w-full text-xs mb-3">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-1.5 text-muted-foreground font-medium">Stufe</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Provision</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Mehrverdienst*</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {B2C_STAFFEL.map((s, i) => {
+                    const isCurrent = s.provision === currentB2CStufe.provision;
+                    const mehrVsAktuell = (s.provision - currentB2CStufe.provision) * b2cBestand;
+                    return (
+                      <tr key={i} className={`border-b border-border/40 ${isCurrent ? "bg-primary/5" : ""}`}>
+                        <td className="py-2 font-medium text-foreground">
+                          {s.max ? `${s.min}–${s.max}` : `ab ${s.min}`} Ins./Q.
+                          {isCurrent && <Badge className="ml-1.5 gradient-brand border-0 text-white text-[8px] px-1.5 py-0">Aktuell</Badge>}
+                        </td>
+                        <td className="py-2 text-right font-bold text-foreground">{s.provision.toLocaleString("de-DE")} €</td>
+                        <td className="py-2 text-right font-semibold">
+                          {mehrVsAktuell > 0 ? (
+                            <span className="text-primary flex items-center justify-end gap-0.5">
+                              <ArrowUpRight className="h-3 w-3" />+{mehrVsAktuell.toLocaleString("de-DE")} €
+                            </span>
+                          ) : isCurrent ? (
+                            <span className="text-muted-foreground">—</span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-[10px] text-muted-foreground">* Mehrverdienst vs. aktuelle Stufe bei {b2cBestand} Inseraten</p>
+              {nextB2CStufe && (
+                <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                  <p className="text-[11px] text-foreground">
+                    <strong>Nächste Stufe:</strong> Ab {nextB2CStufe.min} Ins./Quartal → <strong>{nextB2CStufe.provision} €</strong> (+{b2cMehrverdienst.toLocaleString("de-DE")} € Mehrverdienst)
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* B2B Stufe */}
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-primary" />
+                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">B2B – Entwickler</h3>
+                </div>
+                <Badge className="gradient-brand border-0 text-white text-[9px]">{currentB2BStufe.provision} % Provision</Badge>
+              </div>
+              <table className="w-full text-xs mb-3">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-1.5 text-muted-foreground font-medium">Monatsumsatz</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Provision</th>
+                    <th className="text-right py-1.5 text-muted-foreground font-medium">Mehrverdienst*</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {B2B_STAFFEL.map((s, i) => {
+                    const isCurrent = s.provision === currentB2BStufe.provision;
+                    const mehrVsAktuell = ((s.provision - currentB2BStufe.provision) / 100) * B2B_MITGLIEDSCHAFT_PREIS * b2bBestand;
+                    return (
+                      <tr key={i} className={`border-b border-border/40 ${isCurrent ? "bg-primary/5" : ""}`}>
+                        <td className="py-2 font-medium text-foreground">
+                          {s.max ? `${s.min.toLocaleString("de-DE")}–${s.max.toLocaleString("de-DE")} €` : `ab ${s.min.toLocaleString("de-DE")} €`}
+                          {isCurrent && <Badge className="ml-1.5 gradient-brand border-0 text-white text-[8px] px-1.5 py-0">Aktuell</Badge>}
+                        </td>
+                        <td className="py-2 text-right font-bold text-foreground">{s.provision} %</td>
+                        <td className="py-2 text-right font-semibold">
+                          {mehrVsAktuell > 0 ? (
+                            <span className="text-primary flex items-center justify-end gap-0.5">
+                              <ArrowUpRight className="h-3 w-3" />+{mehrVsAktuell.toLocaleString("de-DE")} €
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-[10px] text-muted-foreground">* Mehrverdienst vs. aktuelle Stufe bei {b2bBestand} Mitgliedern × {B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} €</p>
+              {nextB2BStufe && (
+                <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                  <p className="text-[11px] text-foreground">
+                    <strong>Nächste Stufe:</strong> Ab {nextB2BStufe.min.toLocaleString("de-DE")} € Umsatz/Monat → <strong>{nextB2BStufe.provision} %</strong> (+{b2bMehrverdienst.toLocaleString("de-DE")} € Mehrverdienst)
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Karrierestufen-Übersicht */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <GraduationCap className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Karrierestufen – Dein Aufstieg</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {KARRIERESTUFEN.map((stufe, i) => {
+              const isActive = i === 0;
+              return (
+                <div
+                  key={stufe.id}
+                  className={`rounded-xl p-4 border transition-all relative ${
+                    isActive
+                      ? "border-primary/40 bg-primary/5 shadow-crm-sm ring-2 ring-primary/20"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  {isActive && (
+                    <Badge className="absolute -top-2 left-4 gradient-brand border-0 text-white text-[8px] px-2 py-0">Deine Stufe</Badge>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">{stufe.icon}</span>
+                    <p className="text-sm font-bold text-foreground">{stufe.title}</p>
+                  </div>
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between"><span className="text-muted-foreground">B2C</span><span className="font-semibold text-foreground">{stufe.b2cMin}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">B2B</span><span className="font-semibold text-foreground">{stufe.b2bRange}</span></div>
+                    {stufe.overrideTeam && <div className="flex justify-between"><span className="text-muted-foreground">Team-Override</span><span className="font-semibold text-primary">{stufe.overrideTeam}</span></div>}
+                  </div>
+                  <div className="border-t border-border mt-3 pt-2">
+                    {stufe.vorteile.slice(0, 3).map((v, vi) => (
+                      <p key={vi} className="text-[10px] text-muted-foreground flex items-start gap-1">
+                        <CheckCircle2 className={`h-3 w-3 mt-0.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />{v}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -146,20 +315,15 @@ export default function Abrechnungen() {
           </ResponsiveContainer>
         </div>
 
-        {/* Steuerdaten-Sektion */}
+        {/* Steuerdaten */}
         <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-display font-semibold text-foreground">Steuerdaten für Gutschriften</h2>
             </div>
-            <Link
-              to="/einstellungen"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              <Settings className="h-3.5 w-3.5" />
-              In Einstellungen bearbeiten
-              <ExternalLink className="h-3 w-3" />
+            <Link to="/einstellungen" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+              <Settings className="h-3.5 w-3.5" />In Einstellungen bearbeiten<ExternalLink className="h-3 w-3" />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -188,7 +352,6 @@ export default function Abrechnungen() {
 
         {/* Detailed Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* B2C */}
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full bg-primary" />
@@ -204,8 +367,12 @@ export default function Abrechnungen() {
                 <span className="text-sm font-semibold text-foreground">{b2cBestand}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Provision pro Inserat</span>
-                <span className="text-sm font-semibold text-foreground">10,00 € netto</span>
+                <span className="text-sm text-muted-foreground">Aktuelle Provisionsstufe</span>
+                <span className="text-sm font-semibold text-foreground">{currentB2CStufe.provision.toLocaleString("de-DE")} € netto / Inserat</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Inserate dieses Quartal</span>
+                <span className="text-sm font-semibold text-foreground">{MY_B2C_INSERATE_QUARTAL}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Aktuelle Provision</span>
@@ -215,11 +382,10 @@ export default function Abrechnungen() {
                 <span className="text-sm font-medium text-foreground">Abrechnungspotenzial</span>
                 <span className="text-sm font-bold text-foreground">{b2cPotenzial.toLocaleString("de-DE")} €</span>
               </div>
-              <p className="text-xs text-muted-foreground">Berechnung: {b2cLeads.length} Leads × 1 Inserat × 10 € netto</p>
+              <p className="text-xs text-muted-foreground">Eigentümer inserieren kostenlos – du erhältst {currentB2CStufe.provision} € netto pro qualifiziertem Inserat</p>
             </div>
           </div>
 
-          {/* B2B */}
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full bg-accent" />
@@ -236,11 +402,15 @@ export default function Abrechnungen() {
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Mitgliedschaft / Jahr</span>
-                <span className="text-sm font-semibold text-foreground">1.250,00 € netto</span>
+                <span className="text-sm font-semibold text-foreground">{B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} € netto</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Deine Provision (25%)</span>
-                <span className="text-sm font-semibold text-foreground">312,50 € netto</span>
+                <span className="text-sm text-muted-foreground">Aktuelle Provisionsstufe</span>
+                <span className="text-sm font-semibold text-foreground">{currentB2BStufe.provision} %</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Provision pro Mitgliedschaft</span>
+                <span className="text-sm font-semibold text-foreground">{(B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100)).toLocaleString("de-DE")} € netto</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Aktuelle Bestandsprovision / Jahr</span>
@@ -250,7 +420,7 @@ export default function Abrechnungen() {
                 <span className="text-sm font-medium text-foreground">Abrechnungspotenzial</span>
                 <span className="text-sm font-bold text-foreground">{b2bPotenzial.toLocaleString("de-DE")} €</span>
               </div>
-              <p className="text-xs text-muted-foreground">Berechnung: {b2bLeads.length} Leads × 1.250 € × 25% = {b2bPotenzial.toLocaleString("de-DE")} € jährlich wiederkehrend</p>
+              <p className="text-xs text-muted-foreground">{currentB2BStufe.provision} % netto auf {B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} € Mitgliedschaft (12 Monate, wiederkehrend)</p>
             </div>
           </div>
         </div>
