@@ -3,7 +3,7 @@ import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, Plus, Minus, Check, Info, Package } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Check, Info, Package, History, FileDown, Calendar } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription
 } from "@/components/ui/dialog";
@@ -66,6 +66,42 @@ interface CartItem {
   size?: string;
 }
 
+interface OrderHistoryItem {
+  id: string;
+  date: string;
+  items: { name: string; quantity: number; size?: string; price: number }[];
+  total: number;
+  status: "geliefert" | "in Bearbeitung" | "versendet";
+  invoiceId: string;
+}
+
+const SAMPLE_ORDERS: OrderHistoryItem[] = [
+  {
+    id: "ORD-2026-001", date: "2026-02-10",
+    items: [
+      { name: "Roll-Up Banner", quantity: 2, price: 189 },
+      { name: "Notizblöcke (50er Pack)", quantity: 3, price: 89 },
+    ],
+    total: 645, status: "geliefert", invoiceId: "RE-2026-001",
+  },
+  {
+    id: "ORD-2026-002", date: "2026-01-22",
+    items: [
+      { name: "Imondu Poloshirt", quantity: 5, size: "L", price: 39.90 },
+      { name: "Imondu Cap", quantity: 5, price: 24.90 },
+    ],
+    total: 324, status: "geliefert", invoiceId: "RE-2026-002",
+  },
+  {
+    id: "ORD-2025-018", date: "2025-12-05",
+    items: [
+      { name: "Kugelschreiber (100er Pack)", quantity: 2, price: 149 },
+      { name: "Messestand Komplett", quantity: 1, price: 2490 },
+    ],
+    total: 2788, status: "geliefert", invoiceId: "RE-2025-018",
+  },
+];
+
 export default function MerchShop() {
   const { toast } = useToast();
   const [category, setCategory] = useState("alle");
@@ -74,7 +110,7 @@ export default function MerchShop() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [showCart, setShowCart] = useState(false);
-
+  const [showHistory, setShowHistory] = useState(false);
   const filtered = category === "alle" ? PRODUCTS : PRODUCTS.filter((p) => p.category === category);
 
   const addToCart = () => {
@@ -118,15 +154,21 @@ export default function MerchShop() {
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Merchandise Shop</h1>
             <p className="text-sm text-muted-foreground mt-1">Werbemittel und Kleidung mit Imondu-Branding bestellen</p>
           </div>
-          <Button variant="outline" className="gap-2 relative border-primary/20 hover:border-primary/40 transition-colors" onClick={() => setShowCart(true)}>
-            <ShoppingCart className="h-4 w-4 text-primary" />
-            Warenkorb
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 gradient-brand text-primary-foreground text-[10px] h-5 w-5 flex items-center justify-center rounded-full font-bold">
-                {cartCount}
-              </span>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2 border-border hover:border-primary/40 transition-colors" onClick={() => setShowHistory(true)}>
+              <History className="h-4 w-4 text-muted-foreground" />
+              Bestellhistorie
+            </Button>
+            <Button variant="outline" className="gap-2 relative border-primary/20 hover:border-primary/40 transition-colors" onClick={() => setShowCart(true)}>
+              <ShoppingCart className="h-4 w-4 text-primary" />
+              Warenkorb
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 gradient-brand text-primary-foreground text-[10px] h-5 w-5 flex items-center justify-center rounded-full font-bold">
+                  {cartCount}
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Category Filter */}
@@ -293,6 +335,84 @@ export default function MerchShop() {
                 </Button>
               )}
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Order History Dialog */}
+        <Dialog open={showHistory} onOpenChange={setShowHistory}>
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <div className="w-8 h-1 rounded-full gradient-brand mb-2" />
+              <DialogTitle className="font-display">Bestellhistorie</DialogTitle>
+              <DialogDescription>Übersicht aller bisherigen Bestellungen</DialogDescription>
+            </DialogHeader>
+            {SAMPLE_ORDERS.length === 0 ? (
+              <div className="py-8 text-center">
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Noch keine Bestellungen</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {SAMPLE_ORDERS.map((order) => (
+                  <div key={order.id} className="border border-border rounded-xl overflow-hidden">
+                    {/* Order header */}
+                    <div className="bg-secondary/30 px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {new Date(order.date).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                        </div>
+                        <span className="text-xs font-mono font-semibold text-foreground">{order.id}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          order.status === "geliefert"
+                            ? "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"
+                            : order.status === "versendet"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]"
+                        }`}>
+                          {order.status === "geliefert" ? "✓ " : ""}{order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Order items */}
+                    <div className="px-4 py-3 space-y-2">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="text-foreground">{item.quantity}×</span>
+                            <span className="text-foreground font-medium">{item.name}</span>
+                            {item.size && <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">Gr. {item.size}</span>}
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {(item.price * item.quantity).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Order footer */}
+                    <div className="border-t border-border px-4 py-3 flex items-center justify-between bg-secondary/10">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">Gesamt:</span>
+                        <span className="text-sm font-bold text-primary">
+                          {order.total.toLocaleString("de-DE", { minimumFractionDigits: 2 })} €
+                        </span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => {
+                          toast({ title: "Rechnung herunterladen", description: `${order.invoiceId}.pdf wird heruntergeladen…` });
+                        }}
+                      >
+                        <FileDown className="h-3.5 w-3.5" /> Rechnung ({order.invoiceId}.pdf)
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
