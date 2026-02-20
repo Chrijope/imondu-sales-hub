@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Users, Search, Shield, Clock, ChevronRight, ChevronDown, CheckCircle2,
   XCircle, UserPlus, Mail, Phone, MoreHorizontal, Eye, EyeOff, Plus, Pencil, Trash2,
+  Key, AtSign,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -181,6 +182,47 @@ export default function Nutzerverwaltung() {
   const [showNewRoleForm, setShowNewRoleForm] = useState(false);
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [editRoleName, setEditRoleName] = useState("");
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteVorname, setInviteVorname] = useState("");
+  const [inviteNachname, setInviteNachname] = useState("");
+  const [inviteRoleId, setInviteRoleId] = useState("vertriebspartner");
+  const [inviteTelefon, setInviteTelefon] = useState("");
+
+  const generateEmail = (vorname: string, nachname: string) => {
+    if (!vorname.trim() || !nachname.trim()) return "";
+    return `${vorname.trim()[0].toLowerCase()}.${nachname.trim().toLowerCase().replace(/\s+/g, "-").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")}@imondu.de`;
+  };
+
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+    return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  };
+
+  const handleInviteUser = () => {
+    const email = generateEmail(inviteVorname, inviteNachname);
+    if (!inviteVorname.trim() || !inviteNachname.trim()) return;
+    const avatar = `${inviteVorname[0].toUpperCase()}${inviteNachname[0].toUpperCase()}`;
+    const newUser: CRMUser = {
+      id: `u-${Date.now()}`,
+      name: `${inviteVorname.trim()} ${inviteNachname.trim()}`,
+      email,
+      phone: inviteTelefon || "–",
+      roleId: inviteRoleId,
+      active: true,
+      lastLogin: "–",
+      avatar,
+    };
+    setUsers(prev => [...prev, newUser]);
+    toast({
+      title: "Nutzer eingeladen ✓",
+      description: `${newUser.name} wurde mit der Rolle "${getRole(inviteRoleId).name}" eingeladen. E-Mail: ${email}`,
+    });
+    setShowInviteDialog(false);
+    setInviteVorname("");
+    setInviteNachname("");
+    setInviteTelefon("");
+    setInviteRoleId("vertriebspartner");
+  };
 
   const filtered = users.filter((u) => {
     if (roleFilter !== "alle" && u.roleId !== roleFilter) return false;
@@ -252,7 +294,7 @@ export default function Nutzerverwaltung() {
             <Button variant="outline" size="sm" onClick={() => setShowRolesOverview(true)}>
               <Shield className="h-4 w-4 mr-1.5" /> Rollen & Berechtigungen
             </Button>
-            <Button size="sm" className="gradient-brand border-0 text-white">
+            <Button size="sm" className="gradient-brand border-0 text-white" onClick={() => setShowInviteDialog(true)}>
               <UserPlus className="h-4 w-4 mr-1.5" /> Nutzer einladen
             </Button>
           </div>
@@ -332,10 +374,10 @@ export default function Nutzerverwaltung() {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
                         style={{ backgroundColor: `${role.color}20`, color: role.color }}
                       >
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: role.color }} />
+                        <Shield className="h-3 w-3" />
                         {role.name}
                       </span>
                     </td>
@@ -646,6 +688,137 @@ export default function Nutzerverwaltung() {
                 </div>
               );
             })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Invite User Dialog ── */}
+      <Dialog open={showInviteDialog} onOpenChange={(open) => { setShowInviteDialog(open); if (!open) { setInviteVorname(""); setInviteNachname(""); setInviteTelefon(""); setInviteRoleId("vertriebspartner"); } }}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" /> Neuen Nutzer einladen
+            </DialogTitle>
+            <DialogDescription>
+              Der Nutzer erhält automatisch eine IONOS-E-Mail-Adresse und ein Erstpasswort.
+              Beim ersten Login muss das Passwort geändert werden.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 mt-2">
+            {/* Name */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Vorname *</label>
+                <Input value={inviteVorname} onChange={(e) => setInviteVorname(e.target.value)} placeholder="Max" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Nachname *</label>
+                <Input value={inviteNachname} onChange={(e) => setInviteNachname(e.target.value)} placeholder="Müller" />
+              </div>
+            </div>
+
+            {/* Auto-generated email */}
+            {inviteVorname.trim() && inviteNachname.trim() && (
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/15">
+                <div className="flex items-center gap-2 mb-1">
+                  <AtSign className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-medium text-foreground">Automatisch generierte E-Mail</span>
+                </div>
+                <p className="text-sm font-mono font-semibold text-primary">{generateEmail(inviteVorname, inviteNachname)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Diese IONOS-Adresse wird bei der Anlage erstellt. Der Nutzer meldet sich damit im Backoffice an.
+                </p>
+              </div>
+            )}
+
+            {/* Phone */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Telefonnummer (optional)</label>
+              <Input value={inviteTelefon} onChange={(e) => setInviteTelefon(e.target.value)} placeholder="+49 170 …" />
+            </div>
+
+            {/* Role selection */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Rolle zuweisen *</label>
+              <Select value={inviteRoleId} onValueChange={setInviteRoleId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {roles.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: r.color }} />
+                        {r.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Show permissions of selected role */}
+            {(() => {
+              const selectedRole = getRole(inviteRoleId);
+              return (
+                <div className="border border-border rounded-lg p-4 bg-secondary/20">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield className="h-4 w-4" style={{ color: selectedRole.color }} />
+                    <span className="text-sm font-semibold text-foreground">
+                      Berechtigungen der Rolle „{selectedRole.name}"
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground ml-auto">
+                      {selectedRole.menuItems.length} Menüpunkte
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedRole.menuItems.map((menuId) => {
+                      const item = ALL_MENU_ITEMS.find((m) => m.id === menuId);
+                      return item ? (
+                        <span
+                          key={menuId}
+                          className="text-[10px] px-2 py-1 rounded-full border border-border bg-card text-foreground"
+                        >
+                          {item.label}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                  {inviteRoleId === "individuell" && (
+                    <p className="text-[10px] text-muted-foreground mt-2">
+                      Bei „Individuell" können Menüpunkte nach der Einladung pro Nutzer angepasst werden.
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Info box */}
+            <div className="p-3 rounded-lg bg-secondary/30 border border-border">
+              <div className="flex items-start gap-2">
+                <Key className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="font-medium text-foreground mb-1">Ablauf nach der Einladung:</p>
+                  <ol className="list-decimal list-inside space-y-0.5">
+                    <li>IONOS-E-Mail-Adresse wird automatisch erstellt</li>
+                    <li>Nutzer erhält ein automatisch generiertes Erstpasswort</li>
+                    <li>Beim ersten Login muss das Passwort zwingend geändert werden</li>
+                    <li>Die E-Mail-Adresse wird in den Einstellungen hinterlegt</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            {/* Action */}
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" onClick={() => setShowInviteDialog(false)}>Abbrechen</Button>
+              <Button
+                className="gradient-brand border-0 text-white"
+                disabled={!inviteVorname.trim() || !inviteNachname.trim()}
+                onClick={handleInviteUser}
+              >
+                <UserPlus className="h-4 w-4 mr-1.5" /> Nutzer einladen
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
