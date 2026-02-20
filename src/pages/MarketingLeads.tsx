@@ -100,6 +100,9 @@ function LeafletMap({ pins }: { pins: MapPin[] }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.CircleMarker[]>([]);
 
+  const bordersRef = useRef<L.GeoJSON[]>([]);
+
+  // Load DACH country borders once
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (!mapRef.current) {
@@ -107,7 +110,34 @@ function LeafletMap({ pins }: { pins: MapPin[] }) {
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org">OSM</a>',
       }).addTo(mapRef.current);
+
+      // Fetch DACH country borders
+      const countries = ["DEU", "AUT", "CHE"];
+      countries.forEach((code) => {
+        fetch(`https://raw.githubusercontent.com/johan/world.geo.json/master/countries/${code}.geo.json`)
+          .then((r) => r.json())
+          .then((geojson) => {
+            if (!mapRef.current) return;
+            const layer = L.geoJSON(geojson, {
+              style: {
+                color: "hsl(250, 60%, 52%)",
+                weight: 2.5,
+                opacity: 0.5,
+                fillColor: "hsl(250, 60%, 52%)",
+                fillOpacity: 0.04,
+                dashArray: "6 4",
+              },
+            }).addTo(mapRef.current);
+            bordersRef.current.push(layer);
+          })
+          .catch(() => {});
+      });
     }
+  }, []);
+
+  // Update markers when pins change
+  useEffect(() => {
+    if (!mapRef.current) return;
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
     pins.forEach((pin) => {
