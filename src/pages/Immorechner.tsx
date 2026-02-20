@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Download, Calculator } from "lucide-react";
+
+const STEPS = [
+  { key: "grunddaten", title: "Berechne Deinen Vermögensaufbau mit Immobilien" },
+  { key: "aufwendungen", title: "Monatlicher Eigenanteil für Vermögensaufbau" },
+  { key: "hebel", title: "Der Fremdkapital-Hebel" },
+  { key: "steuer", title: "Steuerliche Auswertung" },
+  { key: "ergebnis", title: "Dein Immo-Wert" },
+];
 
 // ── Helpers ──
 const fmt = (n: number) =>
@@ -141,16 +150,18 @@ function HebelDiagram({
   );
 }
 
-const STEP_TITLES = [
-  "Berechne Deinen Vermögensaufbau mit Immobilien",
-  "Monatlicher Eigenanteil für Vermögensaufbau",
-  "Der Fremdkapital-Hebel",
-  "Steuerliche Auswertung",
-  "Dein Immo-Wert",
-];
-
 export default function Immorechner() {
-  const [step, setStep] = useState(0);
+  const { subPage } = useParams<{ subPage: string }>();
+  const navigate = useNavigate();
+  const step = Math.max(0, STEPS.findIndex(s => s.key === subPage));
+
+  const goTo = (idx: number) => navigate(`/immorechner/${STEPS[idx].key}`);
+
+  useEffect(() => {
+    if (!subPage || !STEPS.find(s => s.key === subPage)) {
+      navigate("/immorechner/grunddaten", { replace: true });
+    }
+  }, [subPage, navigate]);
 
   // Step 1 – Grunddaten
   const [kaufpreis, setKaufpreis] = useState(200000);
@@ -239,7 +250,7 @@ export default function Immorechner() {
       sonstigesEinmalig, verwaltung, sonstigesMonatlich, miete, mietsteigerung, steuervorteilMonat,
       persSteuersatz, abschreibungssatz, grundsteuerJahr, gebaeudeanteil, sonderabschreibung, werbungskosten]);
 
-  const canNext = step < STEP_TITLES.length - 1;
+  const canNext = step < STEPS.length - 1;
   const canPrev = step > 0;
 
   const diagramProps = {
@@ -264,7 +275,7 @@ export default function Immorechner() {
 
         {/* Step Title */}
         <h2 className="text-lg font-display font-bold text-foreground mb-2">
-          {STEP_TITLES[step]}{" "}
+          {STEPS[step]?.title}{" "}
           {(step >= 2) && <span className="text-[hsl(35,95%,55%)]">in {laufzeit} Jahren</span>}
         </h2>
 
@@ -571,7 +582,7 @@ export default function Immorechner() {
         <div className="flex items-center justify-center gap-6 mt-10 pt-6 border-t border-border">
           <Button
             variant="ghost"
-            onClick={() => setStep((s) => s - 1)}
+            onClick={() => goTo(step - 1)}
             disabled={!canPrev}
             className="text-[hsl(35,95%,55%)] hover:text-[hsl(35,95%,45%)]"
           >
@@ -579,8 +590,8 @@ export default function Immorechner() {
           </Button>
 
           <div className="flex gap-2">
-            {STEP_TITLES.map((_, i) => (
-              <button key={i} onClick={() => setStep(i)}>
+            {STEPS.map((_, i) => (
+              <button key={i} onClick={() => goTo(i)}>
                 <StepDot active={i === step} completed={i < step} />
               </button>
             ))}
@@ -588,7 +599,7 @@ export default function Immorechner() {
 
           <Button
             variant="ghost"
-            onClick={() => setStep((s) => s + 1)}
+            onClick={() => goTo(step + 1)}
             disabled={!canNext}
             className="text-muted-foreground hover:text-foreground"
           >
