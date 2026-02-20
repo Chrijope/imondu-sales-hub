@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,18 @@ const priorityStyles: Record<TaskPriority, string> = {
 type FilterType = "alle" | TaskType;
 
 export default function Inbox() {
-  const [tasks, setTasks] = useState<InboxTask[]>(INITIAL_TASKS);
+  const [tasks, setTasks] = useState<InboxTask[]>(() => {
+    try {
+      const saved = localStorage.getItem("inbox-tasks");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_TASKS;
+  });
   const [filter, setFilter] = useState<FilterType>("alle");
+
+  useEffect(() => {
+    localStorage.setItem("inbox-tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const toggleDone = (id: string) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
