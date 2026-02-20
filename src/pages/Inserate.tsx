@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import CRMLayout from "@/components/CRMLayout";
 import InseratFunnel from "@/components/InseratFunnel";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES } from "@/data/crm-data";
@@ -22,6 +24,7 @@ import {
   LayoutGrid,
   List,
   Pencil,
+  Map,
 } from "lucide-react";
 
 // Images
@@ -72,7 +75,24 @@ interface Inserat {
   anfragen: number;
   beschreibung: string;
   tags: string[];
+  lat: number;
+  lng: number;
 }
+// City coordinates for DACH region
+const CITY_COORDS: Record<string, [number, number]> = {
+  Berlin: [52.52, 13.405], München: [48.137, 11.576], Hamburg: [53.551, 9.994],
+  Stuttgart: [48.776, 9.183], Köln: [50.938, 6.96], Frankfurt: [50.11, 8.682],
+  Dresden: [51.051, 13.738], Hannover: [52.376, 9.738], Wien: [48.208, 16.373],
+  Zürich: [47.377, 8.542], Salzburg: [47.811, 13.055], Bern: [46.948, 7.448],
+};
+
+const getCoordsFromAddress = (adresse: string): [number, number] => {
+  for (const [city, coords] of Object.entries(CITY_COORDS)) {
+    if (adresse.includes(city)) return coords;
+  }
+  // Random DACH position
+  return [48.5 + Math.random() * 4, 8 + Math.random() * 6];
+};
 
 const generateInserate = (): Inserat[] => {
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
@@ -80,13 +100,15 @@ const generateInserate = (): Inserat[] => {
 
   b2cLeads.forEach((lead) => {
     if (lead.status === "b2c_inserat" || lead.status === "b2c_registered") {
+      const addr = lead.objektAdresse || lead.address || "";
+      const [lat, lng] = getCoordsFromAddress(addr);
       inserate.push({
         id: `ins-${lead.id}`,
         leadId: lead.id,
         eigentuemerName: `${lead.firstName} ${lead.lastName}`,
         objekttyp: lead.objekttyp || "Einfamilienhaus",
         titel: lead.notes || "Immobilie mit Potenzial",
-        adresse: lead.objektAdresse || lead.address || "",
+        adresse: addr,
         baujahr: lead.baujahr || 2000,
         wohnflaeche: lead.wohnflaeche || 100,
         grundstuecksflaeche: lead.grundstuecksflaeche,
@@ -102,6 +124,7 @@ const generateInserate = (): Inserat[] => {
         anfragen: Math.floor(Math.random() * 20) + 1,
         beschreibung: lead.notes || "Immobilie des Eigentümers.",
         tags: [lead.objekttyp || "Haus", "Immobilienverkauf", "Immobilienbestand"],
+        lat, lng,
       });
     }
   });
@@ -119,6 +142,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 342, anfragen: 12,
       beschreibung: "Freistehendes EFH in ruhiger Lage. Sanierungsbedarf vorhanden.",
       tags: ["Haus", "Immobilienverkauf", "Immobilienbestand"],
+      lat: 52.52, lng: 13.405,
     },
     {
       id: "ins-demo-2", leadId: "3", eigentuemerName: "Peter Klein",
@@ -131,6 +155,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 518, anfragen: 18,
       beschreibung: "MFH mit 6 Einheiten, teilsaniert.",
       tags: ["Mehrfamilienhaus", "Immobilienverkauf"],
+      lat: 48.137, lng: 11.576,
     },
     {
       id: "ins-demo-3", leadId: "5", eigentuemerName: "Maria Hoffmann",
@@ -143,6 +168,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 89, anfragen: 3,
       beschreibung: "ETW in bester Lage.",
       tags: ["Wohnung", "Immobilienbestand"],
+      lat: 53.551, lng: 9.994,
     },
     {
       id: "ins-demo-4", leadId: "11", eigentuemerName: "Thomas Meier",
@@ -155,6 +181,7 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 0, anfragen: 0,
       beschreibung: "MFH im Zentrum, komplett unsaniert.",
       tags: ["Mehrfamilienhaus", "Immobilienbestand"],
+      lat: 48.776, lng: 9.183,
     },
     {
       id: "ins-demo-5", leadId: "9", eigentuemerName: "Sophie Becker",
@@ -167,11 +194,94 @@ const generateInserate = (): Inserat[] => {
       aufrufe: 210, anfragen: 7,
       beschreibung: "Moderne ETW, vollsaniert.",
       tags: ["Wohnung", "Energieberatung"],
+      lat: 50.938, lng: 6.96,
+    },
+    {
+      id: "ins-demo-6", leadId: "1", eigentuemerName: "Karl Huber",
+      objekttyp: "Gewerbeobjekt",
+      titel: "Bürogebäude in Wien-Innere Stadt",
+      adresse: "Kärntner Ring 5, 1010 Wien", baujahr: 1990, wohnflaeche: 850,
+      zimmer: 12, vermietet: true,
+      sanierungsstatus: "Teilsaniert", status: "aktiv", objektNr: "4055304",
+      erstelltAm: "2026-01-05", aktualisiertAm: "2026-02-15",
+      aufrufe: 420, anfragen: 15,
+      beschreibung: "Bürogebäude in bester Lage.",
+      tags: ["Gewerbeobjekt", "Immobilienverkauf"],
+      lat: 48.208, lng: 16.373,
+    },
+    {
+      id: "ins-demo-7", leadId: "3", eigentuemerName: "Lisa Müller",
+      objekttyp: "Grundstück",
+      titel: "Baugrundstück am Zürichsee",
+      adresse: "Seestr. 40, 8002 Zürich", baujahr: 0, wohnflaeche: 0,
+      grundstuecksflaeche: 1200, vermietet: false,
+      sanierungsstatus: "Unsaniert", status: "aktiv", objektNr: "4055305",
+      erstelltAm: "2026-02-10", aktualisiertAm: "2026-02-18",
+      aufrufe: 680, anfragen: 22,
+      beschreibung: "Exklusives Baugrundstück am See.",
+      tags: ["Grundstück", "Immobilienverkauf"],
+      lat: 47.377, lng: 8.542,
     }
   );
 
   return inserate;
 };
+
+// Map colors per Objekttyp
+const OBJEKTTYP_COLORS: Record<string, string> = {
+  Einfamilienhaus: "#f97316",
+  Mehrfamilienhaus: "#8b5cf6",
+  Wohnung: "#3b82f6",
+  Gewerbeobjekt: "#10b981",
+  Grundstück: "#eab308",
+  Mischobjekt: "#ec4899",
+};
+
+type ObjektFilterType = "Alle" | "Einfamilienhaus" | "Mehrfamilienhaus" | "Wohnung" | "Gewerbeobjekt" | "Grundstück";
+
+function InserateMap({ inserate, objektFilter }: { inserate: Inserat[]; objektFilter: ObjektFilterType }) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<L.Map | null>(null);
+
+  const pins = useMemo(() => {
+    let list = inserate;
+    if (objektFilter !== "Alle") list = list.filter((i) => i.objekttyp === objektFilter);
+    return list;
+  }, [inserate, objektFilter]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (mapInstance.current) {
+      mapInstance.current.remove();
+      mapInstance.current = null;
+    }
+    const map = L.map(mapRef.current, { zoomControl: true }).setView([48.5, 10.5], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(map);
+
+    pins.forEach((ins) => {
+      const color = OBJEKTTYP_COLORS[ins.objekttyp] || "#6b7280";
+      L.circleMarker([ins.lat, ins.lng], {
+        radius: 8, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9,
+      })
+        .bindPopup(
+          `<div style="min-width:180px">
+            <strong>${ins.titel}</strong><br/>
+            <span style="color:#888;font-size:11px">${ins.objekttyp} · ${ins.adresse}</span><br/>
+            <span style="font-size:11px">${ins.wohnflaeche > 0 ? ins.wohnflaeche + " m²" : ""} ${ins.grundstuecksflaeche ? "· " + ins.grundstuecksflaeche + " m² Grundstück" : ""}</span><br/>
+            <span style="font-size:11px;color:#666">Eigentümer: ${ins.eigentuemerName}</span>
+          </div>`
+        )
+        .addTo(map);
+    });
+
+    mapInstance.current = map;
+    return () => { map.remove(); mapInstance.current = null; };
+  }, [pins]);
+
+  return <div ref={mapRef} className="w-full h-[500px] rounded-xl border border-border" />;
+}
 
 const statusConfig: Record<InseratStatus, { label: string; icon: React.ComponentType<{ className?: string }>; color: string; dotColor: string }> = {
   aktiv: { label: "Aktiv", icon: CheckCircle2, color: "bg-success/10 text-success border-success/20", dotColor: "bg-success" },
@@ -181,7 +291,7 @@ const statusConfig: Record<InseratStatus, { label: string; icon: React.Component
 };
 
 type StatusFilter = "alle" | InseratStatus;
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list" | "map";
 
 export default function Inserate() {
   const navigate = useNavigate();
@@ -190,6 +300,7 @@ export default function Inserate() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showFunnel, setShowFunnel] = useState(false);
+  const [objektFilter, setObjektFilter] = useState<ObjektFilterType>("Alle");
 
   const filtered = useMemo(() => {
     let list = inserate;
@@ -297,11 +408,44 @@ export default function Inserate() {
             <Button variant={viewMode === "list" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("list")}>
               <List className="h-4 w-4" />
             </Button>
+            <Button variant={viewMode === "map" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("map")}>
+              <Map className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
+        {/* Map View */}
+        {viewMode === "map" && (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-xs font-medium text-muted-foreground mr-1">Objekttyp:</span>
+              {(["Alle", "Einfamilienhaus", "Mehrfamilienhaus", "Wohnung", "Gewerbeobjekt", "Grundstück"] as ObjektFilterType[]).map((t) => (
+                <Button
+                  key={t}
+                  variant={objektFilter === t ? "default" : "outline"}
+                  size="sm"
+                  className={objektFilter === t ? "gradient-brand border-0 text-primary-foreground" : ""}
+                  onClick={() => setObjektFilter(t)}
+                >
+                  {t !== "Alle" && <span className="w-2.5 h-2.5 rounded-full mr-1.5" style={{ backgroundColor: OBJEKTTYP_COLORS[t] }} />}
+                  {t}
+                </Button>
+              ))}
+            </div>
+            <InserateMap inserate={filtered} objektFilter={objektFilter} />
+            <div className="flex flex-wrap gap-3 justify-center">
+              {Object.entries(OBJEKTTYP_COLORS).map(([typ, color]) => (
+                <div key={typ} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                  {typ}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Grid View */}
-        {viewMode === "grid" ? (
+        {viewMode === "grid" && (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             {filtered.map((ins) => {
               const sc = statusConfig[ins.status];
@@ -397,8 +541,10 @@ export default function Inserate() {
               );
             })}
           </div>
-        ) : (
-          /* List View */
+        )}
+
+        {/* List View */}
+        {viewMode === "list" && (
           <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
