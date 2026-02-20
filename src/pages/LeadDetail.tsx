@@ -58,6 +58,8 @@ export default function LeadDetail() {
   const name = lead.type === "b2b" ? lead.companyName : `${lead.firstName} ${lead.lastName}`;
   const typeLabel = lead.type === "b2b" ? "Partner" : "Eigentümer";
 
+  const chatCategory = lead.type === "b2c" ? "eigentuemer" : "entwickler";
+
   const actions = [
     { icon: StickyNote, label: "Notiz erstellen", color: "bg-primary text-primary-foreground" },
     { icon: Mail, label: "E-Mail schreiben", color: "bg-secondary text-secondary-foreground" },
@@ -65,6 +67,12 @@ export default function LeadDetail() {
     { icon: CheckSquare, label: "Aufgabe erstellen", color: "bg-secondary text-secondary-foreground" },
     { icon: CalendarDays, label: "Meeting erstellen", color: "bg-secondary text-secondary-foreground" },
     { icon: MessageSquare, label: "WhatsApp schreiben", color: "bg-success text-success-foreground" },
+    {
+      icon: MessageSquare,
+      label: "Chat starten",
+      color: "bg-primary/10 text-primary border border-primary/20",
+      onClick: () => navigate(`/chat?newChat=${encodeURIComponent(name)}&category=${chatCategory}`),
+    },
     { icon: PhoneCall, label: "Anruf protokollieren", color: "bg-secondary text-secondary-foreground" },
     { icon: Video, label: "Meeting protokollieren", color: "bg-secondary text-secondary-foreground" },
   ];
@@ -157,6 +165,7 @@ export default function LeadDetail() {
                 {actions.map((action, i) => (
                   <button
                     key={i}
+                    onClick={action.onClick}
                     className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity ${action.color}`}
                   >
                     <action.icon className="h-3.5 w-3.5" />

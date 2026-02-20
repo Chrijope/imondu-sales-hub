@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -271,6 +272,7 @@ const CHAT_CATEGORIES = [
 ];
 
 export default function Chat() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [chats, setChats] = useState<ChatThread[]>(initialChats);
   const [activeChatId, setActiveChatId] = useState<string>("1");
   const [searchQuery, setSearchQuery] = useState("");
@@ -278,6 +280,45 @@ export default function Chat() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteType, setInviteType] = useState<"admin" | "teampartner" | "entwickler" | "eigentuemer">("teampartner");
   const [activeCategory, setActiveCategory] = useState<"alle" | "intern" | "entwickler" | "eigentuemer">("alle");
+
+  // Handle deep-link from LeadDetail: ?newChat=Name&category=eigentuemer
+  useEffect(() => {
+    const newChatName = searchParams.get("newChat");
+    const category = searchParams.get("category") as "intern" | "entwickler" | "eigentuemer" | null;
+    if (!newChatName) return;
+
+    // Check if chat with this name already exists
+    const existing = chats.find((c) => c.name === newChatName);
+    if (existing) {
+      setActiveChatId(existing.id);
+      setActiveCategory(existing.category);
+    } else {
+      const initials = newChatName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+      const role = category === "entwickler" ? "Entwickler" : category === "eigentuemer" ? "Eigentümer" : "Teampartner";
+      const newChat: ChatThread = {
+        id: `new-${Date.now()}`,
+        name: newChatName,
+        initials,
+        lastMessage: "Chat gestartet",
+        time: new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
+        unread: 0,
+        pinned: false,
+        category: category || "intern",
+        members: [
+          { name: newChatName, initials, role },
+          { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+        ],
+        messages: [
+          { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: new Date().toLocaleDateString("de-DE"), isOwn: false, isSystem: true },
+        ],
+      };
+      setChats((prev) => [newChat, ...prev]);
+      setActiveChatId(newChat.id);
+      setActiveCategory(category || "alle");
+    }
+    // Clear the search params
+    setSearchParams({}, { replace: true });
+  }, []);
 
   const activeChat = chats.find((c) => c.id === activeChatId);
 
