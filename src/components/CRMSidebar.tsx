@@ -94,7 +94,6 @@ const sectionVertrieb = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/automations", icon: Zap, label: "Automations & Workflows" },
   { path: "/dialer", icon: Phone, label: "Powerdialer" },
-  { path: "/kontakte", icon: Contact, label: "Kontakte" },
 ];
 
 const sectionImmobilien = [
@@ -266,6 +265,7 @@ export default function CRMSidebar() {
         <div>
           <SectionLabel>Vertrieb</SectionLabel>
           <div className="space-y-0.5">
+            <NavItem path="/kontakte" icon={Contact} label="Kontakte" isActive={isActive("/kontakte")} />
             <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" />
             <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" />
             {sectionVertrieb.map((item) => (
