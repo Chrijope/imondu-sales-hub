@@ -38,6 +38,7 @@ import {
   ClipboardList,
   UsersRound,
   BotMessageSquare,
+  Calculator,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 
@@ -61,6 +62,12 @@ const b2bSubItems = [
   { path: "/b2b/termine-gebucht", icon: CalendarCheck, label: "Termine gebucht" },
   { path: "/b2b/gewonnen", icon: Trophy, label: "Gewonnen" },
   { path: "/b2b/bestand", icon: Archive, label: "Bestand" },
+];
+
+const rechnerSubItems = [
+  { path: "/rechner/wohnung", icon: Calculator, label: "Rechner Wohnung" },
+  { path: "/rechner/grundstueck", icon: Calculator, label: "Rechner Grundstück" },
+  { path: "/rechner/mfh", icon: Calculator, label: "Rechner MFH" },
 ];
 
 const shopSubItems = [
@@ -252,7 +259,15 @@ export default function CRMSidebar() {
         <NavSection title="Auswertung" items={sectionAuswertung} isActive={isActive} />
 
         {/* TOOLS & WISSEN */}
-        <NavSection title="Tools & Wissen" items={sectionTools} isActive={isActive} />
+        <div>
+          <SectionLabel>Tools & Wissen</SectionLabel>
+          <div className="space-y-0.5">
+            <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" />
+            {sectionTools.map((item) => (
+              <NavItem key={item.path} {...item} isActive={isActive(item.path)} />
+            ))}
+          </div>
+        </div>
 
         {/* TEAM & ADMIN */}
         <NavSection title="Team & Admin" items={sectionTeam} isActive={isActive} />

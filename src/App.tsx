@@ -35,6 +35,9 @@ import Kalender from "./pages/Kalender";
 import Nutzerverwaltung from "./pages/Nutzerverwaltung";
 import SupportKI from "./pages/SupportKI";
 import EmailPage from "./pages/Email";
+import RechnerWohnung from "./pages/RechnerWohnung";
+import RechnerGrundstueck from "./pages/RechnerGrundstueck";
+import RechnerMFH from "./pages/RechnerMFH";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +81,9 @@ const App = () => (
           <Route path="/nutzerverwaltung" element={<Nutzerverwaltung />} />
           <Route path="/support-ki" element={<SupportKI />} />
           <Route path="/email" element={<EmailPage />} />
+          <Route path="/rechner/wohnung" element={<RechnerWohnung />} />
+          <Route path="/rechner/grundstueck" element={<RechnerGrundstueck />} />
+          <Route path="/rechner/mfh" element={<RechnerMFH />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
