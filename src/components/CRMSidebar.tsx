@@ -111,6 +111,7 @@ const sectionAuswertung = [
 ];
 
 const sectionTools = [
+  { path: "/immorechner", icon: Calculator, label: "Immorechner" },
   { path: "/academy", icon: GraduationCap, label: "Academy" },
   { path: "/presentation", icon: Presentation, label: "Präsentation" },
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
