@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User, Building, FileText, MapPin, Camera, Save, Info, Calendar } from "lucide-react";
+import { User, Building, FileText, MapPin, Camera, Save, Info, Calendar, Mail, Key, Eye, EyeOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface ProfileData {
@@ -82,6 +82,23 @@ export default function Einstellungen() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [profilbild, setProfilbild] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailPasswort, setEmailPasswort] = useState("");
+  const [emailPasswortNeu, setEmailPasswortNeu] = useState("");
+  const [emailPasswortNeuConfirm, setEmailPasswortNeuConfirm] = useState("");
+
+  const ionosEmail = `${profile.vorname.trim()[0]?.toLowerCase() || "x"}.${profile.nachname.trim().toLowerCase().replace(/\s+/g, "-").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")}@imondu.de`;
+
+  const handlePasswordChange = () => {
+    if (!emailPasswortNeu || emailPasswortNeu !== emailPasswortNeuConfirm) {
+      toast({ title: "Fehler", description: "Die Passwörter stimmen nicht überein." });
+      return;
+    }
+    toast({ title: "Passwort geändert ✓", description: "Dein E-Mail-Passwort wurde erfolgreich aktualisiert." });
+    setEmailPasswort("");
+    setEmailPasswortNeu("");
+    setEmailPasswortNeuConfirm("");
+  };
 
   const update = (field: keyof ProfileData, value: string) =>
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -258,6 +275,71 @@ export default function Einstellungen() {
           <p className="text-xs text-muted-foreground mt-3">
             Für erweiterte Kalender-Einstellungen besuche die <a href="/kalender" className="text-primary hover:underline font-medium">Kalender-Seite</a>.
           </p>
+        </SectionCard>
+
+        {/* E-Mail-Konto (IONOS) */}
+        <SectionCard icon={Mail} title="E-Mail-Konto (IONOS)">
+          <div className="space-y-4">
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/15">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Deine geschäftliche E-Mail-Adresse</p>
+              <p className="text-sm font-mono font-semibold text-primary">{ionosEmail}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Diese Adresse wird automatisch nach dem Schema v.nachname@imondu.de generiert und ist mit IONOS verknüpft.
+              </p>
+            </div>
+
+            <Separator />
+
+            <div>
+              <p className="text-xs font-medium text-foreground mb-3 flex items-center gap-1.5">
+                <Key className="h-3.5 w-3.5 text-primary" /> E-Mail-Passwort ändern
+              </p>
+              <div className="grid grid-cols-1 gap-3 max-w-sm">
+                <Field label="Aktuelles Passwort">
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={emailPasswort}
+                      onChange={(e) => setEmailPasswort(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </Field>
+                <Field label="Neues Passwort">
+                  <Input
+                    type="password"
+                    value={emailPasswortNeu}
+                    onChange={(e) => setEmailPasswortNeu(e.target.value)}
+                    placeholder="Neues Passwort eingeben"
+                  />
+                </Field>
+                <Field label="Neues Passwort bestätigen">
+                  <Input
+                    type="password"
+                    value={emailPasswortNeuConfirm}
+                    onChange={(e) => setEmailPasswortNeuConfirm(e.target.value)}
+                    placeholder="Neues Passwort wiederholen"
+                  />
+                </Field>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  disabled={!emailPasswort || !emailPasswortNeu || !emailPasswortNeuConfirm}
+                  onClick={handlePasswordChange}
+                >
+                  <Key className="h-3.5 w-3.5 mr-1.5" /> Passwort ändern
+                </Button>
+              </div>
+            </div>
+          </div>
         </SectionCard>
 
         {/* Speichern */}
