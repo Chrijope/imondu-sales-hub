@@ -1,6 +1,45 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-// Menu item IDs matching ALL_MENU_ITEMS in Nutzerverwaltung
+// All assignable menu item IDs with labels
+export const ALL_MENU_ITEMS = [
+  { id: "dashboard", label: "Dashboard" },
+  { id: "inbox", label: "Inbox" },
+  { id: "anrufe", label: "Anrufe" },
+  { id: "email", label: "E-Mail" },
+  { id: "kalender", label: "Kalender" },
+  { id: "news", label: "News" },
+  { id: "kontakte", label: "Kontakte" },
+  { id: "b2c", label: "B2C – Eigentümer" },
+  { id: "b2b", label: "B2B – Partner" },
+  { id: "pipeline", label: "Pipeline" },
+  { id: "automations", label: "Automations & Workflows" },
+  { id: "dialer", label: "Powerdialer" },
+  { id: "inserate", label: "Inserate" },
+  { id: "entwickler", label: "Entwickler" },
+  { id: "entwickler-registrieren", label: "Entwickler registrieren" },
+  { id: "auswertungen", label: "Auswertungen" },
+  { id: "statistik", label: "Statistik" },
+  { id: "analysetool", label: "Analysetool" },
+  { id: "abrechnungen", label: "Abrechnungen" },
+  { id: "immorechner", label: "Immorechner" },
+  { id: "rechner", label: "Entwicklungsrechner" },
+  { id: "marketing", label: "Marketing" },
+  { id: "academy", label: "Academy" },
+  { id: "presentation", label: "Präsentation" },
+  { id: "unterlagen", label: "Unterlagen" },
+  { id: "chat", label: "Chat" },
+  { id: "support-ki", label: "Support KI" },
+  { id: "teampartner", label: "Teampartner" },
+  { id: "nutzerverwaltung", label: "Nutzerverwaltung" },
+  { id: "ansprechpartner", label: "Ansprechpartner" },
+  { id: "berater-microseite", label: "Berater-Microseite" },
+  { id: "helpdesk", label: "Helpdesk" },
+  { id: "shop", label: "Shop" },
+  { id: "einstellungen", label: "Einstellungen" },
+];
+
+const ALL_MENU_IDS = ALL_MENU_ITEMS.map((m) => m.id);
+
 export interface RoleDef {
   id: string;
   name: string;
@@ -8,18 +47,6 @@ export interface RoleDef {
   fixed: boolean;
   menuItems: string[];
 }
-
-const ALL_MENU_IDS = [
-  "dashboard", "inbox", "anrufe", "email", "kalender", "news",
-  "kontakte", "b2c", "b2b", "pipeline", "automations", "dialer",
-  "inserate", "entwickler", "entwickler-registrieren",
-  "auswertungen", "statistik", "analysetool", "abrechnungen",
-  "immorechner", "rechner", "marketing", "academy", "presentation",
-  "unterlagen", "chat", "support-ki",
-  "teampartner", "nutzerverwaltung", "ansprechpartner",
-  "berater-microseite", "helpdesk",
-  "shop", "einstellungen",
-];
 
 export const DEFAULT_ROLES: RoleDef[] = [
   {
@@ -108,14 +135,16 @@ interface UserRoleContextType {
   setCurrentRoleId: (id: string) => void;
   allowedMenuItems: string[];
   roles: RoleDef[];
+  setRoles: React.Dispatch<React.SetStateAction<RoleDef[]>>;
 }
 
 const UserRoleContext = createContext<UserRoleContextType | null>(null);
 
 export function UserRoleProvider({ children }: { children: ReactNode }) {
   const [currentRoleId, setCurrentRoleId] = useState("admin");
+  const [roles, setRoles] = useState<RoleDef[]>(DEFAULT_ROLES);
 
-  const currentRole = DEFAULT_ROLES.find((r) => r.id === currentRoleId) || DEFAULT_ROLES[0];
+  const currentRole = roles.find((r) => r.id === currentRoleId) || roles[0];
 
   return (
     <UserRoleContext.Provider
@@ -123,7 +152,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
         currentRoleId,
         setCurrentRoleId,
         allowedMenuItems: currentRole.menuItems,
-        roles: DEFAULT_ROLES,
+        roles,
+        setRoles,
       }}
     >
       {children}

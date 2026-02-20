@@ -16,113 +16,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useUserRole, ALL_MENU_ITEMS, type RoleDef } from "@/contexts/UserRoleContext";
 
-// ── All menu items that can be assigned ──
-const ALL_MENU_ITEMS = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "inbox", label: "Inbox" },
-  { id: "kalender", label: "Kalender" },
-  { id: "news", label: "News" },
-  { id: "presentation", label: "Präsentation" },
-  { id: "analysetool", label: "Analysetool" },
-  { id: "unterlagen", label: "Unterlagen" },
-  { id: "pipeline", label: "Pipeline" },
-  { id: "chat", label: "Chat" },
-  { id: "kontakte", label: "Kontakte" },
-  { id: "inserate", label: "Inserate" },
-  { id: "b2c", label: "B2C – Eigentümer" },
-  { id: "b2b", label: "B2B – Partner" },
-  { id: "teampartner", label: "Teampartner" },
-  { id: "auswertungen", label: "Auswertungen" },
-  { id: "abrechnungen", label: "Abrechnungen" },
-  { id: "statistik", label: "Statistik" },
-  { id: "ansprechpartner", label: "Ansprechpartner" },
-  { id: "marketing", label: "Marketing" },
-  { id: "berater-microseite", label: "Berater-Microseite" },
-  { id: "academy", label: "Academy" },
-  { id: "entwickler", label: "Entwickler" },
-  { id: "shop", label: "Shop" },
-  { id: "nutzerverwaltung", label: "Nutzerverwaltung" },
-  { id: "einstellungen", label: "Einstellungen" },
-  { id: "dialer", label: "Powerdialer" },
-];
-
-// ── Roles with pre-assigned menu items ──
-export interface Role {
-  id: string;
-  name: string;
-  color: string;
-  fixed: boolean; // false = individuell
-  menuItems: string[];
-}
-
-const DEFAULT_ROLES: Role[] = [
-  {
-    id: "admin",
-    name: "Admin",
-    color: "hsl(0, 72%, 51%)",
-    fixed: true,
-    menuItems: ALL_MENU_ITEMS.map((m) => m.id),
-  },
-  {
-    id: "vertriebsleiter",
-    name: "Vertriebsleiter",
-    color: "hsl(250, 60%, 52%)",
-    fixed: true,
-    menuItems: [
-      "dashboard", "inbox", "kalender", "news", "pipeline", "chat", "kontakte",
-      "b2c", "b2b", "teampartner", "auswertungen", "abrechnungen", "statistik",
-      "ansprechpartner", "marketing", "academy", "dialer", "inserate", "nutzerverwaltung",
-    ],
-  },
-  {
-    id: "vertriebspartner",
-    name: "Vertriebspartner",
-    color: "hsl(152, 60%, 42%)",
-    fixed: true,
-    menuItems: [
-      "dashboard", "inbox", "kalender", "news", "presentation", "unterlagen",
-      "pipeline", "chat", "kontakte", "b2c", "b2b", "teampartner", "abrechnungen",
-      "statistik", "academy", "shop", "berater-microseite", "dialer", "inserate",
-    ],
-  },
-  {
-    id: "marketing",
-    name: "Marketing",
-    color: "hsl(280, 60%, 52%)",
-    fixed: true,
-    menuItems: [
-      "dashboard", "inbox", "kalender", "news", "kontakte", "marketing",
-      "auswertungen", "statistik", "academy",
-    ],
-  },
-  {
-    id: "backoffice",
-    name: "Backoffice",
-    color: "hsl(210, 80%, 52%)",
-    fixed: true,
-    menuItems: [
-      "dashboard", "inbox", "kalender", "kontakte", "inserate", "abrechnungen",
-      "entwickler", "ansprechpartner", "unterlagen", "nutzerverwaltung",
-    ],
-  },
-  {
-    id: "buchhaltung",
-    name: "Buchhaltung",
-    color: "hsl(38, 92%, 50%)",
-    fixed: true,
-    menuItems: [
-      "dashboard", "inbox", "kalender", "abrechnungen", "auswertungen", "statistik",
-    ],
-  },
-  {
-    id: "individuell",
-    name: "Individuell",
-    color: "hsl(220, 10%, 46%)",
-    fixed: false,
-    menuItems: ["dashboard", "inbox", "kalender"],
-  },
-];
+// Re-export Role type alias for compatibility
+export type Role = RoleDef;
 
 const CUSTOM_ROLE_COLORS = [
   "hsl(340, 65%, 47%)",
@@ -171,7 +68,7 @@ function timeAgo(dateStr: string): string {
 
 export default function Nutzerverwaltung() {
   const { toast } = useToast();
-  const [roles, setRoles] = useState<Role[]>(DEFAULT_ROLES);
+  const { roles, setRoles } = useUserRole();
   const [users, setUsers] = useState<CRMUser[]>(SAMPLE_USERS);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("alle");
