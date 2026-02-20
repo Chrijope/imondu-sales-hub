@@ -40,6 +40,7 @@ import RechnerGrundstueck from "./pages/RechnerGrundstueck";
 import RechnerMFH from "./pages/RechnerMFH";
 import SocialMediaCreator from "./pages/SocialMediaCreator";
 import Anrufe from "./pages/Anrufe";
+import Helpdesk from "./pages/Helpdesk";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -88,6 +89,7 @@ const App = () => (
           <Route path="/rechner/grundstueck" element={<RechnerGrundstueck />} />
           <Route path="/rechner/mfh" element={<RechnerMFH />} />
           <Route path="/anrufe" element={<Anrufe />} />
+          <Route path="/helpdesk" element={<Helpdesk />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

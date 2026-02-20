@@ -36,6 +36,7 @@ import {
   Target,
   ThumbsUp,
   Sparkles,
+  HeadphonesIcon,
 } from "lucide-react";
 
 // Profile images
@@ -392,6 +393,9 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
             <hr className="border-border" />
             <Button onClick={() => navigate(chatLink)} className="w-full gap-2 gradient-brand border-0 text-primary-foreground">
               <MessageSquare className="h-4 w-4" /> Jetzt kontaktieren
+            </Button>
+            <Button onClick={() => navigate("/helpdesk")} variant="outline" className="w-full gap-2 mt-2 text-xs">
+              <HeadphonesIcon className="h-4 w-4" /> Expertensupport kontaktieren
             </Button>
           </div>
 
