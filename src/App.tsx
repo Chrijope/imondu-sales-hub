@@ -1,3 +1,4 @@
+import { UserRoleProvider } from "@/contexts/UserRoleContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,6 +50,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <UserRoleProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -99,6 +101,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </UserRoleProvider>
   </QueryClientProvider>
 );
 
