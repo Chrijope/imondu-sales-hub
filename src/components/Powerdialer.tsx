@@ -13,6 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import CallScript, { ScriptStepResult, ScriptStep, B2C_SCRIPT, B2B_SCRIPT } from "@/components/CallScript";
+import Einwandbehandlung from "@/components/Einwandbehandlung";
 
 // ── Custom script type ──
 export interface CustomScript {
@@ -479,20 +480,27 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
 
           {/* Call Script – auto-opens when dialing with custom steps */}
           {isDialing && current && activeScript && (
-            <CallScript
-              type={type}
-              contactName={currentName}
-              customSteps={activeScript.steps}
-              scriptName={activeScript.name}
-              onSave={(results) => {
-                setScriptResults(results);
-                setScriptSaved(true);
-                toast({
-                  title: "Gesprächsskript gespeichert ✓",
-                  description: `Skript wird dem Profil von ${currentName} unter Aktivitäten zugeordnet.`,
-                });
-              }}
-            />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <CallScript
+                type={type}
+                contactName={currentName}
+                customSteps={activeScript.steps}
+                scriptName={activeScript.name}
+                onSave={(results) => {
+                  setScriptResults(results);
+                  setScriptSaved(true);
+                  toast({
+                    title: "Gesprächsskript gespeichert ✓",
+                    description: `Skript wird dem Profil von ${currentName} unter Aktivitäten zugeordnet.`,
+                  });
+                }}
+              />
+              <Einwandbehandlung
+                type={type}
+                contactName={currentName}
+                isLive={isDialing}
+              />
+            </div>
           )}
 
           {/* Notes */}
