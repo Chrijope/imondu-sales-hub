@@ -6,8 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Users, Search, Shield, Clock, ChevronRight, ChevronDown, CheckCircle2,
   XCircle, UserPlus, Mail, Phone, MoreHorizontal, Eye, EyeOff, Plus, Pencil, Trash2,
-  Key, AtSign,
+  Key, AtSign, FileText, Send, CheckCheck, Download,
 } from "lucide-react";
+import { KARRIERESTUFEN, B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS } from "@/data/karriereplan";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -187,6 +188,10 @@ export default function Nutzerverwaltung() {
   const [inviteNachname, setInviteNachname] = useState("");
   const [inviteRoleId, setInviteRoleId] = useState("vertriebspartner");
   const [inviteTelefon, setInviteTelefon] = useState("");
+  const [inviteKarrierestufe, setInviteKarrierestufe] = useState("projektassistent");
+  const [showContractDialog, setShowContractDialog] = useState(false);
+  const [contractUser, setContractUser] = useState<{ name: string; email: string; karrierestufe: string } | null>(null);
+  const [contractSent, setContractSent] = useState(false);
 
   const generateEmail = (vorname: string, nachname: string) => {
     if (!vorname.trim() || !nachname.trim()) return "";
@@ -202,9 +207,10 @@ export default function Nutzerverwaltung() {
     const email = generateEmail(inviteVorname, inviteNachname);
     if (!inviteVorname.trim() || !inviteNachname.trim()) return;
     const avatar = `${inviteVorname[0].toUpperCase()}${inviteNachname[0].toUpperCase()}`;
+    const fullName = `${inviteVorname.trim()} ${inviteNachname.trim()}`;
     const newUser: CRMUser = {
       id: `u-${Date.now()}`,
-      name: `${inviteVorname.trim()} ${inviteNachname.trim()}`,
+      name: fullName,
       email,
       phone: inviteTelefon || "–",
       roleId: inviteRoleId,
@@ -213,15 +219,20 @@ export default function Nutzerverwaltung() {
       avatar,
     };
     setUsers(prev => [...prev, newUser]);
+    setShowInviteDialog(false);
+    // Open contract dialog
+    setContractUser({ name: fullName, email, karrierestufe: inviteKarrierestufe });
+    setContractSent(false);
+    setShowContractDialog(true);
     toast({
       title: "Nutzer eingeladen ✓",
-      description: `${newUser.name} wurde mit der Rolle "${getRole(inviteRoleId).name}" eingeladen. E-Mail: ${email}`,
+      description: `${fullName} wurde angelegt. Vertragsdokumente werden vorbereitet…`,
     });
-    setShowInviteDialog(false);
     setInviteVorname("");
     setInviteNachname("");
     setInviteTelefon("");
     setInviteRoleId("vertriebspartner");
+    setInviteKarrierestufe("projektassistent");
   };
 
   const filtered = users.filter((u) => {
@@ -742,6 +753,43 @@ export default function Nutzerverwaltung() {
               <Input value={inviteTelefon} onChange={(e) => setInviteTelefon(e.target.value)} placeholder="+49 170 …" />
             </div>
 
+            {/* Karrierestufe / Provisionsstufe */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Provisionsstufe (Karriereplan) *</label>
+              <Select value={inviteKarrierestufe} onValueChange={setInviteKarrierestufe}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {KARRIERESTUFEN.map((k) => (
+                    <SelectItem key={k.id} value={k.id}>
+                      <span className="flex items-center gap-2">
+                        <span>{k.icon}</span> {k.title}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {(() => {
+                const stufe = KARRIERESTUFEN.find(k => k.id === inviteKarrierestufe);
+                if (!stufe) return null;
+                return (
+                  <div className="p-3 rounded-lg bg-secondary/30 border border-border mt-2">
+                    <p className="text-xs font-semibold text-foreground mb-1">{stufe.icon} {stufe.title}</p>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                      <div><span className="font-medium text-foreground">B2C:</span> {stufe.b2cMin}</div>
+                      <div><span className="font-medium text-foreground">B2B:</span> {stufe.b2bRange}</div>
+                    </div>
+                    <ul className="mt-2 space-y-0.5">
+                      {stufe.vorteile.slice(0, 3).map((v, i) => (
+                        <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1">
+                          <CheckCircle2 className="h-3 w-3 text-primary shrink-0 mt-0.5" /> {v}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Role selection */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Rolle zuweisen *</label>
@@ -824,6 +872,180 @@ export default function Nutzerverwaltung() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Contract Preview Dialog ── */}
+      <Dialog open={showContractDialog} onOpenChange={(open) => { setShowContractDialog(open); if (!open) setContractSent(false); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" /> Vertragsdokumente
+            </DialogTitle>
+            <DialogDescription>
+              Automatisch generiert für {contractUser?.name} – bitte prüfen und zur Unterschrift senden.
+            </DialogDescription>
+          </DialogHeader>
+
+          {contractUser && (() => {
+            const stufe = KARRIERESTUFEN.find(k => k.id === contractUser.karrierestufe) || KARRIERESTUFEN[0];
+            const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+            return (
+              <div className="space-y-6 mt-2">
+                {/* Document 1: Vertriebspartnervertrag */}
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-primary/5 border-b border-border">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold text-foreground">Vertriebspartnervertrag</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                      {stufe.icon} {stufe.title}
+                    </span>
+                  </div>
+                  <div className="p-4 text-xs text-muted-foreground space-y-3 font-mono bg-card">
+                    <p className="text-center font-semibold text-foreground text-sm">VERTRIEBSPARTNERVERTRAG</p>
+                    <p className="text-center text-[10px]">zwischen imondu GmbH und {contractUser.name}</p>
+                    <hr className="border-border" />
+                    <p><strong className="text-foreground">§ 1 Vertragsgegenstand</strong><br />
+                      Der Vertriebspartner wird als <strong className="text-foreground">{stufe.title}</strong> für die imondu GmbH tätig und vermittelt Immobilieninserate (B2C) sowie Partnermitgliedschaften (B2B).
+                    </p>
+                    <p><strong className="text-foreground">§ 2 Provisionssätze B2C (Inserate)</strong></p>
+                    <table className="w-full text-[11px] border-collapse">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-1 text-foreground">Inserate / Quartal</th>
+                          <th className="text-right py-1 text-foreground">Netto-Provision</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {B2C_STAFFEL.map((s, i) => (
+                          <tr key={i} className="border-b border-border/50">
+                            <td className="py-1">{s.min} – {s.max ?? "∞"}</td>
+                            <td className="text-right py-1 font-semibold text-foreground">{s.provision} € / Inserat</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p><strong className="text-foreground">§ 3 Provisionssätze B2B (Mitgliedschaften)</strong><br />
+                      Mitgliedschaftspreis: {B2B_MITGLIEDSCHAFT_PREIS} € / Monat
+                    </p>
+                    <table className="w-full text-[11px] border-collapse">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-1 text-foreground">Monatsumsatz</th>
+                          <th className="text-right py-1 text-foreground">Provision</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {B2B_STAFFEL.map((s, i) => (
+                          <tr key={i} className="border-b border-border/50">
+                            <td className="py-1">{s.min.toLocaleString("de-DE")} – {s.max ? s.max.toLocaleString("de-DE") : "∞"} €</td>
+                            <td className="text-right py-1 font-semibold text-foreground">{s.provision} %</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {stufe.overrideTeam && (
+                      <p><strong className="text-foreground">§ 4 Override-Provision</strong><br />
+                        {stufe.overrideTeam} auf den Nettoumsatz des betreuten Teams.
+                      </p>
+                    )}
+                    <p><strong className="text-foreground">§ {stufe.overrideTeam ? "5" : "4"} Einstiegsstufe</strong><br />
+                      Der Vertriebspartner startet als <strong className="text-foreground">{stufe.title}</strong> mit folgenden Konditionen:<br />
+                      • B2C: {stufe.b2cMin}<br />
+                      • B2B: {stufe.b2bRange}
+                    </p>
+                    <div className="grid grid-cols-2 gap-8 mt-4 pt-4 border-t border-border">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground mb-6">Ort, Datum: _________________, {today}</p>
+                        <div className="border-t border-foreground/30 pt-1">
+                          <p className="text-[10px]">imondu GmbH (Auftraggeber)</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground mb-6">&nbsp;</p>
+                        <div className="border-t border-foreground/30 pt-1">
+                          <p className="text-[10px]">{contractUser.name} (Vertriebspartner)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Document 2: NDA + DSGVO */}
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-secondary/50 border-b border-border">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">Verschwiegenheitserklärung & Datenschutz (DSGVO)</span>
+                  </div>
+                  <div className="p-4 text-xs text-muted-foreground space-y-3 font-mono bg-card">
+                    <p className="text-center font-semibold text-foreground text-sm">VERSCHWIEGENHEITS- UND DATENSCHUTZERKLÄRUNG</p>
+                    <p className="text-center text-[10px]">Anlage zum Vertriebspartnervertrag – {contractUser.name}</p>
+                    <hr className="border-border" />
+                    <p><strong className="text-foreground">§ 1 Geheimhaltungsverpflichtung</strong><br />
+                      Der Vertriebspartner verpflichtet sich, alle vertraulichen Informationen, Geschäftsgeheimnisse, Kundendaten, Provisionssätze und interne Prozesse der imondu GmbH streng vertraulich zu behandeln. Diese Verpflichtung gilt auch über die Beendigung des Vertragsverhältnisses hinaus.
+                    </p>
+                    <p><strong className="text-foreground">§ 2 Personenbezogene Daten (DSGVO)</strong><br />
+                      Der Vertriebspartner wird im Rahmen seiner Tätigkeit Zugang zu personenbezogenen Daten (Name, Adresse, E-Mail, Telefon, Immobiliendaten) von Eigentümern und Geschäftspartnern erhalten. Er verpflichtet sich zur Einhaltung der EU-DSGVO und des BDSG.
+                    </p>
+                    <p><strong className="text-foreground">§ 3 Pflichten</strong></p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Personenbezogene Daten nur im Rahmen der Vertriebstätigkeit verwenden</li>
+                      <li>Keine Weitergabe an unbefugte Dritte</li>
+                      <li>Datensicherung durch Passwortschutz und sichere Endgeräte</li>
+                      <li>Unverzügliche Meldung von Datenschutzverstößen an die imondu GmbH</li>
+                      <li>Löschung aller Daten bei Vertragsbeendigung</li>
+                    </ul>
+                    <p><strong className="text-foreground">§ 4 Konsequenzen bei Verstoß</strong><br />
+                      Bei Verstoß gegen diese Vereinbarung behält sich die imondu GmbH rechtliche Schritte sowie Schadensersatzforderungen vor. Schwere Verstöße können zur fristlosen Beendigung des Vertriebspartnervertrages führen.
+                    </p>
+                    <p><strong className="text-foreground">§ 5 Einwilligungserklärung</strong><br />
+                      Der Vertriebspartner willigt ein, dass seine personenbezogenen Daten (Name, E-Mail, Telefon, VP-Nummer, Provision) im CRM-System der imondu GmbH verarbeitet und gespeichert werden. Diese Einwilligung kann jederzeit schriftlich widerrufen werden.
+                    </p>
+                    <div className="grid grid-cols-2 gap-8 mt-4 pt-4 border-t border-border">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground mb-6">Ort, Datum: _________________, {today}</p>
+                        <div className="border-t border-foreground/30 pt-1">
+                          <p className="text-[10px]">imondu GmbH</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground mb-6">&nbsp;</p>
+                        <div className="border-t border-foreground/30 pt-1">
+                          <p className="text-[10px]">{contractUser.name}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-3 pt-2">
+                  <Button variant="outline" size="sm" onClick={() => toast({ title: "PDF-Download", description: "Vertragsdokumente werden als PDF heruntergeladen… (Simulation)" })}>
+                    <Download className="h-4 w-4 mr-1.5" /> PDFs herunterladen
+                  </Button>
+                  <div className="flex-1" />
+                  {contractSent ? (
+                    <div className="flex items-center gap-2 text-sm text-[hsl(var(--success))] font-medium">
+                      <CheckCheck className="h-4 w-4" /> Zur Unterschrift versendet an {contractUser.email}
+                    </div>
+                  ) : (
+                    <Button
+                      className="gradient-brand border-0 text-white"
+                      onClick={() => {
+                        setContractSent(true);
+                        toast({
+                          title: "Dokumente versendet ✓",
+                          description: `Vertriebspartnervertrag und NDA/DSGVO wurden zur digitalen Unterschrift an ${contractUser.email} gesendet.`,
+                        });
+                      }}
+                    >
+                      <Send className="h-4 w-4 mr-1.5" /> Zur Unterschrift senden
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </CRMLayout>
