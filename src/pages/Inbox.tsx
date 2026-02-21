@@ -149,7 +149,7 @@ export default function Inbox() {
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
-       <div className="max-w-5xl">
+       <div className="max-w-5xl space-y-5">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">

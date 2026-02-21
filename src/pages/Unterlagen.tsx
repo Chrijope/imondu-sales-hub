@@ -170,7 +170,7 @@ export default function Unterlagen() {
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-4 animate-fade-in min-h-screen dashboard-mesh-bg">
-       <div className="max-w-4xl">
+       <div className="max-w-4xl space-y-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-10 h-1 rounded-full gradient-brand" />

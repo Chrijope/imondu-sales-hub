@@ -119,19 +119,15 @@ export default function Zielplanung() {
   return (
     <CRMLayout>
       <div className="space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
-       <div className="max-w-6xl">
+       <div className="max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="h-10 w-10 rounded-xl gradient-brand flex items-center justify-center">
-                <Target className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Zielplanung</h1>
-                <p className="text-sm text-muted-foreground">Plane deine monatlichen Ziele & sieh deine Provisionsvorschau</p>
-              </div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
+            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Zielplanung</h1>
+            <p className="text-sm text-muted-foreground mt-1">Plane deine monatlichen Ziele & sieh deine Provisionsvorschau</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Karrierestufe:</span>
