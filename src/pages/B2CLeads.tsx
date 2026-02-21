@@ -1,10 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Search, Phone, Upload, Download, SlidersHorizontal, Filter, X, Home, Sparkles, Plus } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { useToast } from "@/hooks/use-toast";
 import Powerdialer from "@/components/Powerdialer";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, Lead } from "@/data/crm-data";
+import { getScoutedLeads } from "@/utils/scouted-leads";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -114,8 +115,19 @@ export default function B2CLeads() {
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
   const showSidebar = subPage === "gewonnen" || subPage === "bestand";
+  const [scoutedLeads, setScoutedLeads] = useState<Lead[]>(() => getScoutedLeads().filter((l) => l.type === "b2c"));
 
-  const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
+  useEffect(() => {
+    const handler = () => setScoutedLeads(getScoutedLeads().filter((l) => l.type === "b2c"));
+    window.addEventListener("scouted-leads-updated", handler);
+    window.addEventListener("focus", handler);
+    return () => {
+      window.removeEventListener("scouted-leads-updated", handler);
+      window.removeEventListener("focus", handler);
+    };
+  }, []);
+
+  const b2cLeads = [...SAMPLE_LEADS.filter((l) => l.type === "b2c"), ...scoutedLeads];
   const filtered = useMemo(() => {
     let list = b2cLeads.filter((l) => config.filterFn(l));
     if (search) {
