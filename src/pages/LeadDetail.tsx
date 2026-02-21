@@ -22,6 +22,7 @@ import {
   Video,
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 
 const sampleActivities = [
@@ -155,6 +156,24 @@ export default function LeadDetail() {
                 {lead.objekttyp} · {lead.interesse}
               </p>
             )}
+            {/* Action Icons */}
+            <div className="flex items-center gap-1 mt-2">
+              {actions.map((action, i) => (
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={action.onClick}
+                      className={`p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors`}
+                    >
+                      <action.icon className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    {action.label}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
           </div>
           <button className="p-2 rounded-lg border border-border hover:bg-secondary transition-colors">
             <Edit3 className="h-4 w-4 text-muted-foreground" />
@@ -195,25 +214,6 @@ export default function LeadDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="space-y-4">
-            {/* Aktionen */}
-            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-1 rounded-full gradient-brand" />
-                <h2 className="text-sm font-semibold text-foreground">Aktionen</h2>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {actions.map((action, i) => (
-                  <button
-                    key={i}
-                    onClick={action.onClick}
-                    className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity ${action.color}`}
-                  >
-                    <action.icon className="h-3.5 w-3.5" />
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Kontaktdaten */}
             <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
