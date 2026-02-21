@@ -94,7 +94,7 @@ function CollapsibleCard({ section }: { section: CollapsibleSection }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="glass-card-static rounded-xl overflow-hidden">
+    <div className="glass-card rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors"
