@@ -219,8 +219,8 @@ export default function B2BLeads() {
       case "region": return <span className="text-muted-foreground text-xs">{lead.region}</span>;
       case "status": return (
         <span className="inline-flex items-center gap-1.5 text-xs">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage?.color }} />
-          {stage?.name}
+          <span className="h-2 w-2 rounded-full bg-warning" />
+          <span className="font-medium text-warning">{stage?.name}</span>
         </span>
       );
       case "prioritaet": return (

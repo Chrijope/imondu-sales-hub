@@ -174,8 +174,8 @@ export default function B2CLeads() {
       case "interesse": return <span className="text-muted-foreground">{lead.interesse}</span>;
       case "status": return (
         <span className="inline-flex items-center gap-1.5 text-xs">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage?.color }} />
-          {stage?.name}
+          <span className="h-2 w-2 rounded-full bg-warning" />
+          <span className="font-medium text-warning">{stage?.name}</span>
         </span>
       );
       case "prioritaet": return (

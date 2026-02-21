@@ -147,8 +147,7 @@ export default function Kontakte() {
                       <td className="py-3 px-4">
                         <Badge
                           variant="outline"
-                          className="text-[10px] font-semibold border"
-                          style={{ borderColor: stageColor(lead.status), color: stageColor(lead.status) }}
+                          className="text-[10px] font-semibold border border-warning text-warning"
                         >
                           {stageLabel(lead.status)}
                         </Badge>
