@@ -132,6 +132,20 @@ export const DEFAULT_ROLES: RoleDef[] = [
     fixed: false,
     menuItems: ["dashboard", "inbox", "kalender"],
   },
+  {
+    id: "eigentuemer",
+    name: "Eigentümer",
+    color: "hsl(30, 80%, 50%)",
+    fixed: true,
+    menuItems: ["dashboard", "entwickler", "support-ki"],
+  },
+  {
+    id: "entwickler",
+    name: "Entwickler",
+    color: "hsl(180, 60%, 40%)",
+    fixed: true,
+    menuItems: ["dashboard", "inserate", "support-ki"],
+  },
 ];
 
 interface UserRoleContextType {
