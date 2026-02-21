@@ -1,7 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import CRMLayout from "@/components/CRMLayout";
+import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
+import { TIME_RANGE_OPTIONS, TimeRangeKey, getDateRange, isInRange, DateRange } from "@/utils/date-filters";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend } from "recharts";
-import { BarChart3, Percent, Phone, PhoneCall, PhoneOff, PhoneMissed, Timer, TrendingUp, Calendar, CheckCircle2, XCircle, RotateCcw, Users, Target, Clock, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import type { DateRange as DayPickerRange } from "react-day-picker";
 
 /* ── KPI Tile ──────────────────────────────────── */
 function KpiTile({ label, value, sub, trend }: { label: string; value: string | number; sub?: string; trend?: "up" | "down" }) {
@@ -96,28 +103,60 @@ const leadSourceData = [
 ];
 const totalLeadSources = leadSourceData.reduce((s, d) => s + d.value, 0);
 
-const conversionFunnel = [
-  { phase: "Kontakte", value: 2287, pct: 100 },
-  { phase: "Neukunden", value: 1993, pct: 87 },
-  { phase: "Vollständig", value: 801, pct: 35 },
-  { phase: "Reserviert", value: 353, pct: 15 },
-  { phase: "Finanziert", value: 146, pct: 6 },
-  { phase: "Notar", value: 202, pct: 9 },
-  { phase: "Abgeschlossen", value: 140, pct: 6 },
-];
-
-/* ── Time range options ────────────────────────── */
-const TIME_RANGES = [
-  "Heute", "Letzte 7 Tage", "Letzte 30 Tage", "Aktueller Monat",
-  "Vorheriger Monat", "Letzte 3 Monate", "Letzte 12 Monate",
-  "Aktuelles Jahr", "Seit Anfang", "Individuell",
-] as const;
-
 /* ── Main Component ────────────────────────────── */
 export default function Statistik() {
   const [scope, setScope] = useState<"gesamt" | "individuell">("gesamt");
-  const [timeRange, setTimeRange] = useState("Seit Anfang");
+  const [timeRange, setTimeRange] = useState<TimeRangeKey>("Seit Anfang");
+  const [customRange, setCustomRange] = useState<DayPickerRange | undefined>(undefined);
   const [potenzialView, setPotenzialView] = useState<"kaufpreis" | "einkommen" | "geschlecht" | "quelle">("kaufpreis");
+  const [uebersichtTab, setUebersichtTab] = useState<"b2c" | "b2b">("b2c");
+
+  // Compute active date range
+  const activeDateRange: DateRange | null = useMemo(() => {
+    if (timeRange === "Individuell" && customRange?.from) {
+      return { from: customRange.from, to: customRange.to || customRange.from };
+    }
+    return getDateRange(timeRange);
+  }, [timeRange, customRange]);
+
+  // Filter leads by date range
+  const filteredLeads = useMemo(
+    () => SAMPLE_LEADS.filter((l) => isInRange(l.createdAt, activeDateRange)),
+    [activeDateRange]
+  );
+
+  const b2cLeads = useMemo(() => filteredLeads.filter((l) => l.type === "b2c"), [filteredLeads]);
+  const b2bLeads = useMemo(() => filteredLeads.filter((l) => l.type === "b2b"), [filteredLeads]);
+
+  // Pipeline stage counts
+  const b2cStageCounts = useMemo(
+    () => B2C_PIPELINE_STAGES.map((s) => ({ ...s, count: b2cLeads.filter((l) => l.status === s.id).length })),
+    [b2cLeads]
+  );
+  const b2bStageCounts = useMemo(
+    () => B2B_PIPELINE_STAGES.map((s) => ({ ...s, count: b2bLeads.filter((l) => l.status === s.id).length })),
+    [b2bLeads]
+  );
+
+  const activeStages = uebersichtTab === "b2c" ? b2cStageCounts : b2bStageCounts;
+  const activeLeadCount = uebersichtTab === "b2c" ? b2cLeads.length : b2bLeads.length;
+
+  // Bar chart data for overview
+  const overviewBarData = activeStages.map((s) => ({ name: s.name, Anzahl: s.count, fill: s.color }));
+
+  // Conversion funnel from filtered data
+  const conversionFunnel = useMemo(() => {
+    const total = filteredLeads.length;
+    if (total === 0) return [];
+    const stages = [
+      { phase: "Kontakte gesamt", value: total },
+      { phase: "B2C Leads", value: b2cLeads.length },
+      { phase: "B2B Leads", value: b2bLeads.length },
+      { phase: "B2C Inserat erstellt", value: b2cLeads.filter((l) => l.status === "b2c_inserat").length },
+      { phase: "B2B Gewonnen", value: b2bLeads.filter((l) => l.status === "b2b_won").length },
+    ];
+    return stages.map((s) => ({ ...s, pct: total > 0 ? Math.round((s.value / total) * 100) : 0 }));
+  }, [filteredLeads, b2cLeads, b2bLeads]);
 
   return (
     <CRMLayout>
@@ -129,45 +168,84 @@ export default function Statistik() {
         </div>
 
         {/* Scope Toggle */}
-        <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-3">
+        <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-3 flex-wrap">
           <span className="text-sm text-muted-foreground">Statistiken anzeigen für:</span>
           <ToggleBtn label="Gesamt" active={scope === "gesamt"} onClick={() => setScope("gesamt")} />
           <ToggleBtn label="Individuell" active={scope === "individuell"} onClick={() => setScope("individuell")} />
+
+          {scope === "individuell" && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="ml-2 px-3 py-1 rounded text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 flex items-center gap-1.5 border border-border">
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customRange?.from
+                    ? `${format(customRange.from, "dd.MM.yyyy", { locale: de })}${customRange.to ? ` – ${format(customRange.to, "dd.MM.yyyy", { locale: de })}` : ""}`
+                    : "Zeitraum wählen"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={customRange}
+                  onSelect={(range) => {
+                    setCustomRange(range);
+                    if (range?.from) setTimeRange("Individuell");
+                  }}
+                  numberOfMonths={2}
+                  locale={de}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
 
         {/* Time Range */}
         <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground mr-1">Zeitraum:</span>
-          {TIME_RANGES.map((t) => (
+          {TIME_RANGE_OPTIONS.map((t) => (
             <ToggleBtn key={t} label={t} active={timeRange === t} onClick={() => setTimeRange(t)} />
           ))}
+          {activeDateRange && (
+            <span className="text-[10px] text-muted-foreground ml-2">
+              ({format(activeDateRange.from, "dd.MM.yyyy", { locale: de })} – {format(activeDateRange.to, "dd.MM.yyyy", { locale: de })})
+            </span>
+          )}
         </div>
 
-        {/* Top Row: Übersicht + Kundenpotenzial */}
+        {/* Top Row: Übersicht (B2C/B2B) + Kundenpotenzial */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <SectionCard
             title="Übersicht"
             actions={
               <div className="flex gap-1">
-                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
-                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold">
-                  <BarChart3 className="h-3 w-3 inline" />
-                </span>
+                <ToggleBtn label="B2C" active={uebersichtTab === "b2c"} onClick={() => setUebersichtTab("b2c")} />
+                <ToggleBtn label="B2B" active={uebersichtTab === "b2b"} onClick={() => setUebersichtTab("b2b")} />
               </div>
             }
           >
-            <div className="grid grid-cols-3 gap-3">
-              <KpiTile label="Kontakte" value="0" />
-              <KpiTile label="Neukunden" value="6" />
-              <KpiTile label="Antrag" value="7" />
-              <KpiTile label="Rücklauf" value="5" />
-              <KpiTile label="Vollständig Bonitätscheck" value="40" />
-              <KpiTile label="Fixe Reservierung" value="1" />
-              <KpiTile label="Finanzierung" value="19" />
-              <KpiTile label="Notar" value="0" />
-              <KpiTile label="After Sales" value="5" />
-              <KpiTile label="Abrechnung" value="0" />
-              <KpiTile label="Inaktiv" value="2.030" />
+            {/* KPI Tiles per pipeline stage */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {activeStages.map((s) => (
+                <KpiTile key={s.id} label={s.name} value={s.count} />
+              ))}
+              <KpiTile label={`${uebersichtTab === "b2c" ? "B2C" : "B2B"} Gesamt`} value={activeLeadCount} />
+            </div>
+
+            {/* Bar Chart */}
+            <div className="h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={overviewBarData} layout="vertical" margin={{ left: 10, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 85%)" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} />
+                  <YAxis dataKey="name" type="category" tick={{ fontSize: 9 }} width={110} />
+                  <Tooltip />
+                  <Bar dataKey="Anzahl" radius={[0, 4, 4, 0]}>
+                    {overviewBarData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </SectionCard>
 
@@ -221,7 +299,6 @@ export default function Statistik() {
           <h2 className="text-xl font-bold text-foreground">Anruf-Statistiken</h2>
         </div>
 
-        {/* Call KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           <KpiTile label="Calls gesamt" value="360" trend="up" sub="+12% vs. Vorwoche" />
           <KpiTile label="Heute" value="47" />
@@ -233,9 +310,7 @@ export default function Statistik() {
           <KpiTile label="⌀ Calls/Tag" value="51" />
         </div>
 
-        {/* Call Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Calls pro Wochentag */}
           <SectionCard title="Anrufe pro Wochentag">
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -252,7 +327,6 @@ export default function Statistik() {
             </div>
           </SectionCard>
 
-          {/* Ergebnisverteilung */}
           <SectionCard title="Ergebnisverteilung Calls">
             <div className="flex items-center gap-6">
               <div className="w-[200px] h-[200px]">
@@ -279,7 +353,6 @@ export default function Statistik() {
           </SectionCard>
         </div>
 
-        {/* Wochen-Trend */}
         <SectionCard title="Wochen-Trend: Anrufe & Termine">
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -297,19 +370,18 @@ export default function Statistik() {
           </div>
         </SectionCard>
 
-        {/* ── WEITERE VERTRIEBSSTATISTIKEN ──────────── */}
+        {/* ── VERTRIEBSSTATISTIKEN ──────────── */}
         <div className="flex items-center gap-2 pt-2">
           <TrendingUp className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-bold text-foreground">Vertriebsstatistiken</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Conversion Funnel */}
           <SectionCard title="Conversion-Funnel">
             <div className="space-y-2">
               {conversionFunnel.map((step, i) => (
                 <div key={step.phase} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-24 text-right">{step.phase}</span>
+                  <span className="text-xs text-muted-foreground w-32 text-right">{step.phase}</span>
                   <div className="flex-1 h-7 bg-muted rounded-md overflow-hidden relative">
                     <div
                       className="h-full rounded-md transition-all"
@@ -327,7 +399,6 @@ export default function Statistik() {
             </div>
           </SectionCard>
 
-          {/* Lead-Quellen */}
           <SectionCard title="Lead-Quellen">
             <div className="flex items-center gap-6">
               <div className="w-[200px] h-[200px]">
@@ -366,15 +437,12 @@ export default function Statistik() {
             }
           >
             <div className="grid grid-cols-3 gap-3">
-              <KpiTile label="Kontakte angelegt" value="2.287" />
-              <KpiTile label="Neukunden eingereicht" value="1.993" />
-              <KpiTile label="Vervollständigt" value="801" />
-              <KpiTile label="Objekt platziert" value="806" />
-              <KpiTile label="Reserviert" value="353" />
-              <KpiTile label="Finanziert" value="146" />
-              <KpiTile label="Notar abgeschlossen" value="202" />
-              <KpiTile label="After Sales abgeschlossen" value="88" />
-              <KpiTile label="Abgerechnet / Abgeschlossen" value="140" />
+              <KpiTile label="Kontakte angelegt" value={filteredLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="B2B Leads" value={b2bLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="B2C Inserat erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} />
+              <KpiTile label="B2B Gewonnen" value={b2bLeads.filter((l) => l.status === "b2b_won").length} />
+              <KpiTile label="B2C Registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} />
             </div>
           </SectionCard>
 
@@ -387,18 +455,22 @@ export default function Statistik() {
               </div>
             }
           >
-            <div className="grid grid-cols-3 gap-3">
-              <KpiTile label="Kontakte zu Neukunde" value="87 %" />
-              <KpiTile label="Neukunde zu Vollständig" value="40 %" />
-              <KpiTile label="Vollständig zu Gesetzt" value="170 %" />
-              <KpiTile label="Gesetzt zu Reserviert" value="44 %" />
-              <KpiTile label="Reserviert zu Finanziert" value="87 %" />
-              <KpiTile label="Finanziert zu Notar" value="73 %" />
-              <KpiTile label="Neukunde zu Notar" value="8 %" />
-              <KpiTile label="Vollständig zu Reserviert" value="41 %" />
-              <KpiTile label="Vollständig zu Notar" value="19 %" />
-              <KpiTile label="Reserviert zu Notar" value="44 %" />
-            </div>
+            {(() => {
+              const totalL = filteredLeads.length || 1;
+              const b2cIns = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
+              const b2bWon = b2bLeads.filter((l) => l.status === "b2b_won").length;
+              const b2cReg = b2cLeads.filter((l) => l.status === "b2c_registered").length;
+              return (
+                <div className="grid grid-cols-3 gap-3">
+                  <KpiTile label="Kontakt zu B2C Lead" value={`${totalL > 0 ? Math.round((b2cLeads.length / totalL) * 100) : 0} %`} />
+                  <KpiTile label="Kontakt zu B2B Lead" value={`${totalL > 0 ? Math.round((b2bLeads.length / totalL) * 100) : 0} %`} />
+                  <KpiTile label="B2C Lead zu Registriert" value={`${b2cLeads.length > 0 ? Math.round((b2cReg / b2cLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="B2C Lead zu Inserat" value={`${b2cLeads.length > 0 ? Math.round((b2cIns / b2cLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="B2B Lead zu Gewonnen" value={`${b2bLeads.length > 0 ? Math.round((b2bWon / b2bLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="Gesamt-Abschlussquote" value={`${totalL > 0 ? Math.round(((b2cIns + b2bWon) / totalL) * 100) : 0} %`} />
+                </div>
+              );
+            })()}
           </SectionCard>
         </div>
 
@@ -407,8 +479,8 @@ export default function Statistik() {
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
             <KpiTile label="⌀ Reaktionszeit" value="2,4h" trend="down" sub="schneller als Vormonat" />
             <KpiTile label="⌀ Abschlusszeit" value="34 Tage" sub="Kontakt → Notar" />
-            <KpiTile label="B2C Leads" value="1.650" trend="up" />
-            <KpiTile label="B2B Partner" value="637" trend="up" />
+            <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} trend="up" />
+            <KpiTile label="B2B Partner" value={b2bLeads.length.toLocaleString("de-DE")} trend="up" />
             <KpiTile label="Stornoquote" value="3,2%" trend="down" sub="gut" />
             <KpiTile label="⌀ Provision" value="4.820 €" trend="up" />
           </div>

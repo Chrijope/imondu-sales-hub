@@ -20,12 +20,9 @@ import {
   KARRIERESTUFEN, getB2CStufe, getB2BStufe,
 } from "@/data/karriereplan";
 
-// ── Time filters ──
-const TIME_FILTERS = [
-  "Heute", "Letzte 7 Tage", "Letzte 30 Tage", "Aktueller Monat",
-  "Vorheriger Monat", "Letzte 3 Monate", "Letzte 12 Monate",
-  "Aktuelles Jahr", "Seit Anfang",
-];
+import { TIME_RANGE_OPTIONS, TimeRangeKey } from "@/utils/date-filters";
+
+const TIME_FILTERS = TIME_RANGE_OPTIONS.filter(t => t !== "Individuell");
 
 // ── Fake partner data ──
 const PARTNERS = [
@@ -179,7 +176,7 @@ function RankingTable({ title, data, valueLabel = "Anzahl", formatValue }: {
 
 export default function Auswertungen() {
   const { toast } = useToast();
-  const [timeFilter, setTimeFilter] = useState("Seit Anfang");
+  const [timeFilter, setTimeFilter] = useState<TimeRangeKey>("Seit Anfang");
   const [tab, setTab] = useState<"b2c" | "b2b">("b2c");
   const [claimDialogOpen, setClaimDialogOpen] = useState(false);
   const [claimReward, setClaimReward] = useState<{ level: number; title: string; reward: string; rewardLabel: string } | null>(null);
