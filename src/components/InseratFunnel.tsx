@@ -19,7 +19,6 @@ import {
   Upload,
   FileText,
   Image as ImageIcon,
-  Home,
   Info,
   Camera,
   File,
@@ -31,11 +30,11 @@ import {
 } from "lucide-react";
 
 const STEPS = [
-  { id: 1, label: "Objektbeschreibung", icon: Home },
-  { id: 2, label: "Angaben zum Objekt", icon: ClipboardList },
-  { id: 3, label: "Entwicklungsplanung", icon: Lightbulb },
-  { id: 4, label: "Bilder", icon: Camera },
-  { id: 5, label: "Dokumente", icon: FileText },
+  { id: 1, label: "Objekt" },
+  { id: 2, label: "Entwicklung" },
+  { id: 3, label: "Bilder" },
+  { id: 4, label: "Dokumente" },
+  { id: 5, label: "Übersicht" },
 ];
 
 interface FunnelForm {
@@ -106,10 +105,47 @@ const ENTWICKLUNGS_OPTIONEN = [
   "Badsanierung",
 ];
 
+// Collapsible section (same as EntwicklerRegistrieren)
+function AccordionSection({
+  title,
+  done,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  done: boolean;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border overflow-hidden">
+      <button
+        onClick={onToggle}
+        className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-all ${
+          open ? "bg-primary/5 border-b border-border" : "bg-muted/30"
+        }`}
+      >
+        <span className="text-sm font-semibold text-foreground">{title}</span>
+        {done && <CheckCircle2 className="h-5 w-5 text-primary" />}
+      </button>
+      {open && <div className="p-5 bg-card">{children}</div>}
+    </div>
+  );
+}
+
 export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    objekt: true, angaben: false, entwicklung: false,
+    bilder: true, dokumente: false,
+  });
+
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
   const [form, setForm] = useState<FunnelForm>({
     objekttyp: "Einfamilienhaus",
     titel: "",
@@ -158,12 +194,19 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     });
   };
 
+  const sectionsDone: Record<string, boolean> = {
+    objekt: !!(form.titel && form.adresse && form.eigentuemerName),
+    angaben: !!(form.wohnflaeche || form.zimmer),
+    entwicklung: !!(form.entwicklungsabsicht),
+    bilder: form.bilder.length > 0,
+    dokumente: form.dokumente.length > 0,
+  };
+
   const goNext = () => {
     if (step === 1 && (!form.titel || !form.adresse || !form.eigentuemerName)) {
       toast({ title: "Pflichtfelder fehlen", description: "Bitte Titel, Adresse und Eigentümer ausfüllen.", variant: "destructive" });
       return;
     }
-    setCompletedSteps((prev) => (prev.includes(step) ? prev : [...prev, step]));
     if (step < 5) setStep(step + 1);
   };
 
@@ -172,7 +215,6 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   const handleSubmit = () => {
-    setCompletedSteps((prev) => (prev.includes(5) ? prev : [...prev, 5]));
     toast({ title: "Inserat erstellt ✓", description: `"${form.titel}" wurde als Entwurf gespeichert.` });
     onClose();
   };
@@ -187,108 +229,107 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
+    <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
       <div className="max-w-5xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-display font-bold text-foreground text-center flex-1">Neues Inserat erstellen</h1>
-        <Button variant="outline" onClick={onClose}>Abbrechen</Button>
-      </div>
+        {/* Header */}
+        <h1 className="text-2xl font-display font-bold text-foreground text-center mb-6">Neues Inserat erstellen</h1>
 
-      {/* Step indicator */}
-      <div className="flex items-center justify-center mb-8 max-w-2xl mx-auto">
-        {STEPS.map((s, i) => (
-          <div key={s.id} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => setStep(s.id)}
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${
-                  step === s.id
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : completedSteps.includes(s.id)
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {s.id}
-              </button>
-              <span className={`mt-2 text-xs whitespace-nowrap ${step === s.id ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
-                {s.label}
-              </span>
-            </div>
-            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mt-[-1.25rem] ${completedSteps.includes(s.id) ? "bg-primary" : "bg-border"}`} />}
-          </div>
-        ))}
-      </div>
-
-      {/* Step content + hint sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start">
-        <div className="rounded-xl border border-border overflow-hidden">
-          {/* Banner heading */}
-          <div className="w-full px-5 py-3.5 bg-primary/5 border-b border-border">
-            <span className="text-sm font-semibold text-foreground">
-              {STEPS.find(s => s.id === step)?.label}
-            </span>
-          </div>
-          <div className="p-6 bg-card space-y-5">
-            {step === 1 && <Step1 form={form} update={update} />}
-            {step === 2 && <Step2 form={form} update={update} />}
-            {step === 3 && <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />}
-            {step === 4 && <StepBilder form={form} onUpload={simulateImageUpload} />}
-            {step === 5 && <StepDokumente form={form} onUpload={simulateDocUpload} />}
-          </div>
-        </div>
-        <HintSidebar step={step} />
-      </div>
-
-      {/* Step indicators */}
-      <div className="space-y-3">
-        {STEPS.map((s) => {
-          const done = completedSteps.includes(s.id);
-          const active = step === s.id;
-          return (
-            <button
-              key={s.id}
-              onClick={() => setStep(s.id)}
-              className={`w-full flex items-center justify-between px-5 py-3.5 rounded-xl border text-left transition-all ${
-                active
-                  ? "bg-primary/5 border-primary/30 shadow-sm"
-                  : done
-                  ? "bg-muted/40 border-border"
-                  : "bg-card border-border hover:bg-muted/20"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <s.icon className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`font-medium text-sm ${active ? "text-primary" : "text-foreground"}`}>
+        {/* Step indicator */}
+        <div className="flex items-center justify-center mb-8 max-w-2xl mx-auto">
+          {STEPS.map((s, i) => (
+            <div key={s.id} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => setStep(s.id)}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${
+                    step === s.id
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : step > s.id
+                      ? "bg-primary/20 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {s.id}
+                </button>
+                <span className={`mt-2 text-xs whitespace-nowrap ${step === s.id ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
                   {s.label}
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  – {done ? "Abgeschlossen" : "Bitte füllen Sie alle Felder aus!"}
-                </span>
               </div>
-              {done && <CheckCircle2 className="h-5 w-5 text-primary" />}
-            </button>
-          );
-        })}
-      </div>
+              {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mt-[-1.25rem] ${step > s.id ? "bg-primary" : "bg-border"}`} />}
+            </div>
+          ))}
+        </div>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between pt-2">
-        <Button variant="outline" onClick={goBack} disabled={step === 1} className="gap-2">
-          <ChevronLeft className="h-4 w-4" /> Zurück
-        </Button>
-        {step < 5 ? (
-          <Button onClick={goNext} className="gap-2 gradient-brand border-0 text-primary-foreground">
-            Speichern und weiter <ChevronRight className="h-4 w-4" />
+        {/* Step Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+          <div className="space-y-4">
+            {step === 1 && (
+              <>
+                <AccordionSection title="Objektbeschreibung" done={sectionsDone.objekt} open={openSections.objekt} onToggle={() => toggleSection("objekt")}>
+                  <Step1 form={form} update={update} />
+                </AccordionSection>
+                <AccordionSection title="Angaben zum Objekt" done={sectionsDone.angaben} open={openSections.angaben} onToggle={() => toggleSection("angaben")}>
+                  <Step2 form={form} update={update} />
+                </AccordionSection>
+              </>
+            )}
+
+            {step === 2 && (
+              <AccordionSection title="Entwicklungsplanung" done={sectionsDone.entwicklung} open={openSections.entwicklung || true} onToggle={() => toggleSection("entwicklung")}>
+                <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />
+              </AccordionSection>
+            )}
+
+            {step === 3 && (
+              <AccordionSection title="Bilder hochladen" done={sectionsDone.bilder} open={openSections.bilder || true} onToggle={() => toggleSection("bilder")}>
+                <StepBilder form={form} onUpload={simulateImageUpload} />
+              </AccordionSection>
+            )}
+
+            {step === 4 && (
+              <AccordionSection title="Dokumente hochladen" done={sectionsDone.dokumente} open={openSections.dokumente || true} onToggle={() => toggleSection("dokumente")}>
+                <StepDokumente form={form} onUpload={simulateDocUpload} />
+              </AccordionSection>
+            )}
+
+            {step === 5 && (
+              <div className="rounded-xl border border-border overflow-hidden">
+                <div className="w-full px-5 py-3.5 bg-primary/5 border-b border-border">
+                  <span className="text-sm font-semibold text-foreground">Zusammenfassung</span>
+                </div>
+                <div className="p-5 bg-card space-y-3">
+                  <p className="text-sm text-muted-foreground">Bitte überprüfen Sie Ihre Angaben und klicken Sie auf <strong>"Inserat erstellen"</strong>.</p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Titel:</span><span className="font-medium">{form.titel || "–"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Objekttyp:</span><span className="font-medium">{form.objekttyp}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Adresse:</span><span className="font-medium">{form.adresse || "–"}, {form.plz} {form.ort}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Eigentümer:</span><span className="font-medium">{form.eigentuemerName || "–"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Bilder:</span><span className="font-medium">{form.bilder.length}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Dokumente:</span><span className="font-medium">{form.dokumente.length}</span></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <HintSidebar step={step} />
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between pt-6">
+          <Button variant="outline" onClick={step === 1 ? onClose : goBack} className="gap-2">
+            <ChevronLeft className="h-4 w-4" /> {step === 1 ? "Abbrechen" : "Zurück"}
           </Button>
-        ) : (
-          <Button onClick={handleSubmit} className="gap-2 gradient-brand border-0 text-primary-foreground">
-            Inserat erstellen <CheckCircle2 className="h-4 w-4" />
-          </Button>
-        )}
+          {step < 5 ? (
+            <Button onClick={goNext} className="gap-2 gradient-brand border-0 text-primary-foreground">
+              Speichern und weiter <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} className="gap-2 gradient-brand border-0 text-primary-foreground">
+              Inserat erstellen <CheckCircle2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 }
@@ -757,24 +798,24 @@ function StepDokumente({ form, onUpload }: { form: FunnelForm; onUpload: (typ: s
 function HintSidebar({ step }: { step: number }) {
   const hints: Record<number, { title: string; text: string }> = {
     1: {
-      title: "Änderung der Angaben",
+      title: "Objektangaben",
       text: "Die Angaben können später angepasst bzw. geändert werden, falls Sie die genauen Angaben jetzt nicht zur Hand haben. Bitte füllen Sie alle Felder aus!",
     },
     2: {
-      title: "Objektdetails",
-      text: "Detaillierte Angaben helfen potenziellen Interessenten bei der Bewertung. Je mehr Informationen, desto qualifizierter die Anfragen.",
-    },
-    3: {
       title: "Matching mit Entwicklern",
       text: "Diese Angaben werden für das KI-gestützte Matching mit registrierten Entwicklungspartnern verwendet. Je detaillierter Ihre Angaben, desto passendere Partner können wir Ihnen vorschlagen.",
     },
-    4: {
+    3: {
       title: "Bilderupload",
       text: "Sie können bis zu 10 Bilder hochladen. Das Bild Nr. 1 wird dann zum Titelbild. Verwenden Sie hochwertige Fotos für bessere Ergebnisse.",
     },
-    5: {
+    4: {
       title: "Optionale Dokumente",
       text: "Um ein Inserat optimal zu beschreiben, benötigt es Dokumente wie z.B. einen Grundriss, Energieausweis oder Lageplan.",
+    },
+    5: {
+      title: "Fast geschafft!",
+      text: "Überprüfen Sie Ihre Angaben und erstellen Sie Ihr Inserat. Sie können es jederzeit nachträglich bearbeiten.",
     },
   };
 
