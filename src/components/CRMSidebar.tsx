@@ -93,7 +93,6 @@ const sectionOverview = [
 ];
 
 const sectionVertrieb = [
-  { path: "/kundenmaske", icon: User, label: "Kundenmaske 360°" },
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/automations", icon: Zap, label: "Automations & Workflows" },
   { path: "/dialer", icon: Phone, label: "Powerdialer" },
