@@ -163,7 +163,7 @@ export default function Anrufe() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -175,24 +175,24 @@ export default function Anrufe() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <Phone className="h-5 w-5 text-primary mx-auto mb-1" />
             <p className="text-3xl font-display font-bold text-foreground">{totalCalls}</p>
             <p className="text-xs text-muted-foreground mt-1">Anrufe heute</p>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <Timer className="h-5 w-5 text-primary mx-auto mb-1" />
             <p className="text-3xl font-display font-bold text-foreground">{formatDuration(totalDuration)}</p>
             <p className="text-xs text-muted-foreground mt-1">Gesamtdauer</p>
             <p className="text-[10px] text-muted-foreground">⌀ {formatDuration(avgDuration)} / Call</p>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <TrendingUp className="h-5 w-5 text-success mx-auto mb-1" />
             <p className="text-3xl font-display font-bold text-success">{reachRate}%</p>
             <p className="text-xs text-muted-foreground mt-1">Erreichbarkeit</p>
             <p className="text-[10px] text-muted-foreground">{reached} von {totalCalls} erreicht</p>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <Calendar className="h-5 w-5 text-primary mx-auto mb-1" />
             <p className="text-3xl font-display font-bold text-primary">{appointments}</p>
             <p className="text-xs text-muted-foreground mt-1">Termine vereinbart</p>
@@ -200,7 +200,7 @@ export default function Anrufe() {
         </div>
 
         {/* Result distribution bar */}
-        <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border">
+        <div className="glass-card-static rounded-xl p-4">
           <p className="text-xs font-semibold text-foreground mb-3">Ergebnisverteilung</p>
           <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
             {(Object.entries(resultCounts) as [CallResult, number][]).map(([key, count]) => {
@@ -257,7 +257,7 @@ export default function Anrufe() {
         </div>
 
         {/* Call List */}
-        <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+        <div className="glass-card-static rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -346,7 +346,7 @@ export default function Anrufe() {
         </div>
 
         {/* Aircall hint */}
-        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+        <div className="glass-card-static rounded-xl p-5">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-lg gradient-brand flex items-center justify-center shrink-0">
               <PhoneCall className="h-5 w-5 text-primary-foreground" />

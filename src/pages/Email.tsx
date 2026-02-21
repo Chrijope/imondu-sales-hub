@@ -178,17 +178,15 @@ export default function EmailPage() {
 
   return (
     <CRMLayout>
-      <div className="h-screen flex flex-col">
+      <div className="h-screen flex flex-col dashboard-mesh-bg">
         {/* Header */}
-        <div className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Mail className="h-5 w-5 text-primary" />
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">E-Mail</h1>
-              <p className="text-xs text-muted-foreground">{CURRENT_USER.email} • IONOS</p>
-            </div>
+            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">E-Mail</h1>
+            <p className="text-xs text-muted-foreground">{CURRENT_USER.email} • IONOS</p>
           </div>
           <div className="flex items-center gap-2">
             <a href="/einstellungen">

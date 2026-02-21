@@ -133,7 +133,7 @@ export default function LeadDetail() {
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-1 rounded-full gradient-brand" />
+              <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-display font-bold text-foreground">{name}</h1>
