@@ -289,15 +289,16 @@ export default function Nutzerverwaltung() {
 
   const activeCount = users.filter((u) => u.active).length;
   const inactiveUsers = users.filter((u) => !u.active);
+  const inactiveAccepted = users.filter((u) => !u.active && u.inviteStatus === "accepted");
   const pendingUsers = users.filter((u) => u.inviteStatus === "pending");
   const recentUsers = users.filter((u) => { const d = Date.now() - new Date(u.lastLogin).getTime(); return d < 7 * 86400000; });
   const todayOnline = users.filter((u) => u.lastLogin !== "–" && new Date(u.lastLogin).toDateString() === new Date().toDateString());
 
   const kpiCards = [
-    { label: "LETZTE 7 TAGE AKTIV", value: recentUsers.length, action: "Details anzeigen", list: recentUsers, listTitle: "In den letzten 7 Tagen aktiv" },
-    { label: "INAKTIVE BENUTZER", value: inactiveUsers.length, action: "Benutzer überprüfen", list: inactiveUsers, listTitle: "Inaktive Benutzer" },
-    { label: "DEAKTIVIERTE BENUTZER", value: inactiveUsers.length, action: "Benutzer überprüfen", list: inactiveUsers, listTitle: "Deaktivierte Benutzer" },
-    { label: "EINLADUNG AUSSTEHEND", value: pendingUsers.length, action: "Einladungen prüfen", list: pendingUsers, listTitle: "Ausstehende Einladungen" },
+    { label: "LETZTE 7 TAGE AKTIV", value: recentUsers.length, action: recentUsers.length > 0 ? "Details anzeigen" : null, list: recentUsers, listTitle: "In den letzten 7 Tagen aktiv" },
+    { label: "INAKTIVE BENUTZER", value: inactiveAccepted.length, action: inactiveAccepted.length > 0 ? "Benutzer überprüfen" : null, list: inactiveAccepted, listTitle: "Inaktive Benutzer (Einladung angenommen)" },
+    { label: "DEAKTIVIERTE BENUTZER", value: inactiveUsers.length, action: inactiveUsers.length > 0 ? "Benutzer überprüfen" : null, list: inactiveUsers, listTitle: "Deaktivierte Benutzer" },
+    { label: "EINLADUNG AUSSTEHEND", value: pendingUsers.length, action: pendingUsers.length > 0 ? "Einladungen prüfen" : null, list: pendingUsers, listTitle: "Ausstehende Einladungen" },
     { label: "HEUTE ONLINE", value: todayOnline.length, action: todayOnline.length > 0 ? "Details anzeigen" : null, list: todayOnline, listTitle: "Heute online" },
   ];
 
