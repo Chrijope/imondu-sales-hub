@@ -20,7 +20,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/": "dashboard", "/inbox": "inbox", "/anrufe": "anrufe", "/email": "email",
   "/kalender": "kalender", "/news": "news", "/kontakte": "kontakte",
   "/kundenmaske": "kundenmaske", "/pipeline": "pipeline", "/automations": "automations",
-  "/dialer": "dialer", "/inserate": "inserate", "/entwickler": "entwickler",
+  "/inserate": "inserate", "/entwickler": "entwickler",
   "/entwickler-registrieren": "entwickler-registrieren", "/auswertungen": "auswertungen",
   "/statistik": "statistik", "/analysetool": "analysetool", "/abrechnungen": "abrechnungen",
   "/wettbewerb": "wettbewerb", "/academy": "academy", "/lexikon": "lexikon",
@@ -95,7 +95,6 @@ const sectionOverview = [
 const sectionVertrieb = [
   { path: "/pipeline", icon: Kanban, label: "Pipeline" },
   { path: "/automations", icon: Zap, label: "Automations & Workflows" },
-  { path: "/dialer", icon: Phone, label: "Powerdialer" },
 ];
 
 const sectionImmobilien = [

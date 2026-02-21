@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import Pipeline from "./pages/Pipeline";
 import Leads from "./pages/Leads";
 import LeadDetail from "./pages/LeadDetail";
-import Dialer from "./pages/Dialer";
+
 import Chat from "./pages/Chat";
 import Abrechnungen from "./pages/Abrechnungen";
 import News from "./pages/News";
@@ -69,7 +69,7 @@ const App = () => (
           <Route path="/pipeline" element={<P path="/pipeline"><Pipeline /></P>} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/lead/:id" element={<LeadDetail />} />
-          <Route path="/dialer" element={<P path="/dialer"><Dialer /></P>} />
+          
           <Route path="/chat" element={<P path="/chat"><Chat /></P>} />
           <Route path="/abrechnungen" element={<P path="/abrechnungen"><Abrechnungen /></P>} />
           <Route path="/news" element={<P path="/news"><News /></P>} />
