@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import {
   Search,
   Plus,
   Home,
@@ -397,20 +400,27 @@ export default function Inserate() {
               className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-1.5">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            {(["alle", "aktiv", "entwurf", "pausiert", "abgelaufen"] as StatusFilter[]).map((s) => (
-              <Button
-                key={s}
-                variant={statusFilter === s ? "default" : "outline"}
-                size="sm"
-                className={statusFilter === s ? "gradient-brand border-0 text-primary-foreground" : ""}
-                onClick={() => setStatusFilter(s)}
-              >
-                {s === "alle" ? "Alle" : statusConfig[s].label} ({counts[s]})
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Filter className="h-4 w-4" />
+                {statusFilter === "alle" ? "Alle Status" : statusConfig[statusFilter].label}
               </Button>
-            ))}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="bg-popover">
+              <DropdownMenuLabel className="text-xs">Status filtern</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {(["alle", "aktiv", "entwurf", "pausiert", "abgelaufen"] as StatusFilter[]).map((s) => (
+                <DropdownMenuItem
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={statusFilter === s ? "font-semibold text-primary" : ""}
+                >
+                  {s === "alle" ? "Alle" : statusConfig[s].label} ({counts[s]})
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="flex items-center gap-1 ml-auto">
             <Button variant={viewMode === "grid" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("grid")}>
               <LayoutGrid className="h-4 w-4" />
