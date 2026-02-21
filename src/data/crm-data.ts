@@ -88,24 +88,24 @@ export const B2C_PIPELINE_STAGES: PipelineStage[] = [
   { id: 'b2c_new', name: 'Neuer Lead', order: 0, color: 'hsl(220 10% 46%)' },
   { id: 'b2c_contact', name: 'Kontaktversuch', order: 1, color: 'hsl(210 80% 52%)' },
   { id: 'b2c_reached', name: 'Erreicht', order: 2, color: 'hsl(250 60% 52%)' },
-  { id: 'b2c_interested', name: 'Interesse geweckt', order: 3, color: 'hsl(38 92% 50%)' },
-  { id: 'b2c_followup', name: 'Follow-Up', order: 4, color: 'hsl(280 60% 55%)' },
-  { id: 'b2c_registered', name: 'Registriert', order: 5, color: 'hsl(195 70% 45%)' },
-  { id: 'b2c_inserat', name: 'Inserat erstellt', order: 6, color: 'hsl(152 60% 42%)' },
-  { id: 'b2c_lost', name: 'Kein Interesse', order: 7, color: 'hsl(0 72% 51%)' },
+  { id: 'b2c_first_call', name: 'Erstgespräch geführt', order: 3, color: 'hsl(38 92% 50%)' },
+  { id: 'b2c_link_sent', name: 'Link versendet', order: 4, color: 'hsl(280 60% 55%)' },
+  { id: 'b2c_followup', name: 'Follow-Up', order: 5, color: 'hsl(195 70% 45%)' },
+  { id: 'b2c_registered', name: 'Registriert', order: 6, color: 'hsl(170 60% 45%)' },
+  { id: 'b2c_inserat', name: 'Inserat erstellt', order: 7, color: 'hsl(152 60% 42%)' },
+  { id: 'b2c_lost', name: 'Kein Interesse', order: 8, color: 'hsl(0 72% 51%)' },
 ];
 
 export const B2B_PIPELINE_STAGES: PipelineStage[] = [
   { id: 'b2b_new', name: 'Neuer Lead', order: 0, color: 'hsl(220 10% 46%)' },
   { id: 'b2b_contact', name: 'Kontaktversuch', order: 1, color: 'hsl(210 80% 52%)' },
-  { id: 'b2b_reached', name: 'Erreicht', order: 2, color: 'hsl(250 60% 52%)' },
-  { id: 'b2b_qualified', name: 'Qualifiziert', order: 3, color: 'hsl(38 92% 50%)' },
-  { id: 'b2b_demo', name: 'Präsentation/Demo', order: 4, color: 'hsl(280 60% 55%)' },
-  { id: 'b2b_offer', name: 'Angebot Mitgliedschaft', order: 5, color: 'hsl(340 75% 55%)' },
-  { id: 'b2b_followup', name: 'Follow-Up', order: 6, color: 'hsl(195 70% 45%)' },
-  { id: 'b2b_negotiation', name: 'Verhandlung', order: 7, color: 'hsl(30 80% 50%)' },
-  { id: 'b2b_won', name: 'Mitgliedschaft verkauft', order: 8, color: 'hsl(152 60% 42%)' },
-  { id: 'b2b_lost', name: 'Verloren', order: 9, color: 'hsl(0 72% 51%)' },
+  { id: 'b2b_consultation', name: 'Beratungsgespräch', order: 2, color: 'hsl(250 60% 52%)' },
+  { id: 'b2b_followup', name: 'Follow-Up', order: 3, color: 'hsl(38 92% 50%)' },
+  { id: 'b2b_offer', name: 'Angebot Mitgliedschaft', order: 4, color: 'hsl(280 60% 55%)' },
+  { id: 'b2b_followup2', name: 'Follow-Up 2', order: 5, color: 'hsl(195 70% 45%)' },
+  { id: 'b2b_onboarding', name: 'Onboarding', order: 6, color: 'hsl(170 60% 45%)' },
+  { id: 'b2b_won', name: 'Gewonnen', order: 7, color: 'hsl(152 60% 42%)' },
+  { id: 'b2b_lost', name: 'Verloren', order: 8, color: 'hsl(0 72% 51%)' },
 ];
 
 // Legacy compat
@@ -146,7 +146,7 @@ export const SAMPLE_LEADS: Lead[] = [
     energieausweis: true, sanierungsstatus: 'Teilsaniert', eigentuemertyp: 'Vermieter', interesse: 'Fenstertausch',
   },
   {
-    id: '5', type: 'b2c', status: 'b2c_interested', priority: 'medium', assignee: 'Jan Fischer', source: 'Google Ads',
+    id: '5', type: 'b2c', status: 'b2c_reached', priority: 'medium', assignee: 'Jan Fischer', source: 'Google Ads',
     createdAt: '2026-02-08', updatedAt: '2026-02-16', value: 10, notes: '',
     firstName: 'Maria', lastName: 'Hoffmann', phone: '+49 160 3334455', email: 'maria.h@gmail.com',
     address: 'Elbchaussee 88, 22763 Hamburg',
@@ -173,7 +173,7 @@ export const SAMPLE_LEADS: Lead[] = [
     energieausweis: true, sanierungsstatus: 'Vollsaniert', eigentuemertyp: 'Vermieter', interesse: 'Energieberatung',
   },
   {
-    id: '11', type: 'b2c', status: 'b2c_reached', priority: 'medium', assignee: 'Max Müller', source: 'Empfehlung',
+    id: '11', type: 'b2c', status: 'b2c_first_call', priority: 'medium', assignee: 'Max Müller', source: 'Empfehlung',
     createdAt: '2026-02-17', updatedAt: '2026-02-19', value: 10, notes: '',
     firstName: 'Thomas', lastName: 'Meier', phone: '+49 171 2223344', email: 't.meier@gmx.de',
     address: 'Schillerstr. 15, 70173 Stuttgart',
@@ -182,18 +182,27 @@ export const SAMPLE_LEADS: Lead[] = [
     energieausweis: false, sanierungsstatus: 'Unsaniert', eigentuemertyp: 'Vermieter', interesse: 'Sanierung',
   },
   {
-    id: '12', type: 'b2c', status: 'b2c_registered', priority: 'high', assignee: 'Jan Fischer', source: 'Website',
-    createdAt: '2026-02-10', updatedAt: '2026-02-18', value: 10, notes: 'Registrierung abgeschlossen, wartet auf Inserat',
+    id: '12', type: 'b2c', status: 'b2c_link_sent', priority: 'high', assignee: 'Jan Fischer', source: 'Website',
+    createdAt: '2026-02-10', updatedAt: '2026-02-18', value: 10, notes: 'Link per E-Mail versendet',
     firstName: 'Sabine', lastName: 'Richter', phone: '+49 163 5556677', email: 's.richter@email.de',
     address: 'Am Rhein 22, 40213 Düsseldorf',
     objekttyp: 'Gewerbeobjekt', objektAdresse: 'Am Rhein 22, 40213 Düsseldorf',
     baujahr: 2001, wohnflaeche: 250,
     energieausweis: true, sanierungsstatus: 'Teilsaniert', eigentuemertyp: 'Vermieter', interesse: 'Verkauf',
   },
+  {
+    id: '16', type: 'b2c', status: 'b2c_registered', priority: 'medium', assignee: 'Max Müller', source: 'Google Ads',
+    createdAt: '2026-02-05', updatedAt: '2026-02-19', value: 10, notes: 'Hat sich registriert, Inserat steht noch aus',
+    firstName: 'Heike', lastName: 'Braun', phone: '+49 157 1112233', email: 'h.braun@email.de',
+    address: 'Königstr. 10, 90402 Nürnberg',
+    objekttyp: 'Einfamilienhaus', objektAdresse: 'Königstr. 10, 90402 Nürnberg',
+    baujahr: 1988, wohnflaeche: 130, grundstuecksflaeche: 380,
+    energieausweis: true, sanierungsstatus: 'Teilsaniert', eigentuemertyp: 'Selbstnutzer', interesse: 'Verkauf',
+  },
 
   // B2B – Entwicklungspartner / Gewerke
   {
-    id: '2', type: 'b2b', status: 'b2b_qualified', priority: 'high', assignee: 'Lisa Weber', source: 'LinkedIn',
+    id: '2', type: 'b2b', status: 'b2b_consultation', priority: 'high', assignee: 'Lisa Weber', source: 'LinkedIn',
     createdAt: '2026-02-15', updatedAt: '2026-02-17', value: 1250, notes: '',
     companyName: 'Architektur Bauer GmbH', gewerk: 'Architekt',
     contactPerson: 'Dr. Thomas Bauer', position: 'Geschäftsführer',
@@ -229,7 +238,7 @@ export const SAMPLE_LEADS: Lead[] = [
     companySize: '50-100', partnerStatus: 'Aktiver Partner',
   },
   {
-    id: '10', type: 'b2b', status: 'b2b_negotiation', priority: 'high', assignee: 'Max Müller', source: 'Webinar',
+    id: '10', type: 'b2b', status: 'b2b_followup', priority: 'high', assignee: 'Max Müller', source: 'Webinar',
     createdAt: '2026-02-05', updatedAt: '2026-02-19', value: 1250, notes: '',
     companyName: 'Projektbau Süd GmbH', gewerk: 'Projektentwickler',
     contactPerson: 'Robert Lang', position: 'Einkaufsleiter',
@@ -247,7 +256,7 @@ export const SAMPLE_LEADS: Lead[] = [
     companySize: '10-20', partnerStatus: 'Aktiver Partner',
   },
   {
-    id: '14', type: 'b2b', status: 'b2b_followup', priority: 'medium', assignee: 'Max Müller', source: 'LinkedIn',
+    id: '14', type: 'b2b', status: 'b2b_followup2', priority: 'medium', assignee: 'Max Müller', source: 'LinkedIn',
     createdAt: '2026-02-14', updatedAt: '2026-02-19', value: 1250, notes: 'Nächste Woche nochmal anrufen',
     companyName: 'Elektro Schmidt GmbH', gewerk: 'Elektriker',
     contactPerson: 'Jürgen Schmidt', position: 'Geschäftsführer',
@@ -256,8 +265,8 @@ export const SAMPLE_LEADS: Lead[] = [
     companySize: '20-50', partnerStatus: 'Interessent',
   },
   {
-    id: '15', type: 'b2b', status: 'b2b_demo', priority: 'high', assignee: 'Lisa Weber', source: 'Messe',
-    createdAt: '2026-02-11', updatedAt: '2026-02-18', value: 1250, notes: 'Demo am 20.02. geplant',
+    id: '15', type: 'b2b', status: 'b2b_onboarding', priority: 'high', assignee: 'Lisa Weber', source: 'Messe',
+    createdAt: '2026-02-11', updatedAt: '2026-02-18', value: 1250, notes: 'Onboarding läuft, Profil wird eingerichtet',
     companyName: 'Maler Krause & Söhne', gewerk: 'Maler',
     contactPerson: 'Andreas Krause', position: 'Geschäftsführer',
     phone: '+49 511 8889900', email: 'krause@maler-krause.de',

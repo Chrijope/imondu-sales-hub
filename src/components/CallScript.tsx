@@ -137,7 +137,7 @@ export const B2B_SCRIPT: ScriptStep[] = [
     noteLabel: "Einwand & Reaktion",
   },
   {
-    id: "b2b_demo",
+    id: "b2b_consultation",
     type: "closing",
     title: "Demo / Präsentation vereinbaren",
     text: "Ich würde Ihnen gerne in einer kurzen 15-Minuten-Demo zeigen, wie unser Portal funktioniert und welche Aufträge in Ihrer Region verfügbar sind. Wann passt es Ihnen – eher Anfang oder Ende der Woche?",
