@@ -455,7 +455,7 @@ export default function Entwickleruebersicht() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         {selected ? (
           <EntwicklerDetail entwickler={selected} idx={selectedIdx} onBack={() => setSelectedId(null)} />
         ) : (

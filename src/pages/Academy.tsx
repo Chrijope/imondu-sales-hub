@@ -305,7 +305,8 @@ export default function Academy() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in max-w-5xl min-h-screen dashboard-mesh-bg">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-5xl">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -346,6 +347,7 @@ export default function Academy() {
             </div>
           </>
         )}
+        </div>
       </div>
     </CRMLayout>
   );

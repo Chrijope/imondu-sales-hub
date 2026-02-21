@@ -347,7 +347,7 @@ export default function Inserate() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>

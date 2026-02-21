@@ -296,7 +296,7 @@ function TicketDetail({ ticket, onBack, onStatusChange, onAddTeilnehmer }: {
   const pCfg = PRIO_CFG[ticket.prioritaet];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)]">
+    <div className="flex flex-col h-[calc(100vh-80px)] dashboard-mesh-bg">
       {/* Header */}
       <div className="border-b border-border bg-card px-6 py-4">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground gap-1 -ml-2 mb-2">
@@ -470,7 +470,7 @@ export default function Helpdesk() {
       {selected ? (
         <TicketDetail ticket={selected} onBack={() => setSelectedId(null)} onStatusChange={handleStatusChange} onAddTeilnehmer={handleAddTeilnehmer} />
       ) : (
-        <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+        <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>

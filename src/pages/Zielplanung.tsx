@@ -118,7 +118,8 @@ export default function Zielplanung() {
 
   return (
     <CRMLayout>
-      <div className="max-w-6xl mx-auto space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
+      <div className="space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
+       <div className="max-w-6xl">
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
@@ -297,6 +298,7 @@ export default function Zielplanung() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </CRMLayout>

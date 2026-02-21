@@ -110,7 +110,8 @@ export default function Lexikon() {
 
   return (
     <CRMLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen dashboard-mesh-bg p-6 lg:p-8">
+       <div className="max-w-4xl">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
@@ -231,6 +232,7 @@ export default function Lexikon() {
             />
           ))
         )}
+        </div>
       </div>
     </CRMLayout>
   );

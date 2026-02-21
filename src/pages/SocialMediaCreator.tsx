@@ -154,7 +154,8 @@ export default function SocialMediaCreator() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in max-w-7xl mx-auto">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-7xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="h-10 w-10 rounded-xl gradient-brand flex items-center justify-center">
@@ -402,6 +403,7 @@ export default function SocialMediaCreator() {
               </>
             )}
           </div>
+        </div>
         </div>
       </div>
     </CRMLayout>

@@ -469,11 +469,11 @@ export default function Automations() {
   return (
     <CRMLayout>
       {selected ? (
-        <div className="p-6 lg:p-8 animate-fade-in">
+        <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
           <AutomationDetail automation={selected} onBack={() => setSelectedId(null)} onUpdate={handleUpdate} />
         </div>
       ) : (
-        <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+        <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>

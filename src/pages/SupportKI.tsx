@@ -90,7 +90,7 @@ export default function SupportKI() {
 
   return (
     <CRMLayout>
-      <div className="h-screen flex flex-col">
+      <div className="h-screen flex flex-col dashboard-mesh-bg">
         {/* Header */}
         <div className="border-b border-border bg-card px-6 py-4 flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
