@@ -106,7 +106,7 @@ export default function Kundenmaske() {
     <CRMLayout>
       <div className="flex h-[calc(100vh-2rem)] gap-4 min-h-screen dashboard-mesh-bg p-4">
         {/* Left: Customer List */}
-        <div className="w-80 shrink-0 glass-card rounded-xl flex flex-col overflow-hidden">
+        <div className="w-80 shrink-0 glass-card-static rounded-xl flex flex-col overflow-hidden">
           <div className="p-3 border-b border-border">
             <div className="flex items-center gap-2 mb-2">
               <User className="h-4 w-4 text-primary" />
@@ -149,7 +149,7 @@ export default function Kundenmaske() {
         {selected ? (
           <div className="flex-1 overflow-y-auto space-y-4">
             {/* Profile Header */}
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card-static rounded-xl p-5">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-xl gradient-brand flex items-center justify-center text-primary-foreground font-bold text-lg">

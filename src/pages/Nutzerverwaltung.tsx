@@ -186,7 +186,7 @@ export default function Nutzerverwaltung() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -217,7 +217,7 @@ export default function Nutzerverwaltung() {
             { label: "EINLADUNG AUSSTEHEND", value: users.filter((u) => u.lastLogin === "–").length, action: "Einladungen erneut senden" },
             { label: "HEUTE ONLINE", value: users.filter((u) => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length, action: null },
           ].map((kpi) => (
-            <div key={kpi.label} className="bg-card rounded-lg p-4 shadow-crm-sm border border-border text-center">
+            <div key={kpi.label} className="glass-card rounded-lg p-4 text-center">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{kpi.label}</p>
               <p className="text-2xl font-display font-bold text-foreground">{kpi.value}</p>
               {kpi.action && (
@@ -252,7 +252,7 @@ export default function Nutzerverwaltung() {
         </div>
 
         {/* User Table */}
-        <div className="bg-card rounded-lg shadow-crm-sm border border-border overflow-hidden">
+        <div className="glass-card-static rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary/30">

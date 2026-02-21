@@ -472,7 +472,7 @@ export default function Chat() {
 
   return (
     <CRMLayout>
-      <div className="flex h-[calc(100vh-2rem)] bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
+      <div className="flex h-[calc(100vh-2rem)] m-4 glass-card-static rounded-xl overflow-hidden dashboard-mesh-bg">
         {/* Chat List Sidebar */}
         <div className="w-[320px] border-r border-border flex flex-col bg-muted/30">
           <div className="p-3 border-b border-border space-y-2">

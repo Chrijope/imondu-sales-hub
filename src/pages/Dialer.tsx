@@ -15,7 +15,7 @@ const dialerLeads = SAMPLE_LEADS.filter((l) => l.phone).slice(0, 6);
 export default function Dialer() {
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg" style={{ pointerEvents: 'auto' }}>
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">Powerdialer</h1>
           <p className="text-sm text-muted-foreground mt-1">Automatische Anwahl deiner Lead-Liste</p>
@@ -24,7 +24,7 @@ export default function Dialer() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {/* Current Call */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="glass-card rounded-xl p-6 text-center">
+            <div className="glass-card-static rounded-xl p-6 text-center">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Aktueller Kontakt</p>
               <h2 className="text-xl font-display font-bold text-foreground">Anna Schmidt</h2>
               <p className="text-sm text-muted-foreground mt-1">+49 170 1234567</p>
@@ -64,7 +64,7 @@ export default function Dialer() {
             </div>
 
             {/* Notes */}
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card-static rounded-xl p-5">
               <h3 className="text-sm font-semibold text-foreground mb-3">Call-Notiz</h3>
               <textarea
                 placeholder="Notizen zum Gespräch eingeben..."
@@ -74,7 +74,7 @@ export default function Dialer() {
           </div>
 
           {/* Lead Queue */}
-          <div className="glass-card rounded-xl p-5">
+          <div className="glass-card-static rounded-xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">
               Warteschlange ({dialerLeads.length})
             </h3>
