@@ -6,16 +6,23 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Users, Search, Shield, Clock, ChevronRight, ChevronDown, CheckCircle2,
   XCircle, UserPlus, Mail, Phone, MoreHorizontal, Eye, EyeOff, Plus, Pencil, Trash2,
-  Key, AtSign, FileText, Send, CheckCheck, Download,
+  Key, AtSign, FileText, Send, CheckCheck, Download, CalendarDays, MailCheck, MailX, AlertCircle,
 } from "lucide-react";
 import { KARRIERESTUFEN, B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS } from "@/data/karriereplan";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useUserRole, ALL_MENU_ITEMS, type RoleDef } from "@/contexts/UserRoleContext";
 
 // Re-export Role type alias for compatibility
@@ -43,20 +50,25 @@ interface CRMUser {
   lastLogin: string;
   avatar: string;
   customMenuItems?: string[];
+  createdAt: string;
+  inviteStatus: "accepted" | "pending" | "expired";
 }
 
 const SAMPLE_USERS: CRMUser[] = [
-  { id: "u1", name: "Max Müller", email: "max.mueller@example.com", phone: "+49 170 1234567", roleId: "admin", active: true, lastLogin: "2026-02-19T14:32:00", avatar: "MM" },
-  { id: "u2", name: "Lisa Weber", email: "lisa.weber@example.com", phone: "+49 171 2345678", roleId: "vertriebsleiter", active: true, lastLogin: "2026-02-19T11:15:00", avatar: "LW" },
-  { id: "u3", name: "Thomas Schmidt", email: "thomas.schmidt@example.com", phone: "+49 172 3456789", roleId: "vertriebspartner", active: true, lastLogin: "2026-02-18T16:45:00", avatar: "TS" },
-  { id: "u4", name: "Anna Klein", email: "anna.klein@example.com", phone: "+49 173 4567890", roleId: "vertriebspartner", active: true, lastLogin: "2026-02-19T09:22:00", avatar: "AK" },
-  { id: "u5", name: "Stefan Braun", email: "stefan.braun@example.com", phone: "+49 174 5678901", roleId: "marketing", active: true, lastLogin: "2026-02-17T13:10:00", avatar: "SB" },
-  { id: "u6", name: "Julia Fischer", email: "julia.fischer@example.com", phone: "+49 175 6789012", roleId: "backoffice", active: true, lastLogin: "2026-02-19T08:50:00", avatar: "JF" },
-  { id: "u7", name: "Michael Bauer", email: "michael.bauer@example.com", phone: "+49 176 7890123", roleId: "buchhaltung", active: false, lastLogin: "2026-01-28T10:30:00", avatar: "MB" },
-  { id: "u8", name: "Sandra Hoffmann", email: "sandra.hoffmann@example.com", phone: "+49 177 8901234", roleId: "individuell", active: true, lastLogin: "2026-02-19T12:05:00", avatar: "SH", customMenuItems: ["dashboard", "inbox", "kalender", "b2c", "pipeline", "shop"] },
+  { id: "u1", name: "Max Müller", email: "max.mueller@example.com", phone: "+49 170 1234567", roleId: "admin", active: true, lastLogin: "2026-02-19T14:32:00", avatar: "MM", createdAt: "2025-06-15", inviteStatus: "accepted" },
+  { id: "u2", name: "Lisa Weber", email: "lisa.weber@example.com", phone: "+49 171 2345678", roleId: "vertriebsleiter", active: true, lastLogin: "2026-02-19T11:15:00", avatar: "LW", createdAt: "2025-08-01", inviteStatus: "accepted" },
+  { id: "u3", name: "Thomas Schmidt", email: "thomas.schmidt@example.com", phone: "+49 172 3456789", roleId: "vertriebspartner", active: true, lastLogin: "2026-02-18T16:45:00", avatar: "TS", createdAt: "2025-09-10", inviteStatus: "accepted" },
+  { id: "u4", name: "Anna Klein", email: "anna.klein@example.com", phone: "+49 173 4567890", roleId: "vertriebspartner", active: true, lastLogin: "2026-02-19T09:22:00", avatar: "AK", createdAt: "2025-10-22", inviteStatus: "accepted" },
+  { id: "u5", name: "Stefan Braun", email: "stefan.braun@example.com", phone: "+49 174 5678901", roleId: "marketing", active: true, lastLogin: "2026-02-17T13:10:00", avatar: "SB", createdAt: "2025-11-05", inviteStatus: "accepted" },
+  { id: "u6", name: "Julia Fischer", email: "julia.fischer@example.com", phone: "+49 175 6789012", roleId: "backoffice", active: true, lastLogin: "2026-02-19T08:50:00", avatar: "JF", createdAt: "2025-12-01", inviteStatus: "accepted" },
+  { id: "u7", name: "Michael Bauer", email: "michael.bauer@example.com", phone: "+49 176 7890123", roleId: "buchhaltung", active: false, lastLogin: "2026-01-28T10:30:00", avatar: "MB", createdAt: "2025-07-20", inviteStatus: "accepted" },
+  { id: "u8", name: "Sandra Hoffmann", email: "sandra.hoffmann@example.com", phone: "+49 177 8901234", roleId: "individuell", active: true, lastLogin: "2026-02-19T12:05:00", avatar: "SH", createdAt: "2026-01-15", inviteStatus: "accepted", customMenuItems: ["dashboard", "inbox", "kalender", "b2c", "pipeline", "shop"] },
+  { id: "u9", name: "Peter Neumann", email: "peter.neumann@example.com", phone: "+49 178 0123456", roleId: "vertriebspartner", active: false, lastLogin: "–", avatar: "PN", createdAt: "2026-02-18", inviteStatus: "pending" },
+  { id: "u10", name: "Karin Wolf", email: "karin.wolf@example.com", phone: "+49 179 1234567", roleId: "vertriebspartner", active: false, lastLogin: "–", avatar: "KW", createdAt: "2026-01-05", inviteStatus: "expired" },
 ];
 
 function timeAgo(dateStr: string): string {
+  if (dateStr === "–") return "–";
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 60) return `vor ${mins} Min.`;
@@ -65,6 +77,16 @@ function timeAgo(dateStr: string): string {
   const days = Math.floor(hours / 24);
   return `vor ${days} Tag${days > 1 ? "en" : ""}`;
 }
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+const INVITE_STATUS_MAP: Record<CRMUser["inviteStatus"], { label: string; icon: typeof MailCheck; className: string }> = {
+  accepted: { label: "Angenommen", icon: MailCheck, className: "text-[hsl(var(--success))]" },
+  pending: { label: "Ausstehend", icon: Mail, className: "text-amber-500" },
+  expired: { label: "Abgelaufen", icon: MailX, className: "text-destructive" },
+};
 
 export default function Nutzerverwaltung() {
   const { toast } = useToast();
@@ -89,6 +111,8 @@ export default function Nutzerverwaltung() {
   const [showContractDialog, setShowContractDialog] = useState(false);
   const [contractUser, setContractUser] = useState<{ name: string; email: string; karrierestufe: string } | null>(null);
   const [contractSent, setContractSent] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [kpiListDialog, setKpiListDialog] = useState<{ title: string; users: CRMUser[] } | null>(null);
 
   const generateEmail = (vorname: string, nachname: string) => {
     if (!vorname.trim() || !nachname.trim()) return "";
@@ -111,13 +135,14 @@ export default function Nutzerverwaltung() {
       email,
       phone: inviteTelefon || "–",
       roleId: inviteRoleId,
-      active: true,
+      active: false,
       lastLogin: "–",
       avatar,
+      createdAt: new Date().toISOString().split("T")[0],
+      inviteStatus: "pending",
     };
     setUsers(prev => [...prev, newUser]);
     setShowInviteDialog(false);
-    // Open contract dialog
     setContractUser({ name: fullName, email, karrierestufe: inviteKarrierestufe });
     setContractSent(false);
     setShowContractDialog(true);
@@ -130,6 +155,14 @@ export default function Nutzerverwaltung() {
     setInviteTelefon("");
     setInviteRoleId("vertriebspartner");
     setInviteKarrierestufe("projektassistent");
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    setUsers(prev => prev.filter(u => u.id !== userId));
+    if (selectedUser?.id === userId) setSelectedUser(null);
+    setDeleteUserId(null);
+    toast({ title: "Nutzer gelöscht", description: `${user?.name} wurde entfernt.` });
   };
 
   const filtered = users.filter((u) => {
@@ -183,6 +216,18 @@ export default function Nutzerverwaltung() {
   };
 
   const activeCount = users.filter((u) => u.active).length;
+  const inactiveUsers = users.filter((u) => !u.active);
+  const pendingUsers = users.filter((u) => u.inviteStatus === "pending");
+  const recentUsers = users.filter((u) => { const d = Date.now() - new Date(u.lastLogin).getTime(); return d < 7 * 86400000; });
+  const todayOnline = users.filter((u) => u.lastLogin !== "–" && new Date(u.lastLogin).toDateString() === new Date().toDateString());
+
+  const kpiCards = [
+    { label: "LETZTE 7 TAGE AKTIV", value: recentUsers.length, action: "Details anzeigen", list: recentUsers, listTitle: "In den letzten 7 Tagen aktiv" },
+    { label: "INAKTIVE BENUTZER", value: inactiveUsers.length, action: "Benutzer überprüfen", list: inactiveUsers, listTitle: "Inaktive Benutzer" },
+    { label: "DEAKTIVIERTE BENUTZER", value: inactiveUsers.length, action: "Benutzer überprüfen", list: inactiveUsers, listTitle: "Deaktivierte Benutzer" },
+    { label: "EINLADUNG AUSSTEHEND", value: pendingUsers.length, action: "Einladungen prüfen", list: pendingUsers, listTitle: "Ausstehende Einladungen" },
+    { label: "HEUTE ONLINE", value: todayOnline.length, action: todayOnline.length > 0 ? "Details anzeigen" : null, list: todayOnline, listTitle: "Heute online" },
+  ];
 
   return (
     <CRMLayout>
@@ -210,18 +255,17 @@ export default function Nutzerverwaltung() {
 
         {/* KPI */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          {[
-            { label: "LETZTE BENUTZER", value: users.filter((u) => { const d = Date.now() - new Date(u.lastLogin).getTime(); return d < 7 * 86400000; }).length, action: null },
-            { label: "INAKTIVE BENUTZER", value: users.filter((u) => !u.active).length, action: "Benutzer überprüfen" },
-            { label: "DEAKTIVIERTE BENUTZER", value: users.filter((u) => !u.active).length, action: "Benutzer überprüfen" },
-            { label: "EINLADUNG AUSSTEHEND", value: users.filter((u) => u.lastLogin === "–").length, action: "Einladungen erneut senden" },
-            { label: "HEUTE ONLINE", value: users.filter((u) => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length, action: null },
-          ].map((kpi) => (
+          {kpiCards.map((kpi) => (
             <div key={kpi.label} className="glass-card rounded-lg p-4 text-center">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{kpi.label}</p>
               <p className="text-2xl font-display font-bold text-foreground">{kpi.value}</p>
-              {kpi.action && (
-                <button className="text-xs text-primary hover:underline mt-1 font-medium">{kpi.action}</button>
+              {kpi.action && kpi.list.length > 0 && (
+                <button
+                  className="text-xs text-primary hover:underline mt-1 font-medium"
+                  onClick={() => setKpiListDialog({ title: kpi.listTitle, users: kpi.list })}
+                >
+                  {kpi.action}
+                </button>
               )}
             </div>
           ))}
@@ -259,15 +303,17 @@ export default function Nutzerverwaltung() {
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Nutzer</th>
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Rolle</th>
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Einladung</th>
+                <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Erstellt am</th>
                 <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Letzter Login</th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Menüpunkte</th>
                 <th className="text-right py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">Aktionen</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((user) => {
                 const role = getRole(user.roleId);
-                const menuItems = getUserMenuItems(user);
+                const inviteInfo = INVITE_STATUS_MAP[user.inviteStatus];
+                const InviteIcon = inviteInfo.icon;
                 return (
                   <tr key={user.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
                     <td className="py-3 px-4">
@@ -285,13 +331,7 @@ export default function Nutzerverwaltung() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-                        style={{ backgroundColor: `${role.color}20`, color: role.color }}
-                      >
-                        <Shield className="h-3 w-3" />
-                        {role.name}
-                      </span>
+                      <span className="text-sm text-foreground font-medium">{role.name}</span>
                     </td>
                     <td className="py-3 px-4">
                       {user.active ? (
@@ -305,18 +345,57 @@ export default function Nutzerverwaltung() {
                       )}
                     </td>
                     <td className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-1 text-xs ${inviteInfo.className}`}>
+                        <InviteIcon className="h-3.5 w-3.5" /> {inviteInfo.label}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {formatDate(user.createdAt)}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
                         {timeAgo(user.lastLogin)}
                       </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="text-xs text-muted-foreground">{menuItems.length} Punkte</span>
-                    </td>
                     <td className="py-3 px-4 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)}>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setSelectedUser(user)}>
+                            <Eye className="h-4 w-4 mr-2" /> Details anzeigen
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            toggleActive(user.id);
+                            toast({ title: user.active ? "Nutzer deaktiviert" : "Nutzer aktiviert" });
+                          }}>
+                            {user.active ? (
+                              <><EyeOff className="h-4 w-4 mr-2" /> Deaktivieren</>
+                            ) : (
+                              <><Eye className="h-4 w-4 mr-2" /> Aktivieren</>
+                            )}
+                          </DropdownMenuItem>
+                          {user.inviteStatus === "pending" && (
+                            <DropdownMenuItem onClick={() => toast({ title: "Einladung erneut gesendet", description: `An ${user.email}` })}>
+                              <Send className="h-4 w-4 mr-2" /> Einladung erneut senden
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setDeleteUserId(user.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" /> Löschen
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 );
@@ -325,6 +404,78 @@ export default function Nutzerverwaltung() {
           </table>
         </div>
       </div>
+
+      {/* ── KPI List Dialog ── */}
+      <Dialog open={!!kpiListDialog} onOpenChange={() => setKpiListDialog(null)}>
+        <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
+          {kpiListDialog && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{kpiListDialog.title}</DialogTitle>
+                <DialogDescription>{kpiListDialog.users.length} Nutzer</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2 mt-2">
+                {kpiListDialog.users.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">Keine Nutzer in dieser Kategorie.</p>
+                ) : (
+                  kpiListDialog.users.map((user) => {
+                    const role = getRole(user.roleId);
+                    const inviteInfo = INVITE_STATUS_MAP[user.inviteStatus];
+                    const InviteIcon = inviteInfo.icon;
+                    return (
+                      <div
+                        key={user.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary/30 transition-colors cursor-pointer"
+                        onClick={() => { setKpiListDialog(null); setSelectedUser(user); }}
+                      >
+                        <div
+                          className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0"
+                          style={{ background: role.color }}
+                        >
+                          {user.avatar}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs text-foreground">{role.name}</p>
+                          <span className={`inline-flex items-center gap-1 text-[10px] ${inviteInfo.className}`}>
+                            <InviteIcon className="h-3 w-3" /> {inviteInfo.label}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Confirmation ── */}
+      <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" /> Nutzer löschen?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteUserId && `„${users.find(u => u.id === deleteUserId)?.name}" wird unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteUserId && handleDeleteUser(deleteUserId)}
+            >
+              Endgültig löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── User Detail Dialog ── */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
@@ -388,9 +539,15 @@ export default function Nutzerverwaltung() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 bg-secondary/30 rounded-lg">
-                    <Clock className="h-3.5 w-3.5" />
-                    Letzter Login: {new Date(selectedUser.lastLogin).toLocaleString("de-DE")} ({timeAgo(selectedUser.lastLogin)})
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 bg-secondary/30 rounded-lg">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      Erstellt am: {formatDate(selectedUser.createdAt)}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 bg-secondary/30 rounded-lg">
+                      <Clock className="h-3.5 w-3.5" />
+                      Letzter Login: {selectedUser.lastLogin === "–" ? "–" : `${new Date(selectedUser.lastLogin).toLocaleString("de-DE")} (${timeAgo(selectedUser.lastLogin)})`}
+                    </div>
                   </div>
 
                   {/* Menu Items */}
