@@ -201,12 +201,12 @@ export default function LeadDetail() {
                       isActive
                         ? "text-primary-foreground border-transparent shadow-sm"
                         : isPast
-                        ? "bg-muted text-foreground border-border"
+                        ? "bg-success/10 text-success border-success/20"
                         : "bg-card text-muted-foreground border-border"
                     }`}
                     style={isActive ? { backgroundColor: stage.color } : undefined}
                   >
-                    {stage.name}
+                    {isPast && "✓ "}{stage.name}
                   </div>
                 </div>
               );
