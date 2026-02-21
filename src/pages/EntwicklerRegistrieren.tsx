@@ -169,29 +169,28 @@ export default function EntwicklerRegistrieren() {
         <h1 className="text-2xl font-display font-bold text-foreground text-center mb-6">Profil vervollständigen</h1>
 
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-0 mb-8 max-w-md mx-auto">
+        <div className="flex items-center justify-center mb-8 max-w-lg mx-auto">
           {FUNNEL_STEPS.map((s, i) => (
-            <div key={s.id} className="flex items-center flex-1">
-              {i > 0 && <div className={`flex-1 h-0.5 ${step > i ? "bg-primary" : "bg-border"}`} />}
-              <button
-                onClick={() => setStep(s.id)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all ${
-                  step === s.id
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : step > s.id
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {s.id}
-              </button>
-              {i < FUNNEL_STEPS.length - 1 && <div className={`flex-1 h-0.5 ${step > s.id ? "bg-primary" : "bg-border"}`} />}
+            <div key={s.id} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => setStep(s.id)}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${
+                    step === s.id
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : step > s.id
+                      ? "bg-primary/20 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {s.id}
+                </button>
+                <span className={`mt-2 text-xs whitespace-nowrap ${step === s.id ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                  {s.label}
+                </span>
+              </div>
+              {i < FUNNEL_STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mt-[-1.25rem] ${step > s.id ? "bg-primary" : "bg-border"}`} />}
             </div>
-          ))}
-        </div>
-        <div className="flex justify-center gap-16 mb-8 max-w-md mx-auto text-xs text-muted-foreground">
-          {FUNNEL_STEPS.map((s) => (
-            <span key={s.id} className={step === s.id ? "text-foreground font-semibold" : ""}>{s.label}</span>
           ))}
         </div>
 
