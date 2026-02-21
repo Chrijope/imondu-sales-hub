@@ -134,6 +134,49 @@ export default function Abrechnungen() {
           </div>
         </div>
 
+        {/* Karrierestufen-Übersicht */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <GraduationCap className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Karrierestufen – Dein Aufstieg</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {KARRIERESTUFEN.map((stufe, i) => {
+              const isActive = i === 0;
+              return (
+                <div
+                  key={stufe.id}
+                  className={`rounded-xl p-4 border transition-all relative ${
+                    isActive
+                      ? "border-primary/40 bg-primary/5 shadow-crm-sm ring-2 ring-primary/20"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  {isActive && (
+                    <Badge className="absolute -top-2 left-4 gradient-brand border-0 text-white text-[8px] px-2 py-0">Deine Stufe</Badge>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">{stufe.icon}</span>
+                    <p className="text-sm font-bold text-foreground">{stufe.title}</p>
+                  </div>
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between"><span className="text-muted-foreground">B2C</span><span className="font-semibold text-foreground">{stufe.b2cMin}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">B2B</span><span className="font-semibold text-foreground">{stufe.b2bRange}</span></div>
+                    {stufe.overrideTeam && <div className="flex justify-between"><span className="text-muted-foreground">Team-Override</span><span className="font-semibold text-primary">{stufe.overrideTeam}</span></div>}
+                  </div>
+                  <div className="border-t border-border mt-3 pt-2">
+                    {stufe.vorteile.slice(0, 3).map((v, vi) => (
+                      <p key={vi} className="text-[10px] text-muted-foreground flex items-start gap-1">
+                        <CheckCircle2 className={`h-3 w-3 mt-0.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />{v}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Deine aktuelle Provisionsstufe + Mehrverdienst */}
         <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
           <div className="flex items-center gap-2 mb-4">
@@ -174,8 +217,6 @@ export default function Abrechnungen() {
                             <span className="text-primary flex items-center justify-end gap-0.5">
                               <ArrowUpRight className="h-3 w-3" />+{mehrVsAktuell.toLocaleString("de-DE")} €
                             </span>
-                          ) : isCurrent ? (
-                            <span className="text-muted-foreground">—</span>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
@@ -249,49 +290,6 @@ export default function Abrechnungen() {
           </div>
         </div>
 
-        {/* Karrierestufen-Übersicht */}
-        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
-          <div className="flex items-center gap-2 mb-4">
-            <GraduationCap className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-display font-semibold text-foreground">Karrierestufen – Dein Aufstieg</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {KARRIERESTUFEN.map((stufe, i) => {
-              const isActive = i === 0;
-              return (
-                <div
-                  key={stufe.id}
-                  className={`rounded-xl p-4 border transition-all relative ${
-                    isActive
-                      ? "border-primary/40 bg-primary/5 shadow-crm-sm ring-2 ring-primary/20"
-                      : "border-border bg-muted/20"
-                  }`}
-                >
-                  {isActive && (
-                    <Badge className="absolute -top-2 left-4 gradient-brand border-0 text-white text-[8px] px-2 py-0">Deine Stufe</Badge>
-                  )}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">{stufe.icon}</span>
-                    <p className="text-sm font-bold text-foreground">{stufe.title}</p>
-                  </div>
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between"><span className="text-muted-foreground">B2C</span><span className="font-semibold text-foreground">{stufe.b2cMin}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">B2B</span><span className="font-semibold text-foreground">{stufe.b2bRange}</span></div>
-                    {stufe.overrideTeam && <div className="flex justify-between"><span className="text-muted-foreground">Team-Override</span><span className="font-semibold text-primary">{stufe.overrideTeam}</span></div>}
-                  </div>
-                  <div className="border-t border-border mt-3 pt-2">
-                    {stufe.vorteile.slice(0, 3).map((v, vi) => (
-                      <p key={vi} className="text-[10px] text-muted-foreground flex items-start gap-1">
-                        <CheckCircle2 className={`h-3 w-3 mt-0.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />{v}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Jahresübersicht Chart */}
         <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
           <div className="flex items-center justify-between mb-4">
@@ -353,12 +351,12 @@ export default function Abrechnungen() {
           </p>
         </div>
 
-        {/* Detailed Breakdown */}
+        {/* Gutschrift aktueller Monat */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full bg-primary" />
-              <h2 className="text-sm font-semibold text-foreground">B2C – Eigentümer · Gutschrift aktueller Monat</h2>
+              <h2 className="text-sm font-semibold text-foreground">B2C – Gutschrift aktueller Monat</h2>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-border">
@@ -370,26 +368,17 @@ export default function Abrechnungen() {
                   {b2cBestand}
                 </button>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Aktuelle Provisionsstufe</span>
-                <span className="text-sm font-semibold text-foreground">{currentB2CStufe.provision.toLocaleString("de-DE")} € netto / Inserat</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Aktuelle Provision</span>
-                <span className="text-sm font-bold text-b2c">{b2cProvisionAktuell.toLocaleString("de-DE")} €</span>
-              </div>
               <div className="flex justify-between items-center py-2 bg-muted/50 rounded-lg px-3">
                 <span className="text-sm font-medium text-foreground">Gutschriftbetrag B2C</span>
                 <span className="text-sm font-bold text-foreground">{b2cProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
-              <p className="text-xs text-muted-foreground">Eigentümer inserieren kostenlos – du erhältst {currentB2CStufe.provision} € netto pro qualifiziertem Inserat</p>
             </div>
           </div>
 
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full bg-accent" />
-              <h2 className="text-sm font-semibold text-foreground">B2B – Entwicklungspartner · Gutschrift aktueller Monat</h2>
+              <h2 className="text-sm font-semibold text-foreground">B2B – Gutschrift aktueller Monat</h2>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-border">
@@ -410,27 +399,10 @@ export default function Abrechnungen() {
                   0
                 </button>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Mitgliedschaft / Jahr</span>
-                <span className="text-sm font-semibold text-foreground">{B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} € netto</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Aktuelle Provisionsstufe</span>
-                <span className="text-sm font-semibold text-foreground">{currentB2BStufe.provision} %</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Provision pro Mitgliedschaft</span>
-                <span className="text-sm font-semibold text-foreground">{(B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100)).toLocaleString("de-DE")} € netto</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Aktuelle Provision (neue + Bestand)</span>
-                <span className="text-sm font-bold text-b2b">{b2bProvisionAktuell.toLocaleString("de-DE")} €</span>
-              </div>
               <div className="flex justify-between items-center py-2 bg-muted/50 rounded-lg px-3">
                 <span className="text-sm font-medium text-foreground">Gutschriftbetrag B2B</span>
                 <span className="text-sm font-bold text-foreground">{b2bProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
-              <p className="text-xs text-muted-foreground">{currentB2BStufe.provision} % netto auf {B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} € Mitgliedschaft · Bestandsprovision bei auto. Verlängerung nach 12 Monaten</p>
             </div>
           </div>
         </div>
