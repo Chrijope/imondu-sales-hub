@@ -35,6 +35,7 @@ import EntwicklerRegistrieren from "./pages/EntwicklerRegistrieren";
 import Entwickleruebersicht from "./pages/Entwickleruebersicht";
 import Kalender from "./pages/Kalender";
 import Nutzerverwaltung from "./pages/Nutzerverwaltung";
+import NutzerDetail from "./pages/NutzerDetail";
 import SupportKI from "./pages/SupportKI";
 import EmailPage from "./pages/Email";
 import RechnerWohnung from "./pages/RechnerWohnung";
@@ -96,6 +97,7 @@ const App = () => (
           <Route path="/entwickler" element={<P path="/entwickler"><Entwickleruebersicht /></P>} />
           <Route path="/kalender" element={<P path="/kalender"><Kalender /></P>} />
           <Route path="/nutzerverwaltung" element={<P path="/nutzerverwaltung"><Nutzerverwaltung /></P>} />
+          <Route path="/nutzerverwaltung/:id" element={<P path="/nutzerverwaltung"><NutzerDetail /></P>} />
           <Route path="/support-ki" element={<P path="/support-ki"><SupportKI /></P>} />
           <Route path="/email" element={<P path="/email"><EmailPage /></P>} />
           <Route path="/rechner/wohnung" element={<P path="/rechner"><RechnerWohnung /></P>} />
