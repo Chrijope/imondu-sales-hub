@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
-import { SAMPLE_LEADS } from "@/data/crm-data";
+import { SAMPLE_LEADS, Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
@@ -37,7 +38,9 @@ const MY_B2C_INSERATE_QUARTAL = 82;
 const MY_B2B_MONATSUMSATZ = 3750;
 
 export default function Abrechnungen() {
+  const navigate = useNavigate();
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
+  const [detailModal, setDetailModal] = useState<{ title: string; leads: Lead[]; type: "b2c" | "b2b" } | null>(null);
   const b2bLeads = SAMPLE_LEADS.filter((l) => l.type === "b2b");
   const b2cBestand = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
   const b2bBestand = b2bLeads.filter((l) => l.status === "b2b_won").length;
@@ -359,12 +362,31 @@ export default function Abrechnungen() {
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Leads gesamt</span>
-                <span className="text-sm font-semibold text-foreground">{b2cLeads.length}</span>
+                <span className="text-sm text-muted-foreground">Inserierte Inserate</span>
+                <button
+                  onClick={() => setDetailModal({ title: "Inserierte Inserate (Eigentümer)", leads: b2cLeads.filter(l => l.status === "b2c_inserat"), type: "b2c" })}
+                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {b2cBestand}
+                </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Davon Bestandskunden (Inserat aktiv)</span>
-                <span className="text-sm font-semibold text-foreground">{b2cBestand}</span>
+                <span className="text-sm text-muted-foreground">Registrierte Eigentümer</span>
+                <button
+                  onClick={() => setDetailModal({ title: "Registrierte Eigentümer", leads: b2cLeads.filter(l => l.status === "b2c_registered" || l.status === "b2c_inserat"), type: "b2c" })}
+                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {b2cLeads.filter(l => l.status === "b2c_registered" || l.status === "b2c_inserat").length}
+                </button>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Leads in Pipeline</span>
+                <button
+                  onClick={() => setDetailModal({ title: "Alle Eigentümer-Leads in Pipeline", leads: b2cLeads, type: "b2c" })}
+                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {b2cLeads.length}
+                </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Aktuelle Provisionsstufe</span>
@@ -393,12 +415,31 @@ export default function Abrechnungen() {
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Leads gesamt</span>
-                <span className="text-sm font-semibold text-foreground">{b2bLeads.length}</span>
+                <span className="text-sm text-muted-foreground">Registrierungen Entwicklungspartner</span>
+                <button
+                  onClick={() => setDetailModal({ title: "Registrierte Entwicklungspartner (Gewonnen)", leads: b2bLeads.filter(l => l.status === "b2b_won"), type: "b2b" })}
+                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {b2bBestand}
+                </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Davon aktive Mitglieder</span>
-                <span className="text-sm font-semibold text-foreground">{b2bBestand}</span>
+                <span className="text-sm text-muted-foreground">Im Onboarding</span>
+                <button
+                  onClick={() => setDetailModal({ title: "Partner im Onboarding", leads: b2bLeads.filter(l => l.status === "b2b_onboarding"), type: "b2b" })}
+                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {b2bLeads.filter(l => l.status === "b2b_onboarding").length}
+                </button>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Leads in Pipeline</span>
+                <button
+                  onClick={() => setDetailModal({ title: "Alle Entwicklungspartner-Leads in Pipeline", leads: b2bLeads, type: "b2b" })}
+                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {b2bLeads.length}
+                </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Mitgliedschaft / Jahr</span>
@@ -488,6 +529,65 @@ export default function Abrechnungen() {
             </table>
           </div>
         </div>
+
+        {/* Detail Modal */}
+        {detailModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setDetailModal(null)}>
+            <div className="bg-card rounded-xl shadow-crm-md border border-border w-full max-w-lg max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="text-sm font-semibold text-foreground">{detailModal.title}</h3>
+                <button onClick={() => setDetailModal(null)} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="overflow-y-auto max-h-[60vh]">
+                {detailModal.leads.length === 0 ? (
+                  <div className="p-8 text-center text-sm text-muted-foreground">Keine Einträge vorhanden.</div>
+                ) : (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</th>
+                        <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
+                        <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">{detailModal.type === "b2c" ? "Objekttyp" : "Gewerk"}</th>
+                        <th className="text-right px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Provision</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detailModal.leads.map((lead) => {
+                        const stages = lead.type === "b2c" ? B2C_PIPELINE_STAGES : B2B_PIPELINE_STAGES;
+                        const stage = stages.find(s => s.id === lead.status);
+                        const displayName = lead.type === "b2c" ? `${lead.firstName} ${lead.lastName}` : lead.companyName;
+                        const detail = lead.type === "b2c" ? lead.objekttyp : lead.gewerk;
+                        const prov = lead.type === "b2c" ? `${currentB2CStufe.provision} €` : `${(B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100)).toLocaleString("de-DE")} €`;
+                        return (
+                          <tr
+                            key={lead.id}
+                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                            onClick={() => { setDetailModal(null); navigate(`/lead/${lead.id}`); }}
+                          >
+                            <td className="px-4 py-2.5 font-medium text-foreground">{displayName}</td>
+                            <td className="px-4 py-2.5">
+                              <span className="inline-flex items-center gap-1.5 text-xs">
+                                <span className="h-2 w-2 rounded-full bg-warning" />
+                                <span className="text-warning font-medium">{stage?.name}</span>
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{detail || "–"}</td>
+                            <td className="px-4 py-2.5 text-right font-semibold text-foreground">{prov}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+              <div className="p-3 border-t border-border bg-muted/20 text-center">
+                <span className="text-xs text-muted-foreground">{detailModal.leads.length} Einträge · Klicke auf einen Eintrag für Details</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </CRMLayout>
   );
