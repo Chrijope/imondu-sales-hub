@@ -142,7 +142,7 @@ export default function B2BLeads() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { toast } = useToast();
-  const [showDialer, setShowDialer] = useState(subPage === "neue-leads");
+  const [showDialer, setShowDialer] = useState(false);
   const [visibleCols, setVisibleCols] = useState<Set<string>>(
     new Set(ALL_COLUMNS.filter((c) => c.adminDefault).map((c) => c.key))
   );
