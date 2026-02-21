@@ -21,7 +21,7 @@ export default function Leads() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground">Leads</h1>
@@ -59,7 +59,7 @@ export default function Leads() {
         </div>
 
         {/* Table */}
-        <div className="bg-card rounded-lg shadow-crm-sm border border-border overflow-hidden">
+        <div className="glass-card rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary/30">

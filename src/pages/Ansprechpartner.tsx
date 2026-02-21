@@ -66,7 +66,7 @@ function ContactCard({ contact }: { contact: Contact }) {
   const { toast } = useToast();
 
   return (
-    <div className="bg-card border border-border rounded-xl shadow-sm flex overflow-hidden hover:shadow-md transition-shadow">
+    <div className="glass-card rounded-xl flex overflow-hidden transition-shadow">
       <div className="flex-1 p-5 space-y-2">
         <h3 className="text-lg font-semibold text-foreground">{contact.name}</h3>
         <p className="text-sm font-bold text-foreground">{contact.title}</p>
@@ -112,7 +112,7 @@ function ContactCard({ contact }: { contact: Contact }) {
 export default function Ansprechpartner() {
   return (
     <CRMLayout>
-      <div className="p-6 space-y-10">
+      <div className="p-6 space-y-10 min-h-screen dashboard-mesh-bg">
         <div className="flex items-center gap-2">
           <div className="w-1 h-10 bg-accent rounded-full" />
           <h1 className="text-3xl font-bold text-foreground">Ansprechpartner</h1>

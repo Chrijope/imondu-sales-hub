@@ -118,7 +118,7 @@ export default function Zielplanung() {
 
   return (
     <CRMLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
@@ -151,20 +151,20 @@ export default function Zielplanung() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
+          <div className="glass-card rounded-xl p-5">
             <p className="text-xs text-muted-foreground mb-1">Karrierestufe</p>
             <p className="text-xs text-muted-foreground mt-1">B2C: {karriere.b2cMin}</p>
             <p className="text-xs text-muted-foreground">B2B: {karriere.b2bRange}</p>
           </div>
-          <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
+          <div className="glass-card rounded-xl p-5">
             <p className="text-xs text-muted-foreground mb-1">Jahresprognose Gesamt</p>
             <p className="text-2xl font-bold text-foreground">{jahresTotal.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</p>
           </div>
-          <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
+          <div className="glass-card rounded-xl p-5">
             <p className="text-xs text-muted-foreground mb-1">B2C Provision (Jahr)</p>
             <p className="text-xl font-bold text-foreground">{jahresB2C.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</p>
           </div>
-          <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
+          <div className="glass-card rounded-xl p-5">
             <p className="text-xs text-muted-foreground mb-1">B2B Provision (Jahr)</p>
             <p className="text-xl font-bold text-foreground">{jahresB2B.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</p>
           </div>

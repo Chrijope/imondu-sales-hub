@@ -16,7 +16,7 @@ function LeadCard({ lead }: { lead: Lead }) {
   return (
     <div
       onClick={() => navigate(`/lead/${lead.id}`)}
-      className="bg-card rounded-lg p-3 shadow-crm-sm border border-border hover:shadow-crm-md transition-all duration-150 cursor-pointer group"
+      className="glass-card rounded-xl p-3 hover:shadow-crm-md transition-all duration-150 cursor-pointer group"
     >
       <div className="flex items-center justify-between mb-2">
         <span
@@ -111,7 +111,7 @@ export default function Pipeline() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>

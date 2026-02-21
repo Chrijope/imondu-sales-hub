@@ -60,7 +60,7 @@ export default function LeadKauf() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in space-y-6">
+      <div className="p-6 lg:p-8 animate-fade-in space-y-6 min-h-screen dashboard-mesh-bg">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-1 rounded-full gradient-brand" />
@@ -71,17 +71,17 @@ export default function LeadKauf() {
 
         {/* KPI Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card border border-border rounded-xl p-5 text-center">
+          <div className="glass-card rounded-xl p-5 text-center">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Leads gekauft</p>
             <p className="text-2xl font-bold text-foreground mt-1">{totalB2cPurchased}</p>
             <p className="text-xs text-muted-foreground">→ unter B2C / Neue Leads</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-5 text-center">
+          <div className="glass-card rounded-xl p-5 text-center">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Leads gekauft</p>
             <p className="text-2xl font-bold text-foreground mt-1">{totalB2bPurchased}</p>
             <p className="text-xs text-muted-foreground">→ unter B2B / Neue Leads</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-5 text-center">
+          <div className="glass-card rounded-xl p-5 text-center">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Gesamtausgaben</p>
             <p className="text-2xl font-bold text-foreground mt-1">{totalSpent.toLocaleString("de-DE")} €</p>
             <p className="text-xs text-muted-foreground">netto</p>
@@ -114,7 +114,7 @@ export default function LeadKauf() {
         {/* Package Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {packages.map((pkg) => (
-            <div key={pkg.id} className={`relative bg-card border rounded-xl p-6 flex flex-col transition-all hover:shadow-md ${pkg.popular ? "border-primary shadow-sm ring-1 ring-primary/20" : "border-border"}`}>
+            <div key={pkg.id} className={`relative glass-card rounded-xl p-6 flex flex-col transition-all ${pkg.popular ? "ring-1 ring-primary/20" : ""}`}>
               {pkg.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <Badge className="bg-primary text-primary-foreground text-xs px-3">Beliebteste Wahl</Badge>
