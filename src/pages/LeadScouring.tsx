@@ -8,9 +8,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Search, Download, UserPlus, Loader2, Building2, Briefcase, MapPin, Phone, Mail, Globe, Home, Users,
+  Search, Download, UserPlus, Loader2, Building2, Briefcase, MapPin, Phone, Mail, Globe, Home, Users, CheckCircle2,
 } from "lucide-react";
-import { GEWERK_OPTIONS } from "@/data/crm-data";
+import { GEWERK_OPTIONS, Lead, Objekttyp, Gewerk } from "@/data/crm-data";
+import { addScoutedLeads } from "@/utils/scouted-leads";
+import { useToast } from "@/hooks/use-toast";
 
 // ── Mock B2C scouring results ──
 const MOCK_B2C_RESULTS = [
@@ -44,6 +46,7 @@ const REGIONS = [
 const ASSIGNEES = ["Max Müller", "Lisa Weber", "Jan Fischer"];
 
 export default function LeadScouring() {
+  const { toast } = useToast();
   const [tab, setTab] = useState<"b2c" | "b2b">("b2c");
   const [search, setSearch] = useState("");
   const [amount, setAmount] = useState("10");
@@ -111,11 +114,76 @@ export default function LeadScouring() {
   };
 
   const handleAssign = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const newLeads: Lead[] = [];
+
+    selectedIds.forEach((id) => {
+      if (tab === "b2c") {
+        const r = MOCK_B2C_RESULTS.find((x) => x.id === id);
+        if (!r) return;
+        const nameParts = r.name.split(" ");
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(" ");
+        newLeads.push({
+          id: `scouted-b2c-${id}-${Date.now()}`,
+          type: "b2c",
+          status: "b2c_new",
+          priority: "medium",
+          assignee,
+          source: r.quelle,
+          createdAt: today,
+          updatedAt: today,
+          value: 10,
+          notes: `Gescourter Lead von ${r.quelle}`,
+          firstName,
+          lastName,
+          phone: r.phone,
+          email: r.email,
+          address: r.address,
+          objektAdresse: r.address,
+          objekttyp: r.objekttyp as Objekttyp,
+          baujahr: r.baujahr || undefined,
+          wohnflaeche: r.wohnflaeche || undefined,
+        });
+      } else {
+        const r = MOCK_B2B_RESULTS.find((x) => x.id === id);
+        if (!r) return;
+        newLeads.push({
+          id: `scouted-b2b-${id}-${Date.now()}`,
+          type: "b2b",
+          status: "b2b_new",
+          priority: "medium",
+          assignee,
+          source: r.quelle,
+          createdAt: today,
+          updatedAt: today,
+          value: 1250,
+          notes: `Gescourter Lead von ${r.quelle}`,
+          companyName: r.firma,
+          gewerk: r.gewerk as Gewerk,
+          contactPerson: r.kontakt,
+          phone: r.phone,
+          email: r.email,
+          website: r.website,
+          region: r.region,
+          partnerStatus: "Interessent",
+        });
+      }
+    });
+
+    addScoutedLeads(newLeads);
+
     setAssigned((prev) => {
       const next = new Set(prev);
       selectedIds.forEach((id) => next.add(id));
       return next;
     });
+
+    toast({
+      title: `${selectedIds.size} Leads zugeteilt`,
+      description: `Die Leads wurden ${assignee} als neue ${tab === "b2c" ? "B2C" : "B2B"}-Leads zugewiesen.`,
+    });
+
     setSelectedIds(new Set());
   };
 
