@@ -80,7 +80,7 @@ export default function Kontakte() {
         </div>
 
         {/* Table */}
-        <div className="glass-card rounded-xl overflow-hidden">
+        <div className="glass-card-static rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

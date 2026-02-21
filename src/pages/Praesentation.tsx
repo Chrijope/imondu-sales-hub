@@ -94,7 +94,7 @@ function CollapsibleCard({ section }: { section: CollapsibleSection }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+    <div className="glass-card-static rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors"
@@ -126,7 +126,7 @@ function CollapsibleCard({ section }: { section: CollapsibleSection }) {
 export default function Praesentation() {
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -137,7 +137,7 @@ export default function Praesentation() {
         </div>
 
         {/* Erklärvideo */}
-        <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+        <div className="glass-card-static rounded-xl overflow-hidden">
           <div className="bg-muted/30 flex items-center justify-center py-8 px-6">
             <div className="w-full max-w-3xl aspect-video bg-foreground/5 rounded-lg border border-border flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 gradient-brand opacity-10" />
@@ -171,7 +171,7 @@ export default function Praesentation() {
           {/* Kontakt anlegen CTA */}
           <Link
             to="/leads"
-            className="bg-card rounded-xl shadow-crm-sm border border-border flex items-center justify-between px-5 py-4 hover:border-accent/30 hover:shadow-crm-md transition-all group"
+            className="glass-card rounded-xl flex items-center justify-between px-5 py-4 hover:shadow-crm-md transition-all group"
           >
             <span className="text-sm font-semibold text-accent flex items-center gap-2">
               <ArrowRight className="h-4 w-4" />

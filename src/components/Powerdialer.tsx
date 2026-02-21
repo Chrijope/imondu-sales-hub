@@ -307,7 +307,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   return (
     <div className="space-y-4">
       {/* ── Script Manager Panel ── */}
-      <div className="bg-card rounded-lg shadow-crm-sm border border-border overflow-hidden">
+      <div className="glass-card-static rounded-lg overflow-hidden">
         <button
           onClick={() => setShowScriptManager(!showScriptManager)}
           className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors"
@@ -404,7 +404,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
         {/* Main Dialer */}
         <div className="lg:col-span-2 space-y-4">
           {/* Current Contact Card */}
-          <div className="bg-card rounded-lg p-6 shadow-crm-sm border border-border">
+          <div className="glass-card-static rounded-lg p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">

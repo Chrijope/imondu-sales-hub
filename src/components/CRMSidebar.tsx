@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Inbox, Mail, Newspaper, Presentation, BarChart3, FileText,
@@ -136,9 +136,14 @@ const sectionTeam = [
 function NavItem({ path, icon: Icon, label, isActive, collapsed }: {
   path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean; collapsed: boolean;
 }) {
+  const handleClick = () => {
+    const nav = document.getElementById('crm-sidebar-nav');
+    if (nav) sessionStorage.setItem('sidebar-scroll', String(nav.scrollTop));
+  };
   return (
     <Link
       to={path}
+      onClick={handleClick}
       title={collapsed ? label : undefined}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
         isActive
@@ -217,11 +222,15 @@ function CollapsibleGroup({ label, icon: Icon, items, color, collapsed }: {
       {open && (
         <div className="ml-3 pl-3 border-l-2 border-border/60 mt-0.5 space-y-0.5">
           {items.map((item) => {
-            const isActive = location.pathname.startsWith(item.path);
+const isActive = location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => {
+                  const nav = document.getElementById('crm-sidebar-nav');
+                  if (nav) sessionStorage.setItem('sidebar-scroll', String(nav.scrollTop));
+                }}
                 className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-all duration-150 ${
                   isActive
                     ? "gradient-brand text-primary-foreground shadow-crm-sm"
@@ -248,6 +257,15 @@ interface CRMSidebarProps {
 export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
   const location = useLocation();
   const { currentRoleId, setCurrentRoleId, allowedMenuItems, roles } = useUserRole();
+
+  // Restore sidebar scroll position after navigation
+  useEffect(() => {
+    const nav = document.getElementById('crm-sidebar-nav');
+    const saved = sessionStorage.getItem('sidebar-scroll');
+    if (nav && saved) {
+      nav.scrollTop = Number(saved);
+    }
+  }, [location.pathname]);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -285,7 +303,7 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-1 px-2 overflow-y-auto space-y-0.5 text-primary-foreground bg-muted">
+      <nav id="crm-sidebar-nav" className="flex-1 py-1 px-2 overflow-y-auto space-y-0.5 text-primary-foreground bg-muted">
         {/* ÜBERSICHT */}
         <SectionGroup label="Übersicht" collapsed={collapsed}>
           {filterItems(sectionOverview).map((item) => (
@@ -347,7 +365,7 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
           if (toolItems.length === 0 && !showImmo && !showRechner && !showMarketing) return null;
           return (
             <SectionGroup label="Tools & Wissen" collapsed={collapsed}>
-              {showImmo && <CollapsibleGroup label="Immorechner" icon={Calculator} items={immorechnerSubItems} color="text-[hsl(35,95%,55%)]" collapsed={collapsed} />}
+              {/* Immorechner removed */}
               {showRechner && <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" collapsed={collapsed} />}
               {showMarketing && <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" collapsed={collapsed} />}
               {toolItems.map((item) => (
