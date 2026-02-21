@@ -102,17 +102,18 @@ export default function LeadScouring() {
   const requestedAmount = Number(amount) || 10;
 
   const filteredB2C = useMemo(() => {
-    let list = generateB2C(requestedAmount);
+    let list = generateB2C(requestedAmount + assigned.size);
+    list = list.filter((r) => !assigned.has(r.id));
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
     }
-    return list;
-  }, [requestedAmount, search]);
+    return list.slice(0, requestedAmount);
+  }, [requestedAmount, search, assigned]);
 
   const filteredB2B = useMemo(() => {
-    // Generate more to account for filtering
-    let list = generateB2B(requestedAmount * 3);
+    let list = generateB2B((requestedAmount + assigned.size) * 3);
+    list = list.filter((r) => !assigned.has(r.id));
     if (region !== "Alle Regionen") {
       list = list.filter((r) => r.region === region);
     }
@@ -124,7 +125,7 @@ export default function LeadScouring() {
       list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
     }
     return list.slice(0, requestedAmount);
-  }, [requestedAmount, search, region, gewerk]);
+  }, [requestedAmount, search, region, gewerk, assigned]);
   const filtered = tab === "b2c" ? filteredB2C : filteredB2B;
 
   const toggleSelect = (id: string) => {
@@ -406,19 +407,14 @@ export default function LeadScouring() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((r) => {
-                      const isAssigned = assigned.has(r.id);
-                      return (
+                    {filtered.map((r) => (
                         <tr
                           key={r.id}
-                          className={`border-b border-border last:border-0 transition-colors ${
-                            isAssigned ? "bg-primary/5" : "hover:bg-muted/30"
-                          }`}
+                          className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"
                         >
                           <td className="p-3">
                             <Checkbox
                               checked={selectedIds.has(r.id)}
-                              disabled={isAssigned}
                               onCheckedChange={() => toggleSelect(r.id)}
                             />
                           </td>
@@ -439,11 +435,7 @@ export default function LeadScouring() {
                                 <td className="p-3 text-muted-foreground">{b.wohnflaeche ? `${b.wohnflaeche} m²` : "–"}</td>
                                 <td className="p-3 font-medium">{b.preis}</td>
                                 <td className="p-3">
-                                  {isAssigned ? (
-                                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">Zugeteilt</Badge>
-                                  ) : (
-                                    <Badge variant="secondary" className="text-xs">Neu</Badge>
-                                  )}
+                                  <Badge variant="secondary" className="text-xs">Neu</Badge>
                                 </td>
                               </>
                             );
@@ -463,18 +455,13 @@ export default function LeadScouring() {
                                 <td className="p-3 text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" />{b.website}</td>
                                 <td className="p-3 text-muted-foreground">{b.region}</td>
                                 <td className="p-3">
-                                  {isAssigned ? (
-                                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">Zugeteilt</Badge>
-                                  ) : (
-                                    <Badge variant="secondary" className="text-xs">Neu</Badge>
-                                  )}
+                                  <Badge variant="secondary" className="text-xs">Neu</Badge>
                                 </td>
                               </>
                             );
                           })()}
                         </tr>
-                      );
-                    })}
+                      ))}
                   </tbody>
                 </table>
               </div>
