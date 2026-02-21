@@ -161,7 +161,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <Link to="/leads" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
+            <Link to="/inbox" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
               Alle Mitteilungen ansehen <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
