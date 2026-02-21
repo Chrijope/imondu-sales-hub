@@ -21,12 +21,19 @@ import {
   PhoneCall,
   Video,
   CalendarCheck,
-  Tag,
   CreditCard,
+  Pencil,
+  Check,
+  X,
+  Sparkles,
+  BarChart3,
+  Eye,
+  Image,
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
+import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES, Lead } from "@/data/crm-data";
+import { useToast } from "@/hooks/use-toast";
 
 const sampleActivities = [
   { type: "call" as const, desc: "Erstgespräch geführt – Interesse an Sanierungspaket", time: "Heute 11:30", by: "Max Müller" },
@@ -59,10 +66,125 @@ const activityIcons: Record<string, React.ComponentType<{ className?: string }>>
   script: FileText,
 };
 
+/* ── Editable Field Component ── */
+function EditableField({
+  label,
+  value,
+  icon: Icon,
+  editing,
+  editValues,
+  fieldKey,
+  onEdit,
+  suffix,
+}: {
+  label: string;
+  value: string | number | undefined | null;
+  icon?: React.ComponentType<{ className?: string }>;
+  editing: boolean;
+  editValues: Record<string, string>;
+  fieldKey: string;
+  onEdit: (key: string, val: string) => void;
+  suffix?: string;
+}) {
+  const displayVal = value != null && value !== "" ? `${value}${suffix || ""}` : "–";
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
+        {Icon && <Icon className="h-3.5 w-3.5" />}
+        {label}
+      </dt>
+      {editing ? (
+        <input
+          className="text-right text-sm bg-secondary/50 border border-border rounded px-2 py-0.5 w-[180px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+          value={editValues[fieldKey] ?? (value?.toString() || "")}
+          onChange={(e) => onEdit(fieldKey, e.target.value)}
+          placeholder="–"
+        />
+      ) : (
+        <dd className={`text-right max-w-[180px] truncate ${value ? "text-foreground" : "text-muted-foreground"}`}>
+          {displayVal}
+        </dd>
+      )}
+    </div>
+  );
+}
+
+/* ── Section Header with Edit Toggle ── */
+function SectionHeader({
+  title,
+  colorClass,
+  editing,
+  onToggleEdit,
+  onSave,
+  onCancel,
+}: {
+  title: string;
+  colorClass: string;
+  editing: boolean;
+  onToggleEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <div className={`w-6 h-1 rounded-full ${colorClass}`} />
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      </div>
+      {editing ? (
+        <div className="flex items-center gap-1">
+          <button onClick={onSave} className="p-1 rounded hover:bg-success/10 text-success transition-colors">
+            <Check className="h-3.5 w-3.5" />
+          </button>
+          <button onClick={onCancel} className="p-1 rounded hover:bg-destructive/10 text-destructive transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ) : (
+        <button onClick={onToggleEdit} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ── Mock Inserat Data ── */
+const MOCK_INSERAT_DATA: Record<string, {
+  inseratDatum: string;
+  matchingScore: number;
+  aufrufe: number;
+  anfragen: number;
+  bilder: number;
+  status: string;
+  letzteAktualisierung: string;
+  objekttitel: string;
+}> = {
+  "7": {
+    inseratDatum: "14.02.2026",
+    matchingScore: 87,
+    aufrufe: 342,
+    anfragen: 12,
+    bilder: 8,
+    status: "Aktiv",
+    letzteAktualisierung: "20.02.2026",
+    objekttitel: "EFH in Frankfurt – Sanierungsbedarf",
+  },
+};
+
 export default function LeadDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const lead = SAMPLE_LEADS.find((l) => l.id === id);
+
+  // Edit state per section
+  const [editingKontakt, setEditingKontakt] = useState(false);
+  const [editingImmo, setEditingImmo] = useState(false);
+  const [editingPartner, setEditingPartner] = useState(false);
+  const [kontaktEdits, setKontaktEdits] = useState<Record<string, string>>({});
+  const [immoEdits, setImmoEdits] = useState<Record<string, string>>({});
+  const [partnerEdits, setPartnerEdits] = useState<Record<string, string>>({});
 
   // Read inbox tasks for this lead
   const [inboxTasks, setInboxTasks] = useState<{ id: string; title: string; type: string; priority: string; done: boolean; time?: string; day?: string }[]>([]);
@@ -97,12 +219,21 @@ export default function LeadDetail() {
   }
 
   const pipelineStages = lead.type === "b2c" ? B2C_PIPELINE_STAGES : B2B_PIPELINE_STAGES;
-  const currentStage = pipelineStages.find((s) => s.id === lead.status);
   const currentStageIndex = pipelineStages.findIndex((s) => s.id === lead.status);
   const name = lead.type === "b2b" ? lead.companyName : `${lead.firstName} ${lead.lastName}`;
   const typeLabel = lead.type === "b2b" ? "Partner" : "Eigentümer";
-
   const chatCategory = lead.type === "b2c" ? "eigentuemer" : "entwickler";
+
+  const handleSave = (section: string) => {
+    toast({ title: "Gespeichert", description: `${section} wurde aktualisiert.` });
+  };
+
+  const updateKontakt = (key: string, val: string) => setKontaktEdits((p) => ({ ...p, [key]: val }));
+  const updateImmo = (key: string, val: string) => setImmoEdits((p) => ({ ...p, [key]: val }));
+  const updatePartner = (key: string, val: string) => setPartnerEdits((p) => ({ ...p, [key]: val }));
+
+  const hasInserat = lead.status === "b2c_inserat";
+  const inseratData = MOCK_INSERAT_DATA[lead.id];
 
   const actions = [
     { icon: StickyNote, label: "Notiz erstellen", color: "bg-primary text-primary-foreground" },
@@ -166,7 +297,7 @@ export default function LeadDetail() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={action.onClick}
-                      className={`p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors`}
+                      className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                     >
                       <action.icon className="h-4 w-4" />
                     </button>
@@ -190,9 +321,6 @@ export default function LeadDetail() {
             {pipelineStages.map((stage, i) => {
               const isActive = stage.id === lead.status;
               const isPast = i < currentStageIndex;
-              const isLost = stage.id.endsWith("_lost");
-              const isWon = stage.id.endsWith("_won") || stage.id.endsWith("_inserat");
-
               return (
                 <div key={stage.id} className="flex items-center shrink-0">
                   {i > 0 && <span className="text-muted-foreground mx-0.5 text-xs">→</span>}
@@ -219,64 +347,36 @@ export default function LeadDetail() {
 
             {/* Kontaktdaten */}
             <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-1 rounded-full gradient-brand" />
-                <h2 className="text-sm font-semibold text-foreground">Kontaktdaten</h2>
-              </div>
+              <SectionHeader
+                title="Kontaktdaten"
+                colorClass="gradient-brand"
+                editing={editingKontakt}
+                onToggleEdit={() => { setEditingKontakt(true); setKontaktEdits({}); }}
+                onSave={() => { handleSave("Kontaktdaten"); setEditingKontakt(false); }}
+                onCancel={() => { setEditingKontakt(false); setKontaktEdits({}); }}
+              />
               <dl className="space-y-2.5 text-sm">
-                {lead.type === "b2c" && lead.firstName && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Vorname</dt>
-                    <dd className="text-foreground font-medium">{lead.firstName}</dd>
-                  </div>
+                {lead.type === "b2c" && (
+                  <>
+                    <EditableField label="Vorname" value={lead.firstName} editing={editingKontakt} editValues={kontaktEdits} fieldKey="firstName" onEdit={updateKontakt} />
+                    <EditableField label="Nachname" value={lead.lastName} editing={editingKontakt} editValues={kontaktEdits} fieldKey="lastName" onEdit={updateKontakt} />
+                  </>
                 )}
-                {lead.type === "b2c" && lead.lastName && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Nachname</dt>
-                    <dd className="text-foreground font-medium">{lead.lastName}</dd>
-                  </div>
+                {lead.type === "b2b" && (
+                  <>
+                    <EditableField label="Firma" value={lead.companyName} editing={editingKontakt} editValues={kontaktEdits} fieldKey="companyName" onEdit={updateKontakt} />
+                    <EditableField label="Ansprechpartner" value={lead.contactPerson} editing={editingKontakt} editValues={kontaktEdits} fieldKey="contactPerson" onEdit={updateKontakt} />
+                    <EditableField label="Position" value={lead.position} editing={editingKontakt} editValues={kontaktEdits} fieldKey="position" onEdit={updateKontakt} />
+                  </>
                 )}
-                {lead.type === "b2b" && lead.companyName && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Firma</dt>
-                    <dd className="text-foreground font-medium">{lead.companyName}</dd>
-                  </div>
-                )}
-                {lead.type === "b2b" && lead.contactPerson && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Ansprechpartner</dt>
-                    <dd className="text-foreground font-medium">{lead.contactPerson}</dd>
-                  </div>
-                )}
-                {lead.phone && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> Telefon</dt>
-                    <dd className="text-foreground">{lead.phone}</dd>
-                  </div>
-                )}
-                {lead.email && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> E-Mail</dt>
-                    <dd className="text-foreground text-right max-w-[180px] truncate">{lead.email}</dd>
-                  </div>
-                )}
-                {lead.address && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> Adresse</dt>
-                    <dd className="text-foreground text-right max-w-[180px]">{lead.address}</dd>
-                  </div>
-                )}
-                {lead.type === "b2b" && lead.website && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Website</dt>
-                    <dd className="text-foreground">{lead.website}</dd>
-                  </div>
-                )}
-                {lead.type === "b2b" && lead.region && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> Region</dt>
-                    <dd className="text-foreground">{lead.region}</dd>
-                  </div>
+                <EditableField label="Telefon" value={lead.phone} icon={Phone} editing={editingKontakt} editValues={kontaktEdits} fieldKey="phone" onEdit={updateKontakt} />
+                <EditableField label="E-Mail" value={lead.email} icon={Mail} editing={editingKontakt} editValues={kontaktEdits} fieldKey="email" onEdit={updateKontakt} />
+                <EditableField label="Adresse" value={lead.address} icon={MapPin} editing={editingKontakt} editValues={kontaktEdits} fieldKey="address" onEdit={updateKontakt} />
+                {lead.type === "b2b" && (
+                  <>
+                    <EditableField label="Website" value={lead.website} icon={Globe} editing={editingKontakt} editValues={kontaktEdits} fieldKey="website" onEdit={updateKontakt} />
+                    <EditableField label="Region" value={lead.region} icon={MapPin} editing={editingKontakt} editValues={kontaktEdits} fieldKey="region" onEdit={updateKontakt} />
+                  </>
                 )}
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Quelle</dt>
@@ -296,108 +396,116 @@ export default function LeadDetail() {
             {/* Immobiliendaten (B2C) */}
             {lead.type === "b2c" && (
               <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+                <SectionHeader
+                  title="Immobiliendaten"
+                  colorClass="bg-b2c"
+                  editing={editingImmo}
+                  onToggleEdit={() => { setEditingImmo(true); setImmoEdits({}); }}
+                  onSave={() => { handleSave("Immobiliendaten"); setEditingImmo(false); }}
+                  onCancel={() => { setEditingImmo(false); setImmoEdits({}); }}
+                />
+                <dl className="space-y-2.5 text-sm">
+                  <EditableField label="Objekttyp" value={lead.objekttyp} icon={Home} editing={editingImmo} editValues={immoEdits} fieldKey="objekttyp" onEdit={updateImmo} />
+                  <EditableField label="Objektadresse" value={lead.objektAdresse} editing={editingImmo} editValues={immoEdits} fieldKey="objektAdresse" onEdit={updateImmo} />
+                  <EditableField label="Baujahr" value={lead.baujahr} editing={editingImmo} editValues={immoEdits} fieldKey="baujahr" onEdit={updateImmo} />
+                  <EditableField label="Wohnfläche" value={lead.wohnflaeche} icon={Ruler} editing={editingImmo} editValues={immoEdits} fieldKey="wohnflaeche" onEdit={updateImmo} suffix=" m²" />
+                  <EditableField label="Grundstücksfläche" value={lead.grundstuecksflaeche} editing={editingImmo} editValues={immoEdits} fieldKey="grundstuecksflaeche" onEdit={updateImmo} suffix=" m²" />
+                  <EditableField label="Einheiten" value={lead.anzahlEinheiten} editing={editingImmo} editValues={immoEdits} fieldKey="anzahlEinheiten" onEdit={updateImmo} />
+                  <EditableField label="Energieausweis" value={lead.energieausweis !== undefined ? (lead.energieausweis ? "Vorhanden" : "Nicht vorhanden") : undefined} icon={Zap} editing={editingImmo} editValues={immoEdits} fieldKey="energieausweis" onEdit={updateImmo} />
+                  <EditableField label="Sanierungsstatus" value={lead.sanierungsstatus} icon={Wrench} editing={editingImmo} editValues={immoEdits} fieldKey="sanierungsstatus" onEdit={updateImmo} />
+                  <EditableField label="Eigentümertyp" value={lead.eigentuemertyp} editing={editingImmo} editValues={immoEdits} fieldKey="eigentuemertyp" onEdit={updateImmo} />
+                  <EditableField label="Interesse" value={lead.interesse} editing={editingImmo} editValues={immoEdits} fieldKey="interesse" onEdit={updateImmo} />
+                </dl>
+                {!lead.objekttyp && !editingImmo && (
+                  <p className="text-xs text-muted-foreground italic mt-3">
+                    Noch keine Immobiliendaten vorhanden – klicke auf ✏️ um Daten zu ergänzen.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Inseratdaten (B2C) */}
+            {lead.type === "b2c" && (
+              <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-6 h-1 rounded-full bg-b2c" />
-                  <h2 className="text-sm font-semibold text-foreground">Immobiliendaten</h2>
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-b2c" />
+                    Inseratdaten
+                  </h2>
                 </div>
-                <dl className="space-y-2.5 text-sm">
-                  {lead.objekttyp && (
+                {hasInserat && inseratData ? (
+                  <dl className="space-y-2.5 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground flex items-center gap-2"><Home className="h-3.5 w-3.5" /> Objekttyp</dt>
-                      <dd className="font-semibold text-foreground">{lead.objekttyp}</dd>
+                      <dt className="text-muted-foreground">Titel</dt>
+                      <dd className="text-foreground font-medium text-right max-w-[180px]">{inseratData.objekttitel}</dd>
                     </div>
-                  )}
-                  {lead.objektAdresse && (
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Objektadresse</dt>
-                      <dd className="text-foreground text-right max-w-[180px]">{lead.objektAdresse}</dd>
+                      <dt className="text-muted-foreground">Status</dt>
+                      <dd><span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-success/10 text-success">{inseratData.status}</span></dd>
                     </div>
-                  )}
-                  {lead.baujahr && (
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Baujahr</dt>
-                      <dd className="text-foreground">{lead.baujahr}</dd>
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" /> Inseriert am</dt>
+                      <dd className="text-foreground">{inseratData.inseratDatum}</dd>
                     </div>
-                  )}
-                  {lead.wohnflaeche && (
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground flex items-center gap-2"><Ruler className="h-3.5 w-3.5" /> Wohnfläche</dt>
-                      <dd className="text-foreground">{lead.wohnflaeche} m²</dd>
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Matching-Score</dt>
+                      <dd className={`font-semibold ${inseratData.matchingScore >= 80 ? "text-success" : inseratData.matchingScore >= 60 ? "text-warning" : "text-muted-foreground"}`}>
+                        {inseratData.matchingScore}%
+                      </dd>
                     </div>
-                  )}
-                  {lead.grundstuecksflaeche && (
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Grundstücksfläche</dt>
-                      <dd className="text-foreground">{lead.grundstuecksflaeche} m²</dd>
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" /> Aufrufe</dt>
+                      <dd className="text-foreground font-medium">{inseratData.aufrufe}</dd>
                     </div>
-                  )}
-                  {lead.anzahlEinheiten && (
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Einheiten</dt>
-                      <dd className="text-foreground">{lead.anzahlEinheiten}</dd>
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> Anfragen</dt>
+                      <dd className="text-foreground font-medium">{inseratData.anfragen}</dd>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground flex items-center gap-2"><Zap className="h-3.5 w-3.5" /> Energieausweis</dt>
-                    <dd className="text-foreground">{lead.energieausweis ? "Vorhanden" : "Nicht vorhanden"}</dd>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><Image className="h-3.5 w-3.5" /> Bilder</dt>
+                      <dd className="text-foreground">{inseratData.bilder}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Letzte Aktualisierung</dt>
+                      <dd className="text-foreground">{inseratData.letzteAktualisierung}</dd>
+                    </div>
+                  </dl>
+                ) : (
+                  <div className="space-y-2 text-sm">
+                    <p className="text-xs text-muted-foreground italic">
+                      Noch kein Inserat erstellt – wird nach Inseratserstellung hier angezeigt.
+                    </p>
+                    <dl className="space-y-2 opacity-50">
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Inseriert am</dt><dd className="text-muted-foreground">–</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Matching-Score</dt><dd className="text-muted-foreground">–</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Aufrufe</dt><dd className="text-muted-foreground">–</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Anfragen</dt><dd className="text-muted-foreground">–</dd></div>
+                    </dl>
                   </div>
-                  {lead.sanierungsstatus && (
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground flex items-center gap-2"><Wrench className="h-3.5 w-3.5" /> Sanierungsstatus</dt>
-                      <dd className="text-foreground">{lead.sanierungsstatus}</dd>
-                    </div>
-                  )}
-                  {lead.eigentuemertyp && (
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Eigentümertyp</dt>
-                      <dd className="text-foreground">{lead.eigentuemertyp}</dd>
-                    </div>
-                  )}
-                  {lead.interesse && (
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Interesse</dt>
-                      <dd className="font-semibold text-accent">{lead.interesse}</dd>
-                    </div>
-                  )}
-                </dl>
+                )}
               </div>
             )}
 
             {/* Partnerdaten (B2B) */}
             {lead.type === "b2b" && (
               <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-1 rounded-full bg-b2b" />
-                  <h2 className="text-sm font-semibold text-foreground">Partnerdaten</h2>
-                </div>
+                <SectionHeader
+                  title="Partnerdaten"
+                  colorClass="bg-b2b"
+                  editing={editingPartner}
+                  onToggleEdit={() => { setEditingPartner(true); setPartnerEdits({}); }}
+                  onSave={() => { handleSave("Partnerdaten"); setEditingPartner(false); }}
+                  onCancel={() => { setEditingPartner(false); setPartnerEdits({}); }}
+                />
                 <dl className="space-y-2.5 text-sm">
-                  {lead.gewerk && (
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground flex items-center gap-2"><Wrench className="h-3.5 w-3.5" /> Gewerk</dt>
-                      <dd className="font-semibold text-foreground">{lead.gewerk}</dd>
-                    </div>
-                  )}
-                  {lead.companySize && (
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground flex items-center gap-2"><Building2 className="h-3.5 w-3.5" /> Größe</dt>
-                      <dd className="text-foreground">{lead.companySize} Mitarbeiter</dd>
-                    </div>
-                  )}
-                  {lead.partnerStatus && (
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Partnerstatus</dt>
-                      <dd className={`font-semibold ${lead.partnerStatus === "Aktiver Partner" ? "text-success" : lead.partnerStatus === "Inaktiv" ? "text-destructive" : "text-foreground"}`}>
-                        {lead.partnerStatus}
-                      </dd>
-                    </div>
-                  )}
+                  <EditableField label="Gewerk" value={lead.gewerk} icon={Wrench} editing={editingPartner} editValues={partnerEdits} fieldKey="gewerk" onEdit={updatePartner} />
+                  <EditableField label="Größe" value={lead.companySize ? `${lead.companySize} Mitarbeiter` : undefined} icon={Building2} editing={editingPartner} editValues={partnerEdits} fieldKey="companySize" onEdit={updatePartner} />
                   <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Mitgliedschaft</dt>
-                    <dd className="text-foreground">1.250 € / Jahr</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Deine Provision</dt>
-                    <dd className="font-semibold text-accent">312,50 € (25%)</dd>
+                    <dt className="text-muted-foreground">Partnerstatus</dt>
+                    <dd className={`font-semibold ${lead.partnerStatus === "Aktiver Partner" ? "text-success" : lead.partnerStatus === "Inaktiv" ? "text-destructive" : "text-foreground"}`}>
+                      {lead.partnerStatus || "–"}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -450,22 +558,10 @@ export default function LeadDetail() {
                   <div className="space-y-2.5 text-sm">
                     <p className="text-xs text-muted-foreground italic">Keine aktive Mitgliedschaft – wird nach erfolgreichem Abschluss hier angezeigt.</p>
                     <dl className="space-y-2 text-sm opacity-50">
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Plan</dt>
-                        <dd className="text-muted-foreground">–</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Laufzeit</dt>
-                        <dd className="text-muted-foreground">–</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Betrag</dt>
-                        <dd className="text-muted-foreground">–</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Start</dt>
-                        <dd className="text-muted-foreground">–</dd>
-                      </div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Plan</dt><dd className="text-muted-foreground">–</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Laufzeit</dt><dd className="text-muted-foreground">–</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Betrag</dt><dd className="text-muted-foreground">–</dd></div>
+                      <div className="flex justify-between"><dt className="text-muted-foreground">Start</dt><dd className="text-muted-foreground">–</dd></div>
                     </dl>
                   </div>
                 )}
@@ -479,10 +575,6 @@ export default function LeadDetail() {
                 <h2 className="text-sm font-semibold text-foreground">Details</h2>
               </div>
               <dl className="space-y-2.5 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Provision</dt>
-                  <dd className="font-semibold text-foreground">{lead.value.toLocaleString("de-DE")} €</dd>
-                </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Priorität</dt>
                   <dd className={`font-medium capitalize ${lead.priority === "high" ? "text-destructive" : lead.priority === "medium" ? "text-warning" : "text-muted-foreground"}`}>
