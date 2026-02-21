@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Search, Phone, Upload, Download, SlidersHorizontal, X, HardHat, Sparkles, CalendarCheck, Tag, Clock, Plus } from "lucide-react";
+import { Search, Phone, Upload, Download, SlidersHorizontal, X, HardHat, Sparkles, CalendarCheck, Tag, Clock, Plus, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { useToast } from "@/hooks/use-toast";
 import Powerdialer from "@/components/Powerdialer";
 import { SAMPLE_LEADS, B2B_PIPELINE_STAGES, Lead } from "@/data/crm-data";
-import { getScoutedLeads } from "@/utils/scouted-leads";
+import { getScoutedLeads, removeScoutedLead, isScoutedLead } from "@/utils/scouted-leads";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -405,6 +405,22 @@ export default function B2BLeads() {
                           {visibleColumns.map((col) => (
                             <td key={col.key} className={`py-3 px-4 ${col.key === "wert" ? "text-right" : ""}`}>{getCellValue(lead, col.key)}</td>
                           ))}
+                          <td className="py-3 px-2 w-10">
+                            {isScoutedLead(lead.id) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeScoutedLead(lead.id);
+                                  setScoutedLeads(getScoutedLeads().filter((l) => l.type === "b2b"));
+                                  toast({ title: "Lead entfernt", description: `${lead.companyName} wurde gelöscht.` });
+                                }}
+                                className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                title="Gescouteten Lead löschen"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                       {filtered.length === 0 && (
