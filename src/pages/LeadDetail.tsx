@@ -20,6 +20,9 @@ import {
   CheckSquare,
   PhoneCall,
   Video,
+  CalendarCheck,
+  Tag,
+  CreditCard,
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -398,6 +401,75 @@ export default function LeadDetail() {
                     <dd className="font-semibold text-accent">312,50 € (25%)</dd>
                   </div>
                 </dl>
+              </div>
+            )}
+
+            {/* Mitgliedschaft (B2B) */}
+            {lead.type === "b2b" && (
+              <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-1 rounded-full bg-b2b" />
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <CalendarCheck className="h-4 w-4 text-b2b" />
+                    Mitgliedschaft
+                  </h2>
+                </div>
+                {lead.status === "b2b_won" ? (
+                  <dl className="space-y-2.5 text-sm">
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Plan</dt>
+                      <dd><span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded gradient-brand text-primary-foreground">Premium</span></dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Laufzeit</dt>
+                      <dd className="font-medium text-foreground">12 Monate</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Betrag</dt>
+                      <dd className="font-semibold text-foreground">1.250 €</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Start</dt>
+                      <dd className="text-foreground">{lead.updatedAt}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Kündigungsfrist</dt>
+                      <dd className="font-medium text-warning">3 Monate vor Ablauf</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Auto-Verlängerung</dt>
+                      <dd className="text-foreground">Ja</dd>
+                    </div>
+                    {lead.notes && (
+                      <div className="pt-2 border-t border-border/60">
+                        <dt className="text-muted-foreground text-xs mb-1">Notiz</dt>
+                        <dd className="text-foreground text-xs">{lead.notes}</dd>
+                      </div>
+                    )}
+                  </dl>
+                ) : (
+                  <div className="space-y-2.5 text-sm">
+                    <p className="text-xs text-muted-foreground italic">Keine aktive Mitgliedschaft – wird nach erfolgreichem Abschluss hier angezeigt.</p>
+                    <dl className="space-y-2 text-sm opacity-50">
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground">Plan</dt>
+                        <dd className="text-muted-foreground">–</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground">Laufzeit</dt>
+                        <dd className="text-muted-foreground">–</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Betrag</dt>
+                        <dd className="text-muted-foreground">–</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground">Start</dt>
+                        <dd className="text-muted-foreground">–</dd>
+                      </div>
+                    </dl>
+                  </div>
+                )}
               </div>
             )}
 
