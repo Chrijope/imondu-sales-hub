@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import Powerdialer from "@/components/Powerdialer";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, Lead } from "@/data/crm-data";
 import { getScoutedLeads, removeScoutedLead, isScoutedLead } from "@/utils/scouted-leads";
+import NewLeadDialog from "@/components/NewLeadDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -112,6 +113,7 @@ export default function B2CLeads() {
   );
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [showNewLead, setShowNewLead] = useState(false);
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
   const showSidebar = subPage === "gewonnen" || subPage === "bestand";
@@ -209,6 +211,7 @@ export default function B2CLeads() {
   const visibleColumns = ALL_COLUMNS.filter((c) => visibleCols.has(c.key));
 
   return (
+    <>
     <CRMLayout>
       <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         <div className="flex items-center justify-between mb-6">
@@ -223,7 +226,7 @@ export default function B2CLeads() {
           <div className="flex items-center gap-2">
             {subPage === "neue-leads" && (
               <button
-                onClick={() => navigate("/lead/new?type=b2c")}
+                onClick={() => setShowNewLead(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-brand text-primary-foreground text-sm font-medium shadow-crm-sm hover:opacity-90 transition-opacity"
               >
                 <Plus className="h-4 w-4" />
@@ -425,5 +428,7 @@ export default function B2CLeads() {
         )}
       </div>
     </CRMLayout>
+    <NewLeadDialog open={showNewLead} onOpenChange={(v) => { setShowNewLead(v); if (!v) setScoutedLeads(getScoutedLeads().filter((l) => l.type === "b2c")); }} type="b2c" />
+    </>
   );
 }
