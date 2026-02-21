@@ -94,8 +94,8 @@ export default function Leads() {
                     <td className="py-3 px-4 text-muted-foreground">{detail}</td>
                     <td className="py-3 px-4">
                       <span className="inline-flex items-center gap-1.5 text-xs">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage?.color }} />
-                        {stage?.name}
+                        <span className="h-2 w-2 rounded-full bg-warning" />
+                        <span className="font-medium text-warning">{stage?.name}</span>
                       </span>
                     </td>
                     <td className="py-3 px-4 text-muted-foreground">{lead.source}</td>

@@ -199,12 +199,11 @@ export default function LeadDetail() {
                   <div
                     className={`px-2.5 py-1 rounded text-[11px] font-medium border transition-all ${
                       isActive
-                        ? "text-primary-foreground border-transparent shadow-sm"
+                        ? "bg-warning text-warning-foreground border-warning shadow-sm"
                         : isPast
                         ? "bg-success/10 text-success border-success/20"
                         : "bg-card text-muted-foreground border-border"
                     }`}
-                    style={isActive ? { backgroundColor: stage.color } : undefined}
                   >
                     {isPast && "✓ "}{stage.name}
                   </div>
