@@ -190,8 +190,34 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-display font-bold text-foreground">Neues Inserat erstellen</h1>
+        <h1 className="text-2xl font-display font-bold text-foreground text-center flex-1">Neues Inserat erstellen</h1>
         <Button variant="outline" onClick={onClose}>Abbrechen</Button>
+      </div>
+
+      {/* Step indicator */}
+      <div className="flex items-center justify-center mb-2 max-w-2xl mx-auto">
+        {STEPS.map((s, i) => (
+          <div key={s.id} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setStep(s.id)}
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${
+                  step === s.id
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : completedSteps.includes(s.id)
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {s.id}
+              </button>
+              <span className={`mt-2 text-xs whitespace-nowrap ${step === s.id ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                {s.label}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mt-[-1.25rem] ${completedSteps.includes(s.id) ? "bg-primary" : "bg-border"}`} />}
+          </div>
+        ))}
       </div>
 
       {/* Step content + hint sidebar */}
