@@ -98,34 +98,29 @@ export default function LeadScouring() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [assignee, setAssignee] = useState(ASSIGNEES[0]);
   const [assigned, setAssigned] = useState<Set<string>>(new Set());
+  // Store the generated lists so they don't regenerate on assign
+  const [scoutedB2CList, setScoutedB2CList] = useState<ReturnType<typeof generateB2C>>([]);
+  const [scoutedB2BList, setScoutedB2BList] = useState<ReturnType<typeof generateB2B>>([]);
 
   const requestedAmount = Number(amount) || 10;
 
   const filteredB2C = useMemo(() => {
-    let list = generateB2C(requestedAmount + assigned.size);
-    list = list.filter((r) => !assigned.has(r.id));
+    let list = scoutedB2CList.filter((r) => !assigned.has(r.id));
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
     }
-    return list.slice(0, requestedAmount);
-  }, [requestedAmount, search, assigned]);
+    return list;
+  }, [scoutedB2CList, search, assigned]);
 
   const filteredB2B = useMemo(() => {
-    let list = generateB2B((requestedAmount + assigned.size) * 3);
-    list = list.filter((r) => !assigned.has(r.id));
-    if (region !== "Alle Regionen") {
-      list = list.filter((r) => r.region === region);
-    }
-    if (gewerk !== "Alle") {
-      list = list.filter((r) => r.gewerk === gewerk);
-    }
+    let list = scoutedB2BList.filter((r) => !assigned.has(r.id));
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
     }
-    return list.slice(0, requestedAmount);
-  }, [requestedAmount, search, region, gewerk, assigned]);
+    return list;
+  }, [scoutedB2BList, search, assigned]);
   const filtered = tab === "b2c" ? filteredB2C : filteredB2B;
 
   const toggleSelect = (id: string) => {
@@ -150,6 +145,17 @@ export default function LeadScouring() {
     setSelectedIds(new Set());
     setAssigned(new Set());
     setTimeout(() => {
+      // Generate lists once at scour time
+      if (tab === "b2c") {
+        setScoutedB2CList(generateB2C(requestedAmount));
+      } else {
+        // Generate a larger pool for B2B to allow for region/gewerk filtering
+        const pool = generateB2B(requestedAmount * 3);
+        let filtered = pool;
+        if (region !== "Alle Regionen") filtered = filtered.filter((r) => r.region === region);
+        if (gewerk !== "Alle") filtered = filtered.filter((r) => r.gewerk === gewerk);
+        setScoutedB2BList(filtered.slice(0, requestedAmount));
+      }
       setScouring(false);
       setScoured(true);
     }, 2000);
