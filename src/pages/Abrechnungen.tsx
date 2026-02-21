@@ -358,34 +358,16 @@ export default function Abrechnungen() {
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full bg-primary" />
-              <h2 className="text-sm font-semibold text-foreground">B2C – Eigentümer</h2>
+              <h2 className="text-sm font-semibold text-foreground">B2C – Eigentümer · Gutschrift aktueller Monat</h2>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Inserierte Inserate</span>
+                <span className="text-sm text-muted-foreground">Inserierte Inserate (abrechenbar)</span>
                 <button
-                  onClick={() => setDetailModal({ title: "Inserierte Inserate (Eigentümer)", leads: b2cLeads.filter(l => l.status === "b2c_inserat"), type: "b2c" })}
+                  onClick={() => setDetailModal({ title: "Inserierte Inserate – abrechenbar", leads: b2cLeads.filter(l => l.status === "b2c_inserat"), type: "b2c" })}
                   className="text-sm font-semibold text-primary hover:underline cursor-pointer"
                 >
                   {b2cBestand}
-                </button>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Registrierte Eigentümer</span>
-                <button
-                  onClick={() => setDetailModal({ title: "Registrierte Eigentümer", leads: b2cLeads.filter(l => l.status === "b2c_registered" || l.status === "b2c_inserat"), type: "b2c" })}
-                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
-                >
-                  {b2cLeads.filter(l => l.status === "b2c_registered" || l.status === "b2c_inserat").length}
-                </button>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Leads in Pipeline</span>
-                <button
-                  onClick={() => setDetailModal({ title: "Alle Eigentümer-Leads in Pipeline", leads: b2cLeads, type: "b2c" })}
-                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
-                >
-                  {b2cLeads.length}
                 </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
@@ -393,16 +375,12 @@ export default function Abrechnungen() {
                 <span className="text-sm font-semibold text-foreground">{currentB2CStufe.provision.toLocaleString("de-DE")} € netto / Inserat</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Inserate dieses Quartal</span>
-                <span className="text-sm font-semibold text-foreground">{MY_B2C_INSERATE_QUARTAL}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Aktuelle Provision</span>
                 <span className="text-sm font-bold text-b2c">{b2cProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-muted/50 rounded-lg px-3">
-                <span className="text-sm font-medium text-foreground">Abrechnungspotenzial</span>
-                <span className="text-sm font-bold text-foreground">{b2cPotenzial.toLocaleString("de-DE")} €</span>
+                <span className="text-sm font-medium text-foreground">Gutschriftbetrag B2C</span>
+                <span className="text-sm font-bold text-foreground">{b2cProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
               <p className="text-xs text-muted-foreground">Eigentümer inserieren kostenlos – du erhältst {currentB2CStufe.provision} € netto pro qualifiziertem Inserat</p>
             </div>
@@ -411,34 +389,25 @@ export default function Abrechnungen() {
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full bg-accent" />
-              <h2 className="text-sm font-semibold text-foreground">B2B – Entwicklungspartner</h2>
+              <h2 className="text-sm font-semibold text-foreground">B2B – Entwicklungspartner · Gutschrift aktueller Monat</h2>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Registrierungen Entwicklungspartner</span>
+                <span className="text-sm text-muted-foreground">Neue Mitgliedschaften (Gewonnen)</span>
                 <button
-                  onClick={() => setDetailModal({ title: "Registrierte Entwicklungspartner (Gewonnen)", leads: b2bLeads.filter(l => l.status === "b2b_won"), type: "b2b" })}
+                  onClick={() => setDetailModal({ title: "Neue Mitgliedschaften – Gewonnen", leads: b2bLeads.filter(l => l.status === "b2b_won"), type: "b2b" })}
                   className="text-sm font-semibold text-primary hover:underline cursor-pointer"
                 >
                   {b2bBestand}
                 </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Im Onboarding</span>
+                <span className="text-sm text-muted-foreground">Bestandsprovision (Verlängerungen)</span>
                 <button
-                  onClick={() => setDetailModal({ title: "Partner im Onboarding", leads: b2bLeads.filter(l => l.status === "b2b_onboarding"), type: "b2b" })}
+                  onClick={() => setDetailModal({ title: "Bestandskunden – Verlängerte Mitgliedschaften", leads: [], type: "b2b" })}
                   className="text-sm font-semibold text-primary hover:underline cursor-pointer"
                 >
-                  {b2bLeads.filter(l => l.status === "b2b_onboarding").length}
-                </button>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Leads in Pipeline</span>
-                <button
-                  onClick={() => setDetailModal({ title: "Alle Entwicklungspartner-Leads in Pipeline", leads: b2bLeads, type: "b2b" })}
-                  className="text-sm font-semibold text-primary hover:underline cursor-pointer"
-                >
-                  {b2bLeads.length}
+                  0
                 </button>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
@@ -454,14 +423,14 @@ export default function Abrechnungen() {
                 <span className="text-sm font-semibold text-foreground">{(B2B_MITGLIEDSCHAFT_PREIS * (currentB2BStufe.provision / 100)).toLocaleString("de-DE")} € netto</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">Aktuelle Bestandsprovision / Jahr</span>
+                <span className="text-sm text-muted-foreground">Aktuelle Provision (neue + Bestand)</span>
                 <span className="text-sm font-bold text-b2b">{b2bProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-muted/50 rounded-lg px-3">
-                <span className="text-sm font-medium text-foreground">Abrechnungspotenzial</span>
-                <span className="text-sm font-bold text-foreground">{b2bPotenzial.toLocaleString("de-DE")} €</span>
+                <span className="text-sm font-medium text-foreground">Gutschriftbetrag B2B</span>
+                <span className="text-sm font-bold text-foreground">{b2bProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
-              <p className="text-xs text-muted-foreground">{currentB2BStufe.provision} % netto auf {B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} € Mitgliedschaft (12 Monate, wiederkehrend)</p>
+              <p className="text-xs text-muted-foreground">{currentB2BStufe.provision} % netto auf {B2B_MITGLIEDSCHAFT_PREIS.toLocaleString("de-DE")} € Mitgliedschaft · Bestandsprovision bei auto. Verlängerung nach 12 Monaten</p>
             </div>
           </div>
         </div>
