@@ -172,11 +172,40 @@ const MOCK_INSERAT_DATA: Record<string, {
   },
 };
 
+// Helper to load/save lead overrides from localStorage
+function getLeadOverrides(): Record<string, Record<string, string>> {
+  try {
+    const saved = localStorage.getItem("lead-overrides");
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+}
+
+function saveLeadOverrides(overrides: Record<string, Record<string, string>>) {
+  localStorage.setItem("lead-overrides", JSON.stringify(overrides));
+}
+
+function getLeadWithOverrides(baseLead: Lead): Lead {
+  const overrides = getLeadOverrides()[baseLead.id];
+  if (!overrides) return baseLead;
+  const merged = { ...baseLead } as any;
+  for (const [key, val] of Object.entries(overrides)) {
+    if (val !== "") merged[key] = val;
+  }
+  return merged as Lead;
+}
+
 export default function LeadDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const lead = SAMPLE_LEADS.find((l) => l.id === id);
+  const baseLead = SAMPLE_LEADS.find((l) => l.id === id);
+
+  const [leadOverrides, setLeadOverrides] = useState<Record<string, string>>(() => {
+    return getLeadOverrides()[id || ""] || {};
+  });
+
+  // Merged lead with overrides
+  const lead = baseLead ? getLeadWithOverrides(baseLead) : undefined;
 
   // Edit state per section
   const [editingKontakt, setEditingKontakt] = useState(false);
@@ -210,7 +239,7 @@ export default function LeadDetail() {
     return () => { window.removeEventListener("storage", onStorage); window.removeEventListener("focus", onStorage); };
   }, [id]);
 
-  if (!lead) {
+  if (!lead || !baseLead) {
     return (
       <CRMLayout>
         <div className="p-8 text-center text-muted-foreground">Lead nicht gefunden.</div>
@@ -224,7 +253,14 @@ export default function LeadDetail() {
   const typeLabel = lead.type === "b2b" ? "Partner" : "Eigentümer";
   const chatCategory = lead.type === "b2c" ? "eigentuemer" : "entwickler";
 
-  const handleSave = (section: string) => {
+  const handleSave = (section: string, edits: Record<string, string>) => {
+    if (!id) return;
+    const allOverrides = getLeadOverrides();
+    const existing = allOverrides[id] || {};
+    const merged = { ...existing, ...edits };
+    allOverrides[id] = merged;
+    saveLeadOverrides(allOverrides);
+    setLeadOverrides(merged);
     toast({ title: "Gespeichert", description: `${section} wurde aktualisiert.` });
   };
 
@@ -352,7 +388,7 @@ export default function LeadDetail() {
                 colorClass="gradient-brand"
                 editing={editingKontakt}
                 onToggleEdit={() => { setEditingKontakt(true); setKontaktEdits({}); }}
-                onSave={() => { handleSave("Kontaktdaten"); setEditingKontakt(false); }}
+                onSave={() => { handleSave("Kontaktdaten", kontaktEdits); setEditingKontakt(false); }}
                 onCancel={() => { setEditingKontakt(false); setKontaktEdits({}); }}
               />
               <dl className="space-y-2.5 text-sm">
@@ -401,7 +437,7 @@ export default function LeadDetail() {
                   colorClass="bg-b2c"
                   editing={editingImmo}
                   onToggleEdit={() => { setEditingImmo(true); setImmoEdits({}); }}
-                  onSave={() => { handleSave("Immobiliendaten"); setEditingImmo(false); }}
+                  onSave={() => { handleSave("Immobiliendaten", immoEdits); setEditingImmo(false); }}
                   onCancel={() => { setEditingImmo(false); setImmoEdits({}); }}
                 />
                 <dl className="space-y-2.5 text-sm">
@@ -495,7 +531,7 @@ export default function LeadDetail() {
                   colorClass="bg-b2b"
                   editing={editingPartner}
                   onToggleEdit={() => { setEditingPartner(true); setPartnerEdits({}); }}
-                  onSave={() => { handleSave("Partnerdaten"); setEditingPartner(false); }}
+                  onSave={() => { handleSave("Partnerdaten", partnerEdits); setEditingPartner(false); }}
                   onCancel={() => { setEditingPartner(false); setPartnerEdits({}); }}
                 />
                 <dl className="space-y-2.5 text-sm">
