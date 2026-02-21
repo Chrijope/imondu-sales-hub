@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Mail, Newspaper, Presentation, BarChart3, FileText,
   Kanban, MessageSquare, Contact, Building2, Briefcase, UserPlus, Receipt,
   TrendingUp, Phone, PhoneCall, Megaphone, ShoppingBag, ShoppingCart, Globe,
-  ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar,
+  ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar, Download,
   CalendarDays, Trophy, Archive, Sparkles, GraduationCap, Home,
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
   Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal
@@ -30,6 +30,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/berater-microseite": "berater-microseite", "/helpdesk": "helpdesk",
   "/einstellungen": "einstellungen", "/marketing-leads": "marketing",
   "/social-media-creator": "marketing",
+  "/lead-scouring": "lead-scouring",
 };
 
 const GROUP_MENU_ID: Record<string, string> = {
@@ -112,6 +113,7 @@ const sectionAuswertung = [
 ];
 
 const sectionTools = [
+  { path: "/lead-scouring", icon: Download, label: "Lead Scouring" },
   { path: "/zielplanung", icon: Target, label: "Zielplanung" },
   { path: "/academy", icon: GraduationCap, label: "Academy" },
   { path: "/lexikon", icon: BookOpen, label: "Immobilien-Lexikon" },

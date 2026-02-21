@@ -50,6 +50,7 @@ import Lexikon from "./pages/Lexikon";
 import Zielplanung from "./pages/Zielplanung";
 import Kundenmaske from "./pages/Kundenmaske";
 import Wettbewerb from "./pages/Wettbewerb";
+import LeadScouring from "./pages/LeadScouring";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -112,6 +113,7 @@ const App = () => (
           <Route path="/zielplanung" element={<P path="/zielplanung"><Zielplanung /></P>} />
           {/* Kundenmaske removed */}
           <Route path="/wettbewerb" element={<P path="/wettbewerb"><Wettbewerb /></P>} />
+          <Route path="/lead-scouring" element={<P path="/lead-scouring"><LeadScouring /></P>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
