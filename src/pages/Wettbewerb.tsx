@@ -118,7 +118,7 @@ function ChallengeCard({ challenge, isExpanded, onToggle }: { challenge: Challen
   const daysLeft = challenge.aktiv ? Math.floor(Math.random() * 20 + 3) : 0;
 
   return (
-    <div className={`bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden transition-all ${!challenge.aktiv ? "opacity-60" : ""}`}>
+    <div className={`glass-card rounded-xl overflow-hidden transition-all ${!challenge.aktiv ? "opacity-60" : ""}`}>
       {/* Card Header - clickable */}
       <button onClick={onToggle} className="w-full text-left p-5 hover:bg-muted/30 transition-colors">
         <div className="flex items-start justify-between mb-3">
@@ -236,7 +236,7 @@ export default function Wettbewerb() {
 
   return (
     <CRMLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
@@ -279,7 +279,7 @@ export default function Wettbewerb() {
 
         {/* Hero Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 shadow-crm-sm">
+          <div className="glass-card rounded-xl p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Flame className="h-5 w-5 text-destructive" />
             </div>
@@ -288,7 +288,7 @@ export default function Wettbewerb() {
               <p className="text-xs text-muted-foreground">Aktive Challenges</p>
             </div>
           </div>
-          <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 shadow-crm-sm">
+          <div className="glass-card rounded-xl p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
               <Crown className="h-5 w-5 text-warning" />
             </div>
@@ -297,7 +297,7 @@ export default function Wettbewerb() {
               <p className="text-xs text-muted-foreground">Beste Platzierung</p>
             </div>
           </div>
-          <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 shadow-crm-sm">
+          <div className="glass-card rounded-xl p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-accent/40 flex items-center justify-center">
               <Target className="h-5 w-5 text-primary" />
             </div>

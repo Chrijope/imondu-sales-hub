@@ -140,7 +140,7 @@ function CollapsibleCard({ section }: { section: Section }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+    <div className="glass-card rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-2 px-5 py-4 hover:bg-muted/30 transition-colors text-left"
@@ -169,7 +169,7 @@ function CollapsibleCard({ section }: { section: Section }) {
 export default function Unterlagen() {
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-4 animate-fade-in max-w-4xl">
+      <div className="p-6 lg:p-8 space-y-4 animate-fade-in max-w-4xl min-h-screen dashboard-mesh-bg">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-1 rounded-full gradient-brand" />

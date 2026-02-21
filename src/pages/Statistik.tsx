@@ -6,7 +6,7 @@ import { BarChart3, Percent, Phone, PhoneCall, PhoneOff, PhoneMissed, Timer, Tre
 /* ── KPI Tile ──────────────────────────────────── */
 function KpiTile({ label, value, sub, trend }: { label: string; value: string | number; sub?: string; trend?: "up" | "down" }) {
   return (
-    <div className="border border-border rounded-lg p-4 flex flex-col items-center justify-center min-h-[90px] bg-card">
+    <div className="glass-card rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px]">
       <span className="text-xs text-muted-foreground text-center mb-1">{label}</span>
       <div className="flex items-center gap-1">
         <span className="text-2xl font-bold text-foreground">{value}</span>
@@ -21,7 +21,7 @@ function KpiTile({ label, value, sub, trend }: { label: string; value: string | 
 /* ── Section Card ──────────────────────────────── */
 function SectionCard({ title, actions, children }: { title: string; actions?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="bg-card border border-border rounded-xl shadow-sm p-5">
+    <div className="glass-card rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-1 bg-accent rounded-full" />
@@ -121,7 +121,7 @@ export default function Statistik() {
 
   return (
     <CRMLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div className="flex items-center gap-2">
           <div className="w-1 h-10 bg-accent rounded-full" />

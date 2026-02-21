@@ -104,9 +104,9 @@ export default function Kundenmaske() {
 
   return (
     <CRMLayout>
-      <div className="flex h-[calc(100vh-2rem)] gap-4">
+      <div className="flex h-[calc(100vh-2rem)] gap-4 min-h-screen dashboard-mesh-bg p-4">
         {/* Left: Customer List */}
-        <div className="w-80 shrink-0 bg-card rounded-xl border border-border shadow-crm-sm flex flex-col overflow-hidden">
+        <div className="w-80 shrink-0 glass-card rounded-xl flex flex-col overflow-hidden">
           <div className="p-3 border-b border-border">
             <div className="flex items-center gap-2 mb-2">
               <User className="h-4 w-4 text-primary" />
@@ -149,7 +149,7 @@ export default function Kundenmaske() {
         {selected ? (
           <div className="flex-1 overflow-y-auto space-y-4">
             {/* Profile Header */}
-            <div className="bg-card rounded-xl border border-border shadow-crm-sm p-5">
+            <div className="glass-card rounded-xl p-5">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-xl gradient-brand flex items-center justify-center text-primary-foreground font-bold text-lg">
@@ -176,19 +176,19 @@ export default function Kundenmaske() {
 
             {/* KPI row */}
             <div className="grid grid-cols-4 gap-3">
-              <div className="bg-card rounded-xl p-4 border border-border shadow-crm-sm text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-foreground">{selected.inserate ?? selected.umsatz?.toLocaleString("de-DE")}</p>
                 <p className="text-xs text-muted-foreground">{selected.typ === "B2C" ? "Inserate" : "Umsatz (€)"}</p>
               </div>
-              <div className="bg-card rounded-xl p-4 border border-border shadow-crm-sm text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-foreground">{selected.activities.length}</p>
                 <p className="text-xs text-muted-foreground">Interaktionen</p>
               </div>
-              <div className="bg-card rounded-xl p-4 border border-border shadow-crm-sm text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-foreground">{selected.erstelltAm}</p>
                 <p className="text-xs text-muted-foreground">Erstellt am</p>
               </div>
-              <div className="bg-card rounded-xl p-4 border border-border shadow-crm-sm text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-foreground">{selected.letzterKontakt}</p>
                 <p className="text-xs text-muted-foreground">Letzter Kontakt</p>
               </div>

@@ -137,7 +137,7 @@ export default function Inbox() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in max-w-5xl">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in max-w-5xl min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -149,19 +149,19 @@ export default function Inbox() {
 
         {/* KPI row */}
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <p className="text-3xl font-display font-bold text-foreground">{todayCount}</p>
             <p className="text-xs text-muted-foreground mt-1">Heute offen</p>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <p className="text-3xl font-display font-bold text-foreground">{weekCount}</p>
             <p className="text-xs text-muted-foreground mt-1">Diese Woche</p>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <p className="text-3xl font-display font-bold text-foreground">{meetingCount}</p>
             <p className="text-xs text-muted-foreground mt-1">Meetings</p>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+          <div className="glass-card rounded-xl p-4 text-center">
             <p className="text-3xl font-display font-bold text-destructive">{highCount}</p>
             <p className="text-xs text-muted-foreground mt-1">Hohe Priorität</p>
           </div>

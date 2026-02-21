@@ -41,7 +41,7 @@ export default function Kontakte() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div>
           <div className="w-10 h-1 rounded-full gradient-brand mb-1" />
@@ -80,7 +80,7 @@ export default function Kontakte() {
         </div>
 
         {/* Table */}
-        <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+        <div className="glass-card rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

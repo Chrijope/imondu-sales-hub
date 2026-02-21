@@ -144,7 +144,7 @@ export default function MerchShop() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in space-y-6">
+      <div className="p-6 lg:p-8 animate-fade-in space-y-6 min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -191,7 +191,7 @@ export default function MerchShop() {
           {filtered.map((product) => (
             <div
               key={product.id}
-              className="bg-card border border-border rounded-xl overflow-hidden shadow-crm-sm hover:shadow-crm-lg transition-all duration-300 group cursor-pointer"
+              className="glass-card rounded-xl overflow-hidden transition-all duration-300 group cursor-pointer"
               onClick={() => { setSelectedProduct(product); setQuantity(1); setSelectedSize(""); }}
             >
               <div className="aspect-square overflow-hidden bg-muted relative">

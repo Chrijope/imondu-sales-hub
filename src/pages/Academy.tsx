@@ -160,7 +160,7 @@ function CourseCard({ course, onSelect }: { course: Course; onSelect: () => void
   return (
     <button
       onClick={onSelect}
-      className="bg-card rounded-xl p-5 shadow-crm-sm border border-border hover:shadow-crm-md hover:border-primary/20 transition-all text-left w-full group"
+      className="glass-card rounded-xl p-5 hover:shadow-crm-md transition-all text-left w-full group"
     >
       <div className="flex items-start gap-4">
         <div className="text-4xl shrink-0">{course.thumbnail}</div>
@@ -305,7 +305,7 @@ export default function Academy() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-5 animate-fade-in max-w-5xl">
+      <div className="p-6 lg:p-8 space-y-5 animate-fade-in max-w-5xl min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -321,17 +321,17 @@ export default function Academy() {
           <>
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <GraduationCap className="h-5 w-5 text-primary mx-auto mb-1" />
                 <p className="text-2xl font-display font-bold text-foreground">{COURSES.length}</p>
                 <p className="text-xs text-muted-foreground">Kurse</p>
               </div>
-              <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <BookOpen className="h-5 w-5 text-primary mx-auto mb-1" />
                 <p className="text-2xl font-display font-bold text-foreground">{completedLessons}/{totalLessons}</p>
                 <p className="text-xs text-muted-foreground">Lektionen</p>
               </div>
-              <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <div className="glass-card rounded-xl p-4 text-center">
                 <Star className="h-5 w-5 text-warning mx-auto mb-1" />
                 <p className="text-2xl font-display font-bold text-foreground">{overallProgress}%</p>
                 <p className="text-xs text-muted-foreground">Gesamtfortschritt</p>

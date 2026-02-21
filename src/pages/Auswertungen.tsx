@@ -122,7 +122,7 @@ function RankingTable({ title, data, valueLabel = "Anzahl", formatValue }: {
   const fmt = formatValue || ((v: number) => v.toLocaleString("de-DE"));
 
   return (
-    <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
+    <div className="glass-card rounded-xl overflow-hidden">
       <div className="p-5 pb-3">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-6 h-1 rounded-full gradient-brand" />
@@ -211,7 +211,7 @@ export default function Auswertungen() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
