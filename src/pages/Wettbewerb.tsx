@@ -236,17 +236,15 @@ export default function Wettbewerb() {
 
   return (
     <CRMLayout>
-      <div className="max-w-5xl mx-auto space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
+      <div className="space-y-6 min-h-screen dashboard-mesh-bg p-6 lg:p-8">
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl gradient-brand flex items-center justify-center shadow-crm-sm">
-              <Trophy className="h-5 w-5 text-primary-foreground" />
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Wettbewerb</h1>
-              <p className="text-sm text-muted-foreground">Challenges, Ranglisten & Prämien</p>
-            </div>
+            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Wettbewerb</h1>
+            <p className="text-sm text-muted-foreground mt-1">Challenges, Ranglisten & Prämien</p>
           </div>
           {isAdmin && (
             <Dialog>

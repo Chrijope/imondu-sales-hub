@@ -63,7 +63,7 @@ export default function LeadKauf() {
       <div className="p-6 lg:p-8 animate-fade-in space-y-6 min-h-screen dashboard-mesh-bg">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-1 rounded-full gradient-brand" />
+            <div className="w-10 h-1 rounded-full gradient-brand" />
           </div>
           <h1 className="text-2xl font-display font-bold text-foreground">Lead-Kauf</h1>
           <p className="text-sm text-muted-foreground mt-1">Kaufe verifizierte B2C- und B2B-Leads für dein CRM</p>
