@@ -58,6 +58,7 @@ interface InboxTask {
   contact?: string;
   done: boolean;
   day?: string;
+  leadId?: string;
 }
 
 function useInboxTasks() {

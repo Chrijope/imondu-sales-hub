@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
+
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES, Lead, PipelineStage } from "@/data/crm-data";
 
@@ -90,6 +91,7 @@ function PipelineBoard({ stages, leads }: { stages: PipelineStage[]; leads: Lead
 }
 
 export default function Pipeline() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"b2c" | "b2b">("b2c");
   const [search, setSearch] = useState("");
 
@@ -123,7 +125,10 @@ export default function Pipeline() {
               {totalLeads} {activeTab === "b2c" ? "Eigentümer" : "Partner"} in der Pipeline
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-brand text-primary-foreground text-sm font-medium shadow-crm-sm hover:opacity-90 transition-opacity">
+          <button
+            onClick={() => navigate(activeTab === "b2c" ? "/b2c/neue-leads" : "/b2b/neue-leads")}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-brand text-primary-foreground text-sm font-medium shadow-crm-sm hover:opacity-90 transition-opacity"
+          >
             <Plus className="h-4 w-4" />
             Neuer Lead
           </button>
