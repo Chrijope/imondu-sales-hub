@@ -291,6 +291,26 @@ export default function LeadScouring() {
                 <Badge variant="secondary">{filtered.length} Ergebnisse</Badge>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    let csv: string;
+                    if (tab === "b2c") {
+                      csv = ["Name,Telefon,E-Mail,Adresse,Objekttyp,Baujahr,Fläche,Preis", ...filteredB2C.map(r => `"${r.name}","${r.phone}","${r.email}","${r.address}","${r.objekttyp}",${r.baujahr || ""},${r.wohnflaeche || ""},"${r.preis}"`)].join("\n");
+                    } else {
+                      csv = ["Firma,Gewerk,Kontaktperson,Telefon,E-Mail,Website,Region", ...filteredB2B.map(r => `"${r.firma}","${r.gewerk}","${r.kontakt}","${r.phone}","${r.email}","${r.website}","${r.region}"`)].join("\n");
+                    }
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url; a.download = `scouring-${tab}-leads.csv`; a.click();
+                    URL.revokeObjectURL(url);
+                    toast({ title: "Export ✓", description: `${filtered.length} Leads als CSV exportiert.` });
+                  }}
+                  className="gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5" /> Export
+                </Button>
                 {selectedIds.size > 0 && (
                   <>
                     <Badge variant="outline">{selectedIds.size} ausgewählt</Badge>
