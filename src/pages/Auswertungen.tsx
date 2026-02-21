@@ -29,11 +29,11 @@ const TIME_FILTERS = [
 
 // ── Fake partner data ──
 const PARTNERS = [
-  "Rouven Maisch", "Andreas Kenkenberg", "Lukas Schwaderer", "Lucas Henn",
-  "Michael Hollenbach", "Max Müller", "Murat Demir", "Benedikt Lukas",
-  "Julius Liebscher", "Johannes Placzek", "Tim Bosler", "Markus Wiedergrün",
-  "Pascal Maison", "Benjamin Thiele", "Henrik Keles", "Sinan Lök",
-  "Florian Walz", "Artem Matrohin", "Hakan Erden", "Manuel Hartmann",
+  "Max Müller", "Laura Schneider", "Tom Weber", "Nina Fischer",
+  "Jan Hoffmann", "Sophie Becker", "Felix Wagner", "Emma Richter",
+  "Lukas Braun", "Lena Hartmann", "Paul Zimmermann", "Marie Krüger",
+  "David Lehmann", "Anna Schmitt", "Tim Neumann", "Lisa Schwarz",
+  "Marco Werner", "Julia Lange", "Nico Baumann", "Sarah Koch",
 ];
 
 const MY_NAME = "Max Müller";
