@@ -40,6 +40,7 @@ export const ALL_MENU_ITEMS = [
   { id: "helpdesk", label: "Helpdesk" },
   { id: "shop", label: "Shop" },
   { id: "einstellungen", label: "Einstellungen" },
+  { id: "lead-scouring", label: "Lead Scouring" },
 ];
 
 const ALL_MENU_IDS = ALL_MENU_ITEMS.map((m) => m.id);
