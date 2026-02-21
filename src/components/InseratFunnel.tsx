@@ -69,6 +69,7 @@ interface FunnelForm {
   // Step 3 – Entwicklungsplanung
   entwicklungsabsicht: string;
   geplanteEntwicklung: string[];
+  zielNachEntwicklung: string;
   zeitrahmen: string;
   budgetRange: string;
   finanzierungGesichert: string;
@@ -137,6 +138,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     anzahlEinheiten: "",
     entwicklungsabsicht: "",
     geplanteEntwicklung: [],
+    zielNachEntwicklung: "",
     zeitrahmen: "",
     budgetRange: "",
     finanzierungGesichert: "",
@@ -269,29 +271,34 @@ function Step1({ form, update }: { form: FunnelForm; update: (p: Partial<FunnelF
           <Label className="text-xs font-medium text-muted-foreground">Titel / Überschrift *</Label>
           <Input placeholder="z.B. Bestandshaus mit großem Potenzial" value={form.titel} onChange={(e) => update({ titel: e.target.value })} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Objekttyp</Label>
-            <Select value={form.objekttyp} onValueChange={(v) => update({ objekttyp: v as Objekttyp })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {["Wohnung", "Einfamilienhaus", "Mehrfamilienhaus", "Gewerbeobjekt", "Grundstück", "Mischobjekt"].map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="space-y-2">
+          <Label className="text-xs font-medium text-muted-foreground">Um was für eine Immobilie handelt es sich?</Label>
+          <div className="flex flex-wrap gap-2">
+            {(["Einfamilienhaus", "Mehrfamilienhaus", "Wohnung", "Gewerbeobjekt", "Grundstück", "Mischobjekt"] as Objekttyp[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => update({ objekttyp: t })}
+                className={`px-4 py-2 rounded-lg border text-sm transition-all ${
+                  form.objekttyp === t
+                    ? "border-primary bg-primary/5 text-foreground font-medium"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                {t === "Einfamilienhaus" ? "Haus" : t === "Gewerbeobjekt" ? "Gewerbe" : t}
+              </button>
+            ))}
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Sanierungsstatus</Label>
-            <Select value={form.sanierungsstatus} onValueChange={(v) => update({ sanierungsstatus: v as Sanierungsstatus })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {["Unsaniert", "Teilsaniert", "Vollsaniert"].map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium text-muted-foreground">Sanierungsstatus</Label>
+          <Select value={form.sanierungsstatus} onValueChange={(v) => update({ sanierungsstatus: v as Sanierungsstatus })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["Unsaniert", "Teilsaniert", "Vollsaniert"].map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs font-medium text-muted-foreground">Adresse *</Label>
@@ -527,6 +534,32 @@ function Step3Entwicklung({
             </div>
           </div>
         )}
+
+        {/* Ziel nach Entwicklung */}
+        <div className="space-y-2">
+          <Label className="text-xs font-medium text-muted-foreground">Was ist Ihr Ziel nach der Immobilienentwicklung? (optional)</Label>
+          <div className="flex flex-wrap gap-4">
+            {[
+              { value: "verkaufen", label: "Immobilie verkaufen" },
+              { value: "behalten", label: "Immobilie behalten" },
+              { value: "unklar", label: "Weiß ich nicht" },
+            ].map((opt) => (
+              <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="zielNachEntwicklung"
+                  checked={form.zielNachEntwicklung === opt.value}
+                  onChange={() => update({ zielNachEntwicklung: opt.value })}
+                  className="accent-primary w-4 h-4"
+                />
+                <span className="text-sm text-foreground">{opt.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+            Wählen Sie, ob Sie die Immobilie nach der Entwicklung behalten möchten (z.&nbsp;B. zur Vermietung oder Eigennutzung) oder ob Sie einen Verkauf planen. Wenn Sie sich noch nicht sicher sind, können Sie diese Frage offen lassen und später entscheiden.
+          </p>
+        </div>
 
         <hr className="border-border" />
 
