@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -8,6 +9,7 @@ import {
   ArrowRight,
   TrendingUp,
   Phone,
+  CheckCircle2,
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
@@ -45,14 +47,47 @@ const news = [
   { text: "→ Provisionsauszahlung Februar abgeschlossen", isNew: false },
 ];
 
-const tasks = [
-  { text: "Follow-Up: Architektur Bauer GmbH anrufen", due: "Heute 14:00", priority: "high" },
-  { text: "Eigentümer Müller – Inserat prüfen", due: "Heute 16:00", priority: "high" },
-  { text: "Peter Klein – Rückruf (MFH Sanierung)", due: "Morgen 10:00", priority: "medium" },
-  { text: "Neue B2B Leads qualifizieren", due: "Morgen", priority: "low" },
-];
+// Inbox task type (matches Inbox.tsx)
+interface InboxTask {
+  id: string;
+  title: string;
+  description?: string;
+  type: string;
+  priority: "high" | "medium" | "low";
+  time?: string;
+  contact?: string;
+  done: boolean;
+  day?: string;
+}
+
+function useInboxTasks() {
+  const [tasks, setTasks] = useState<InboxTask[]>([]);
+
+  useEffect(() => {
+    const load = () => {
+      try {
+        const saved = localStorage.getItem("inbox-tasks-v2");
+        if (saved) setTasks(JSON.parse(saved));
+      } catch {}
+    };
+    load();
+    // Listen for storage changes (from Inbox page)
+    window.addEventListener("storage", load);
+    // Also poll on focus to catch same-tab changes
+    window.addEventListener("focus", load);
+    return () => {
+      window.removeEventListener("storage", load);
+      window.removeEventListener("focus", load);
+    };
+  }, []);
+
+  return tasks;
+}
 
 export default function Dashboard() {
+  const inboxTasks = useInboxTasks();
+  const pendingTasks = inboxTasks.filter((t) => !t.done).slice(0, 4);
+
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
   const b2bLeads = SAMPLE_LEADS.filter((l) => l.type === "b2b");
   const b2cBestand = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
@@ -61,8 +96,8 @@ export default function Dashboard() {
   const b2bNew = b2bLeads.filter((l) => l.status === "b2b_new").length;
 
   // Provision calculations
-  const b2cProvision = b2cBestand * 10; // 10€ per Inserat
-  const b2bProvision = b2bBestand * 312.5; // 25% von 1.250€
+  const b2cProvision = b2cBestand * 10;
+  const b2bProvision = b2bBestand * 312.5;
   const b2cPotenzial = b2cLeads.length * 10;
   const b2bPotenzial = b2bLeads.length * 312.5;
 
@@ -147,19 +182,26 @@ export default function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground">Mitteilungen</h2>
             </div>
             <div className="space-y-3">
-              {tasks.map((task, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <div
-                    className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${
-                      task.priority === "high" ? "bg-destructive" : task.priority === "medium" ? "bg-warning" : "bg-muted-foreground"
-                    }`}
-                  />
-                  <div>
-                    <p className="text-xs text-foreground leading-tight">{task.text}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{task.due}</p>
+              {pendingTasks.length > 0 ? (
+                pendingTasks.map((task) => (
+                  <div key={task.id} className="flex items-start gap-2">
+                    <div
+                      className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${
+                        task.priority === "high" ? "bg-destructive" : task.priority === "medium" ? "bg-warning" : "bg-muted-foreground"
+                      }`}
+                    />
+                    <div>
+                      <p className="text-xs text-foreground leading-tight">{task.title}</p>
+                      {task.time && <p className="text-[11px] text-muted-foreground mt-0.5">{task.time}</p>}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-2 py-2">
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
+                  <p className="text-xs text-muted-foreground">Alles erledigt! 🎉</p>
                 </div>
-              ))}
+              )}
             </div>
             <Link to="/inbox" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
               Alle Mitteilungen ansehen <ArrowRight className="h-3 w-3" />
