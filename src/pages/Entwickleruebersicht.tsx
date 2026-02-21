@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ import {
   ExternalLink,
   LayoutGrid,
   List,
+  Map as MapIcon,
   MessageSquare,
   Shield,
   Wrench,
@@ -230,7 +233,72 @@ const statusColors: Record<string, string> = {
 };
 
 type GewerkFilter = "alle" | Gewerk;
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list" | "map";
+
+const CITY_COORDS: Record<string, [number, number]> = {
+  Berlin: [52.52, 13.405], München: [48.137, 11.576], Hamburg: [53.551, 9.994],
+  Köln: [50.938, 6.957], Frankfurt: [50.111, 8.682], Stuttgart: [48.776, 9.183],
+  Düsseldorf: [51.228, 6.774], Dresden: [51.051, 13.738], Hannover: [52.376, 9.738],
+};
+
+const getEntwicklerCoords = (ort: string): [number, number] => {
+  return CITY_COORDS[ort] || [50.0 + Math.random() * 3, 8 + Math.random() * 5];
+};
+
+// Gewerk color map for map markers
+const GEWERK_COLORS: Record<string, string> = {
+  Architekt: "#6366f1", Fensterbauer: "#0ea5e9", Energieberater: "#f59e0b",
+  Dachdecker: "#ef4444", SHK: "#10b981", Elektriker: "#8b5cf6",
+  Maler: "#ec4899", Projektentwickler: "#14b8a6", Immobilienmakler: "#f97316",
+  Bauträger: "#64748b", Zimmerer: "#a3e635", Sonstige: "#94a3b8",
+};
+
+function EntwicklerMap({ entwickler, onSelect }: { entwickler: Entwickler[]; onSelect: (id: string) => void }) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (mapInstance.current) {
+      mapInstance.current.remove();
+      mapInstance.current = null;
+    }
+
+    const map = L.map(mapRef.current, { scrollWheelZoom: true }).setView([51.2, 10.4], 6);
+    mapInstance.current = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '© OpenStreetMap',
+    }).addTo(map);
+
+    entwickler.forEach((e) => {
+      const [lat, lng] = getEntwicklerCoords(e.ort);
+      const color = GEWERK_COLORS[e.gewerk] || "#6366f1";
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="background:${color};width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;">${e.logoEmoji}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      });
+      const marker = L.marker([lat + (Math.random() - 0.5) * 0.02, lng + (Math.random() - 0.5) * 0.02], { icon }).addTo(map);
+      marker.bindPopup(`
+        <div style="min-width:180px">
+          <strong>${e.firmenname}</strong><br/>
+          <span style="color:#888;font-size:12px;">${e.gewerk} · ${e.ort}</span><br/>
+          <span style="font-size:12px;">⭐ ${e.bewertung} · ${e.projekte} Projekte</span>
+        </div>
+      `);
+      marker.on("click", () => onSelect(e.id));
+    });
+
+    return () => {
+      map.remove();
+      mapInstance.current = null;
+    };
+  }, [entwickler, onSelect]);
+
+  return <div ref={mapRef} className="w-full h-[500px] rounded-xl border border-border overflow-hidden" />;
+}
 
 const getProfilBild = (idx: number) => profilBilder[idx % profilBilder.length];
 const getFirmaBild = (idx: number) => firmaBilder[idx % firmaBilder.length];
@@ -529,11 +597,26 @@ export default function Entwickleruebersicht() {
                 <Button variant={viewMode === "list" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("list")}>
                   <List className="h-4 w-4" />
                 </Button>
+                <Button variant={viewMode === "map" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("map")}>
+                  <MapIcon className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
-            {/* Grid View */}
-            {viewMode === "grid" ? (
+            {/* Map View */}
+            {viewMode === "map" ? (
+              <div className="space-y-3">
+                <EntwicklerMap entwickler={searched} onSelect={(id) => setSelectedId(id)} />
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {Object.entries(GEWERK_COLORS).filter(([g]) => usedGewerke.includes(g as Gewerk)).map(([gewerk, color]) => (
+                    <div key={gewerk} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                      {gewerk}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {searched.map((e, i) => {
                   const globalIdx = SAMPLE_ENTWICKLER.indexOf(e);
