@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
   Video,
   CalendarDays,
   AlertTriangle,
-  Plus,
   Filter,
   ChevronRight,
   Calendar,
@@ -34,19 +34,20 @@ interface InboxTask {
   contact?: string;
   done: boolean;
   day?: "mo" | "di" | "mi" | "do" | "fr"; // for weekly view
+  leadId?: string; // link to lead detail
 }
 
 const INITIAL_TASKS: InboxTask[] = [
-  { id: "1", title: "Rückruf: Hr. Bauer (Architektur Bauer GmbH)", description: "B2B Partner – Interesse an Premium-Paket", type: "call", priority: "high", time: "09:30", contact: "Hr. Bauer", done: false, day: "mo" },
+  { id: "1", title: "Rückruf: Hr. Bauer (Architektur Bauer GmbH)", description: "B2B Partner – Interesse an Premium-Paket", type: "call", priority: "high", time: "09:30", contact: "Hr. Bauer", done: false, day: "mo", leadId: "2" },
   { id: "2", title: "Online-Meeting: Fam. Schneider", description: "Inserat besprechen – MFH München", type: "meeting", priority: "high", time: "10:00", contact: "Fam. Schneider", done: false, day: "mo" },
-  { id: "3", title: "Follow-Up E-Mail an Peter Klein", description: "Sanierungsanfrage nachfassen", type: "follow-up", priority: "medium", time: "11:00", contact: "Peter Klein", done: false, day: "mo" },
+  { id: "3", title: "Follow-Up E-Mail an Peter Klein", description: "Sanierungsanfrage nachfassen", type: "follow-up", priority: "medium", time: "11:00", contact: "Peter Klein", done: false, day: "mo", leadId: "3" },
   { id: "4", title: "Neue B2C Leads qualifizieren", description: "5 neue Eigentümer-Anfragen prüfen", type: "todo", priority: "medium", time: "14:00", done: false, day: "di" },
-  { id: "5", title: "Vertrag an Malermeister Schulz senden", description: "B2B Partnervertrag vorbereiten", type: "deadline", priority: "high", time: "15:00", contact: "Schulz GmbH", done: false, day: "di" },
+  { id: "5", title: "Vertrag an Malermeister Schulz senden", description: "B2B Partnervertrag vorbereiten", type: "deadline", priority: "high", time: "15:00", contact: "Schulz GmbH", done: false, day: "di", leadId: "8" },
   { id: "6", title: "Teammeeting Wochenplanung", description: "Weekly mit Vertriebsteam", type: "meeting", priority: "medium", time: "16:00", done: false, day: "mi" },
   { id: "7", title: "Provision Februar prüfen", description: "Gutschrift kontrollieren", type: "todo", priority: "low", done: false, day: "do" },
-  { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "09:00", contact: "Fr. Müller", done: false, day: "fr" },
+  { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "09:00", contact: "Fr. Müller", done: false, day: "fr", leadId: "1" },
   { id: "9", title: "Kaltakquise-Block: 10 Anrufe", description: "Neue Eigentümer aus Lead-Liste kontaktieren", type: "call", priority: "medium", time: "10:00", done: false, day: "mi" },
-  { id: "10", title: "Exposé für MFH Stuttgart erstellen", description: "Fotos + Daten aufbereiten", type: "todo", priority: "medium", time: "13:00", done: false, day: "do" },
+  { id: "10", title: "Exposé für MFH Stuttgart erstellen", description: "Fotos + Daten aufbereiten", type: "todo", priority: "medium", time: "13:00", done: false, day: "do", leadId: "11" },
 ];
 
 const typeIcons: Record<TaskType, React.ComponentType<{ className?: string }>> = {
@@ -71,17 +72,26 @@ const DAYS = [
 
 type FilterType = "alle" | TaskType;
 
-function TaskRow({ task, onToggle }: { task: InboxTask; onToggle: () => void }) {
+function TaskRow({ task, onToggle, onNavigate }: { task: InboxTask; onToggle: () => void; onNavigate?: () => void }) {
   const Icon = typeIcons[task.type];
   return (
-    <div className="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/30 transition-colors group">
-      <Checkbox checked={task.done} onCheckedChange={onToggle} className="mt-0.5" />
+    <div
+      className={`flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/30 transition-colors group ${task.leadId ? "cursor-pointer" : ""}`}
+      onClick={() => task.leadId && onNavigate?.()}
+    >
+      <Checkbox
+        checked={task.done}
+        onCheckedChange={(e) => { e && e; onToggle(); }}
+        className="mt-0.5"
+        onClick={(e) => e.stopPropagation()}
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-sm font-medium ${task.done ? "line-through text-muted-foreground" : "text-foreground"}`}>{task.title}</span>
           <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityStyles[task.priority]}`}>
             {task.priority === "high" ? "Dringend" : task.priority === "medium" ? "Mittel" : "Niedrig"}
           </Badge>
+          {task.leadId && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
         </div>
         {task.description && <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>}
       </div>
@@ -100,6 +110,7 @@ function TaskRow({ task, onToggle }: { task: InboxTask; onToggle: () => void }) 
 }
 
 export default function Inbox() {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<InboxTask[]>(() => {
     try {
       const saved = localStorage.getItem("inbox-tasks-v2");
@@ -198,14 +209,11 @@ export default function Inbox() {
                   <Sun className="h-4 w-4 text-warning" />
                   <h2 className="text-sm font-semibold text-foreground">Heute – Montag ({pendingToday.length} offen)</h2>
                 </div>
-                <Button variant="ghost" size="sm" className="gap-1 text-xs text-muted-foreground">
-                  <Plus className="h-3.5 w-3.5" /> Aufgabe
-                </Button>
               </div>
               <div className="divide-y divide-border/60">
                 {pendingToday.length > 0 ? (
                   pendingToday.map((task) => (
-                    <TaskRow key={task.id} task={task} onToggle={() => toggleDone(task.id)} />
+                    <TaskRow key={task.id} task={task} onToggle={() => toggleDone(task.id)} onNavigate={() => task.leadId && navigate(`/lead/${task.leadId}`)} />
                   ))
                 ) : (
                   <div className="py-12 text-center text-muted-foreground text-sm">
@@ -256,7 +264,7 @@ export default function Inbox() {
                   {dayTasks.length > 0 ? (
                     <div className="divide-y divide-border/40">
                       {[...pending, ...done].map((task) => (
-                        <TaskRow key={task.id} task={task} onToggle={() => toggleDone(task.id)} />
+                        <TaskRow key={task.id} task={task} onToggle={() => toggleDone(task.id)} onNavigate={() => task.leadId && navigate(`/lead/${task.leadId}`)} />
                       ))}
                     </div>
                   ) : (

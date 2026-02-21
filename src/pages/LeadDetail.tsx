@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -58,6 +59,30 @@ export default function LeadDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const lead = SAMPLE_LEADS.find((l) => l.id === id);
+
+  // Read inbox tasks for this lead
+  const [inboxTasks, setInboxTasks] = useState<{ id: string; title: string; type: string; priority: string; done: boolean; time?: string; day?: string }[]>([]);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("inbox-tasks-v2");
+      if (saved) {
+        const all = JSON.parse(saved);
+        setInboxTasks(all.filter((t: any) => t.leadId === id));
+      }
+    } catch {}
+    const onStorage = () => {
+      try {
+        const saved = localStorage.getItem("inbox-tasks-v2");
+        if (saved) {
+          const all = JSON.parse(saved);
+          setInboxTasks(all.filter((t: any) => t.leadId === id));
+        }
+      } catch {}
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onStorage);
+    return () => { window.removeEventListener("storage", onStorage); window.removeEventListener("focus", onStorage); };
+  }, [id]);
 
   if (!lead) {
     return (
@@ -407,6 +432,22 @@ export default function LeadDetail() {
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Aktivitäten-Timeline</h2>
             </div>
+            {/* Inbox tasks for this lead */}
+            {inboxTasks.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Offene Aufgaben (Inbox)</h3>
+                <div className="space-y-2">
+                  {inboxTasks.map((t) => (
+                    <div key={t.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${t.done ? "bg-muted/30 border-border/40 line-through text-muted-foreground" : "bg-warning/5 border-warning/20 text-foreground"}`}>
+                      <CheckSquare className={`h-3.5 w-3.5 shrink-0 ${t.done ? "text-muted-foreground" : "text-warning"}`} />
+                      <span className="flex-1">{t.title}</span>
+                      {t.time && <span className="text-xs text-muted-foreground">{t.time}</span>}
+                      {t.done && <span className="text-[10px] text-muted-foreground">✓ erledigt</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="space-y-0">
               {sampleActivities.map((act, i) => {
                 const Icon = activityIcons[act.type] || Clock;
