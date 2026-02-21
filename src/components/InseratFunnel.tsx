@@ -192,6 +192,18 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
         <Button variant="outline" onClick={onClose}>Abbrechen</Button>
       </div>
 
+      {/* Step content + hint sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+        <div className="bg-card rounded-xl border border-border p-6 space-y-5">
+          {step === 1 && <Step1 form={form} update={update} />}
+          {step === 2 && <Step2 form={form} update={update} />}
+          {step === 3 && <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />}
+          {step === 4 && <StepBilder form={form} onUpload={simulateImageUpload} />}
+          {step === 5 && <StepDokumente form={form} onUpload={simulateDocUpload} />}
+        </div>
+        <HintSidebar step={step} />
+      </div>
+
       {/* Step indicators */}
       <div className="space-y-3">
         {STEPS.map((s) => {
@@ -222,18 +234,6 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
             </button>
           );
         })}
-      </div>
-
-      {/* Step content + hint sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-        <div className="bg-card rounded-xl border border-border p-6 space-y-5">
-          {step === 1 && <Step1 form={form} update={update} />}
-          {step === 2 && <Step2 form={form} update={update} />}
-          {step === 3 && <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />}
-          {step === 4 && <StepBilder form={form} onUpload={simulateImageUpload} />}
-          {step === 5 && <StepDokumente form={form} onUpload={simulateDocUpload} />}
-        </div>
-        <HintSidebar step={step} />
       </div>
 
       {/* Navigation */}
