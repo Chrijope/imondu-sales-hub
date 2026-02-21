@@ -187,15 +187,16 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
+      <div className="max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-display font-bold text-foreground text-center flex-1">Neues Inserat erstellen</h1>
         <Button variant="outline" onClick={onClose}>Abbrechen</Button>
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center justify-center mb-2 max-w-2xl mx-auto">
+      <div className="flex items-center justify-center mb-8 max-w-2xl mx-auto">
         {STEPS.map((s, i) => (
           <div key={s.id} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center">
@@ -221,13 +222,21 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Step content + hint sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-        <div className="bg-card rounded-xl border border-border p-6 space-y-5">
-          {step === 1 && <Step1 form={form} update={update} />}
-          {step === 2 && <Step2 form={form} update={update} />}
-          {step === 3 && <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />}
-          {step === 4 && <StepBilder form={form} onUpload={simulateImageUpload} />}
-          {step === 5 && <StepDokumente form={form} onUpload={simulateDocUpload} />}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start">
+        <div className="rounded-xl border border-border overflow-hidden">
+          {/* Banner heading */}
+          <div className="w-full px-5 py-3.5 bg-primary/5 border-b border-border">
+            <span className="text-sm font-semibold text-foreground">
+              {STEPS.find(s => s.id === step)?.label}
+            </span>
+          </div>
+          <div className="p-6 bg-card space-y-5">
+            {step === 1 && <Step1 form={form} update={update} />}
+            {step === 2 && <Step2 form={form} update={update} />}
+            {step === 3 && <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />}
+            {step === 4 && <StepBilder form={form} onUpload={simulateImageUpload} />}
+            {step === 5 && <StepDokumente form={form} onUpload={simulateDocUpload} />}
+          </div>
         </div>
         <HintSidebar step={step} />
       </div>
@@ -280,6 +289,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
         )}
       </div>
     </div>
+    </div>
   );
 }
 
@@ -287,7 +297,6 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
 function Step1({ form, update }: { form: FunnelForm; update: (p: Partial<FunnelForm>) => void }) {
   return (
     <>
-      <h2 className="text-lg font-display font-semibold text-foreground">Objektbeschreibung</h2>
       <div className="space-y-4">
         <div className="space-y-1.5">
           <Label className="text-xs font-medium text-muted-foreground">Eigentümer *</Label>
@@ -353,8 +362,6 @@ function Step1({ form, update }: { form: FunnelForm; update: (p: Partial<FunnelF
 function Step2({ form, update }: { form: FunnelForm; update: (p: Partial<FunnelForm>) => void }) {
   return (
     <>
-      <h2 className="text-lg font-display font-semibold text-foreground">Angaben zum Objekt</h2>
-      <p className="text-sm text-muted-foreground font-medium">{form.objekttyp}</p>
       <div className="space-y-5">
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-1.5">
@@ -509,7 +516,6 @@ function Step3Entwicklung({
 }) {
   return (
     <>
-      <h2 className="text-lg font-display font-semibold text-foreground">Entwicklungsplanung</h2>
       <p className="text-sm text-muted-foreground">
         Diese Angaben helfen Entwicklungspartnern einzuschätzen, ob Ihr Objekt zu ihrem Profil passt.
       </p>
@@ -668,7 +674,6 @@ function Step3Entwicklung({
 function StepBilder({ form, onUpload }: { form: FunnelForm; onUpload: () => void }) {
   return (
     <>
-      <h2 className="text-lg font-display font-semibold text-foreground">Bilder</h2>
       <p className="text-sm text-muted-foreground">
         Bitte laden Sie <strong>mindestens ein Bild</strong> hoch!
       </p>
@@ -711,7 +716,6 @@ function StepBilder({ form, onUpload }: { form: FunnelForm; onUpload: () => void
 function StepDokumente({ form, onUpload }: { form: FunnelForm; onUpload: (typ: string) => void }) {
   return (
     <>
-      <h2 className="text-lg font-display font-semibold text-foreground">Dokumente</h2>
       <p className="text-sm text-muted-foreground">
         Zur Vervollständigung Ihres Inserats können Sie <strong>optional</strong> Ihre Dokumente hochladen
       </p>
