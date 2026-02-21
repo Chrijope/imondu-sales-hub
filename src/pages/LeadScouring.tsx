@@ -14,29 +14,70 @@ import { GEWERK_OPTIONS, Lead, Objekttyp, Gewerk } from "@/data/crm-data";
 import { addScoutedLeads } from "@/utils/scouted-leads";
 import { useToast } from "@/hooks/use-toast";
 
-// ── Mock B2C scouring results ──
-const MOCK_B2C_RESULTS = [
-  { id: "s1", name: "Markus Braun", phone: "+49 170 9998877", email: "m.braun@web.de", address: "Friedrichstr. 45, 10117 Berlin", objekttyp: "Einfamilienhaus", baujahr: 1982, wohnflaeche: 135, preis: "389.000 €", quelle: "ImmoScout24" },
-  { id: "s2", name: "Claudia Richter", phone: "+49 151 2223344", email: "c.richter@gmail.com", address: "Leopoldstr. 120, 80802 München", objekttyp: "Wohnung", baujahr: 1995, wohnflaeche: 78, preis: "295.000 €", quelle: "ImmoScout24" },
-  { id: "s3", name: "Hans-Peter Schulz", phone: "+49 172 5556677", email: "hp.schulz@t-online.de", address: "Alsterchaussee 10, 20149 Hamburg", objekttyp: "Mehrfamilienhaus", baujahr: 1968, wohnflaeche: 420, preis: "1.250.000 €", quelle: "ImmoScout24" },
-  { id: "s4", name: "Ingrid Neumann", phone: "+49 160 8889900", email: "i.neumann@outlook.de", address: "Königsallee 55, 40212 Düsseldorf", objekttyp: "Einfamilienhaus", baujahr: 1975, wohnflaeche: 165, preis: "445.000 €", quelle: "ImmoScout24" },
-  { id: "s5", name: "Stefan Krüger", phone: "+49 176 1112233", email: "s.krueger@email.de", address: "Schlossstr. 8, 70173 Stuttgart", objekttyp: "Wohnung", baujahr: 2010, wohnflaeche: 92, preis: "320.000 €", quelle: "ImmoScout24" },
-  { id: "s6", name: "Monika Fischer", phone: "+49 157 4445566", email: "m.fischer@gmx.de", address: "Zeil 100, 60313 Frankfurt", objekttyp: "Gewerbeobjekt", baujahr: 1990, wohnflaeche: 200, preis: "750.000 €", quelle: "ImmoScout24" },
-  { id: "s7", name: "Ralf Zimmermann", phone: "+49 163 7778899", email: "r.zimmermann@web.de", address: "Unter den Linden 20, 10117 Berlin", objekttyp: "Grundstück", baujahr: 0, wohnflaeche: 0, preis: "180.000 €", quelle: "ImmoScout24" },
-  { id: "s8", name: "Andrea Weber", phone: "+49 171 3334455", email: "a.weber@email.de", address: "Maximilianstr. 35, 80539 München", objekttyp: "Wohnung", baujahr: 2003, wohnflaeche: 68, preis: "275.000 €", quelle: "ImmoScout24" },
-];
+// ── B2C data pool for generation ──
+const B2C_FIRST = ["Markus","Claudia","Hans-Peter","Ingrid","Stefan","Monika","Ralf","Andrea","Jürgen","Petra","Wolfgang","Susanne","Dieter","Brigitte","Bernd","Karin","Uwe","Helga","Günter","Renate","Frank","Sabine","Manfred","Gabriele","Werner","Ursula","Horst","Elke","Heinrich","Christa","Gerhard","Erika","Hartmut","Anja","Norbert","Silke","Volker","Birgit","Reinhard","Martina"];
+const B2C_LAST = ["Braun","Richter","Schulz","Neumann","Krüger","Fischer","Zimmermann","Weber","Hoffmann","Koch","Bauer","Schröder","Lange","Meyer","Wagner","Becker","Schmitt","Wolf","Peters","Möller","Berger","Hartmann","Kaiser","Vogt","Jäger","Seidel","Brandt","Haas","Schreiber","Kraft"];
+const B2C_STREETS = ["Friedrichstr.","Leopoldstr.","Alsterchaussee","Königsallee","Schlossstr.","Zeil","Unter den Linden","Maximilianstr.","Goethestr.","Schillerweg","Beethovenallee","Mozartstr.","Bachgasse","Kantstr.","Lessingplatz","Hauptstr.","Bahnhofstr.","Gartenweg","Lindenallee","Parkstr."];
+const B2C_CITIES = ["10117 Berlin","80802 München","20149 Hamburg","40212 Düsseldorf","70173 Stuttgart","60313 Frankfurt","50667 Köln","90402 Nürnberg","01069 Dresden","04109 Leipzig","30159 Hannover","28195 Bremen","45127 Essen","44137 Dortmund","76133 Karlsruhe"];
+const B2C_TYPEN = ["Einfamilienhaus","Wohnung","Mehrfamilienhaus","Gewerbeobjekt","Grundstück"];
+const B2C_QUELLEN = ["ImmoScout24","Immowelt","eBay Kleinanzeigen"];
 
-// ── Mock B2B scouring results ──
-const MOCK_B2B_RESULTS = [
-  { id: "b1", firma: "Planwerk Architekten", gewerk: "Architekt", kontakt: "Dr. Lisa Berger", phone: "+49 30 1234567", email: "berger@planwerk.de", website: "www.planwerk.de", region: "Berlin", quelle: "Google" },
-  { id: "b2", firma: "EnergieEffizient GmbH", gewerk: "Energieberater", kontakt: "Thomas Hartmann", phone: "+49 89 9876543", email: "hartmann@energieeffizient.de", website: "www.energieeffizient.de", region: "Bayern", quelle: "Google" },
-  { id: "b3", firma: "Dachprofi Müller", gewerk: "Dachdecker", kontakt: "Werner Müller", phone: "+49 40 5554433", email: "mueller@dachprofi.de", website: "www.dachprofi.de", region: "Hamburg", quelle: "Google" },
-  { id: "b4", firma: "Fenster König GmbH", gewerk: "Fensterbauer", kontakt: "Sabrina König", phone: "+49 221 7778899", email: "koenig@fenster-koenig.de", website: "www.fenster-koenig.de", region: "NRW", quelle: "Google" },
-  { id: "b5", firma: "Projekthaus Bayern", gewerk: "Projektentwickler", kontakt: "Michael Gruber", phone: "+49 89 3332211", email: "gruber@projekthaus.de", website: "www.projekthaus.de", region: "Bayern", quelle: "Google" },
-  { id: "b6", firma: "Elektro Schuster", gewerk: "Elektriker", kontakt: "Karl Schuster", phone: "+49 711 6665544", email: "schuster@elektro-schuster.de", website: "www.elektro-schuster.de", region: "Baden-Württemberg", quelle: "Google" },
-  { id: "b7", firma: "SHK Profi Nord", gewerk: "SHK", kontakt: "Jens Petersen", phone: "+49 431 1122334", email: "petersen@shk-nord.de", website: "www.shk-nord.de", region: "Schleswig-Holstein", quelle: "Google" },
-  { id: "b8", firma: "Malermeister Braun", gewerk: "Maler", kontakt: "Erich Braun", phone: "+49 351 4455667", email: "braun@malermeister.de", website: "www.malermeister-braun.de", region: "Sachsen", quelle: "Google" },
-];
+function generateB2C(count: number) {
+  return Array.from({ length: count }, (_, i) => {
+    const first = B2C_FIRST[i % B2C_FIRST.length];
+    const last = B2C_LAST[i % B2C_LAST.length];
+    const street = B2C_STREETS[i % B2C_STREETS.length];
+    const city = B2C_CITIES[i % B2C_CITIES.length];
+    const nr = 1 + ((i * 7 + 3) % 120);
+    const typ = B2C_TYPEN[i % B2C_TYPEN.length];
+    const bj = 1955 + (i * 3) % 65;
+    const fl = typ === "Grundstück" ? 0 : 50 + ((i * 13) % 400);
+    const preis = (100 + ((i * 37) % 1400)) * 1000;
+    return {
+      id: `s${i + 1}`,
+      name: `${first} ${last}`,
+      phone: `+49 ${150 + (i % 30)} ${1000000 + i * 1234}`,
+      email: `${first.toLowerCase()}.${last.toLowerCase()}@${["web.de","gmail.com","gmx.de","t-online.de","outlook.de"][i % 5]}`,
+      address: `${street} ${nr}, ${city}`,
+      objekttyp: typ,
+      baujahr: bj,
+      wohnflaeche: fl,
+      preis: `${preis.toLocaleString("de-DE")} €`,
+      quelle: B2C_QUELLEN[i % B2C_QUELLEN.length],
+    };
+  });
+}
+
+// ── B2B data pool for generation ──
+const B2B_FIRMEN_PREFIX = ["Planwerk","EnergieCheck","Dachprofi","Fenster König","Projekthaus","Elektro","SHK Profi","Malermeister","Baukonzept","Architektur","Sanierung Plus","Heizung","Licht & Raum","Holzbau","Solar","Wärme","Klima","Fassaden","Boden","Putz & Stuck"];
+const B2B_FIRMEN_SUFFIX = ["GmbH","AG","& Co. KG","OHG","e.K.","& Söhne","Partner","Solutions","Gruppe","Technik"];
+const B2B_GEWERKE: string[] = ["Architekt","Energieberater","Dachdecker","Fensterbauer","Projektentwickler","Elektriker","SHK","Maler","Zimmerer","Bauträger","Immobilienmakler"];
+const B2B_KONTAKT_FIRST = ["Lisa","Thomas","Werner","Sabrina","Michael","Karl","Jens","Erich","Anna","Markus","Petra","Stefan","Claudia","Frank","Monika","Dieter","Karin","Uwe","Renate","Bernd"];
+const B2B_KONTAKT_LAST = ["Berger","Hartmann","Müller","König","Gruber","Schuster","Petersen","Braun","Lehmann","Vogel","Schmid","Baumann","Richter","Sommer","Winter","Kraus","Roth","Beck","Engel","Scholz"];
+const B2B_REGIONS = ["Berlin","Bayern","Hamburg","NRW","Baden-Württemberg","Hessen","Sachsen","Niedersachsen","Schleswig-Holstein","Brandenburg","Thüringen","Rheinland-Pfalz"];
+
+function generateB2B(count: number) {
+  return Array.from({ length: count }, (_, i) => {
+    const prefix = B2B_FIRMEN_PREFIX[i % B2B_FIRMEN_PREFIX.length];
+    const suffix = B2B_FIRMEN_SUFFIX[i % B2B_FIRMEN_SUFFIX.length];
+    const first = B2B_KONTAKT_FIRST[i % B2B_KONTAKT_FIRST.length];
+    const last = B2B_KONTAKT_LAST[i % B2B_KONTAKT_LAST.length];
+    const gw = B2B_GEWERKE[i % B2B_GEWERKE.length];
+    const reg = B2B_REGIONS[i % B2B_REGIONS.length];
+    const domain = prefix.toLowerCase().replace(/[^a-z]/g, "");
+    return {
+      id: `b${i + 1}`,
+      firma: `${prefix} ${suffix}`,
+      gewerk: gw,
+      kontakt: `${first} ${last}`,
+      phone: `+49 ${30 + (i % 70)} ${1000000 + i * 987}`,
+      email: `${last.toLowerCase()}@${domain}.de`,
+      website: `www.${domain}.de`,
+      region: reg,
+      quelle: "Google",
+    };
+  });
+}
 
 const REGIONS = [
   "Alle Regionen", "Berlin", "Bayern", "Hamburg", "NRW", "Baden-Württemberg",
@@ -58,32 +99,32 @@ export default function LeadScouring() {
   const [assignee, setAssignee] = useState(ASSIGNEES[0]);
   const [assigned, setAssigned] = useState<Set<string>>(new Set());
 
-  const b2cResults = MOCK_B2C_RESULTS;
-  const b2bResults = MOCK_B2B_RESULTS;
+  const requestedAmount = Number(amount) || 10;
 
   const filteredB2C = useMemo(() => {
-    let list = b2cResults;
+    let list = generateB2C(requestedAmount);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
     }
-    return list.slice(0, Number(amount) || 50);
-  }, [b2cResults, search, amount]);
+    return list;
+  }, [requestedAmount, search]);
 
   const filteredB2B = useMemo(() => {
-    let list = b2bResults;
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
-    }
+    // Generate more to account for filtering
+    let list = generateB2B(requestedAmount * 3);
     if (region !== "Alle Regionen") {
       list = list.filter((r) => r.region === region);
     }
     if (gewerk !== "Alle") {
       list = list.filter((r) => r.gewerk === gewerk);
     }
-    return list.slice(0, Number(amount) || 50);
-  }, [b2bResults, search, region, gewerk, amount]);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)));
+    }
+    return list.slice(0, requestedAmount);
+  }, [requestedAmount, search, region, gewerk]);
   const filtered = tab === "b2c" ? filteredB2C : filteredB2B;
 
   const toggleSelect = (id: string) => {
@@ -119,7 +160,7 @@ export default function LeadScouring() {
 
     selectedIds.forEach((id) => {
       if (tab === "b2c") {
-        const r = MOCK_B2C_RESULTS.find((x) => x.id === id);
+        const r = filteredB2C.find((x) => x.id === id);
         if (!r) return;
         const nameParts = r.name.split(" ");
         const firstName = nameParts[0];
@@ -146,7 +187,7 @@ export default function LeadScouring() {
           wohnflaeche: r.wohnflaeche || undefined,
         });
       } else {
-        const r = MOCK_B2B_RESULTS.find((x) => x.id === id);
+        const r = filteredB2B.find((x) => x.id === id);
         if (!r) return;
         newLeads.push({
           id: `scouted-b2b-${id}-${Date.now()}`,
@@ -382,7 +423,7 @@ export default function LeadScouring() {
                             />
                           </td>
                           {tab === "b2c" ? (() => {
-                            const b = r as typeof MOCK_B2C_RESULTS[0];
+                            const b = r as ReturnType<typeof generateB2C>[0];
                             return (
                               <>
                                 <td className="p-3 font-medium text-foreground">{b.name}</td>
@@ -407,7 +448,7 @@ export default function LeadScouring() {
                               </>
                             );
                           })() : (() => {
-                            const b = r as typeof MOCK_B2B_RESULTS[0];
+                            const b = r as ReturnType<typeof generateB2B>[0];
                             return (
                               <>
                                 <td className="p-3 font-medium text-foreground">{b.firma}</td>
