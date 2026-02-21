@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Search, Phone, Upload, Download, SlidersHorizontal, X, HardHat, Sparkles, CalendarCheck, Tag, Clock } from "lucide-react";
+import { Search, Phone, Upload, Download, SlidersHorizontal, X, HardHat, Sparkles, CalendarCheck, Tag, Clock, Plus } from "lucide-react";
 import { useState, useMemo } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { useToast } from "@/hooks/use-toast";
@@ -253,15 +253,26 @@ export default function B2BLeads() {
             <h1 className="text-2xl font-display font-bold text-foreground">{config.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">{filtered.length} Partner · {config.description}</p>
           </div>
-          <button
-            onClick={() => setShowDialer(!showDialer)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              showDialer ? "gradient-brand text-primary-foreground shadow-crm-sm" : "bg-secondary text-foreground hover:bg-secondary/80"
-            }`}
-          >
-            <Phone className="h-4 w-4" />
-            Powerdialer
-          </button>
+          <div className="flex items-center gap-2">
+            {subPage === "neue-leads" && (
+              <button
+                onClick={() => navigate("/lead/new?type=b2b")}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-brand text-primary-foreground text-sm font-medium shadow-crm-sm hover:opacity-90 transition-opacity"
+              >
+                <Plus className="h-4 w-4" />
+                Neuer Lead
+              </button>
+            )}
+            <button
+              onClick={() => setShowDialer(!showDialer)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                showDialer ? "gradient-brand text-primary-foreground shadow-crm-sm" : "bg-secondary text-foreground hover:bg-secondary/80"
+              }`}
+            >
+              <Phone className="h-4 w-4" />
+              Powerdialer
+            </button>
+          </div>
         </div>
 
         {showDialer ? (
