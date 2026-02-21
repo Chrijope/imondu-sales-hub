@@ -7,7 +7,6 @@ import {
   Newspaper,
   ArrowRight,
   TrendingUp,
-  ClipboardList,
   Phone,
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
@@ -284,35 +283,25 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-4 content-start">
+          <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-3 gap-4 content-start">
             <Link
-              to="/leads"
-              className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
-            >
-              <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
-                <ClipboardList className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">Kontakt anlegen</span>
-            </Link>
-
-            <Link
-              to="/b2c-bestand"
+              to="/b2c/neue-leads"
               className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <Building2 className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">B2C Bestandskunden</span>
+              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">B2C neuer Lead</span>
             </Link>
 
             <Link
-              to="/b2b-bestand"
+              to="/b2b/neue-leads"
               className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <Briefcase className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">B2B Bestandskunden</span>
+              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">B2B neuer Lead</span>
             </Link>
 
             <Link
