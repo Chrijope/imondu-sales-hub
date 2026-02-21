@@ -23,3 +23,12 @@ export function addScoutedLeads(newLeads: Lead[]) {
   const toAdd = newLeads.filter((l) => !existingIds.has(l.id));
   saveScoutedLeads([...existing, ...toAdd]);
 }
+
+export function removeScoutedLead(id: string) {
+  const existing = getScoutedLeads();
+  saveScoutedLeads(existing.filter((l) => l.id !== id));
+}
+
+export function isScoutedLead(id: string): boolean {
+  return id.startsWith("scouted-");
+}
