@@ -44,7 +44,7 @@ const SUB_PAGE_CONFIG: Record<string, { title: string; description: string; filt
   "hot-leads": { title: "Hot Leads", description: "Eigentümer mit hoher Priorität", filterFn: (l) => l.priority === "high" },
   "follow-up": { title: "Follow Up", description: "Eigentümer, die nachverfolgt werden müssen", filterFn: (l) => l.status === "b2c_followup" },
   "heutige-termine": { title: "Heutige Termine", description: "Eigentümer-Termine für heute", filterFn: () => false },
-  "termine-gebucht": { title: "Termine gebucht", description: "Eigentümer mit gebuchten Terminen", filterFn: (l) => l.status === "b2c_interested" || l.status === "b2c_reached" },
+  "termine-gebucht": { title: "Termine gebucht", description: "Eigentümer mit gebuchten Terminen", filterFn: (l) => l.status === "b2c_first_call" || l.status === "b2c_reached" },
   "gewonnen": { title: "Gewonnen", description: "Eigentümer mit erstelltem Inserat", filterFn: (l) => l.status === "b2c_inserat" },
   "bestand": { title: "Bestand", description: "Alle aktiven Eigentümer-Leads im Bestand", filterFn: () => true },
 };

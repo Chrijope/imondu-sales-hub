@@ -43,7 +43,7 @@ const SUB_PAGE_CONFIG: Record<string, { title: string; description: string; filt
   "hot-leads": { title: "Hot Leads", description: "Partner mit hoher Priorität", filterFn: (l) => l.priority === "high" },
   "follow-up": { title: "Follow Up", description: "Partner, die nachverfolgt werden müssen", filterFn: (l) => l.status === "b2b_followup" },
   "heutige-termine": { title: "Heutige Termine", description: "Partner-Termine für heute", filterFn: () => false },
-  "termine-gebucht": { title: "Termine gebucht", description: "Partner mit gebuchten Demos/Präsentationen", filterFn: (l) => l.status === "b2b_demo" || l.status === "b2b_offer" },
+  "termine-gebucht": { title: "Termine gebucht", description: "Partner mit gebuchten Beratungsgesprächen", filterFn: (l) => l.status === "b2b_consultation" || l.status === "b2b_offer" },
   "gewonnen": { title: "Gewonnen", description: "Partner mit aktiver Mitgliedschaft", filterFn: (l) => l.status === "b2b_won" },
   "bestand": { title: "Bestand", description: "Alle aktiven Partner-Leads im Bestand", filterFn: () => true },
 };
