@@ -163,7 +163,8 @@ export default function EntwicklerRegistrieren() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in max-w-5xl mx-auto">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-5xl">
         {/* Header */}
         <h1 className="text-2xl font-display font-bold text-foreground text-center mb-6">Profil vervollständigen</h1>
 
@@ -736,6 +737,7 @@ export default function EntwicklerRegistrieren() {
               </Button>
             )}
           </div>
+        </div>
         </div>
       </div>
     </CRMLayout>

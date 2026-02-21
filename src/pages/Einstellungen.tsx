@@ -211,7 +211,8 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in max-w-4xl">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-4xl">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Allgemein</h1>
@@ -920,6 +921,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             </SectionBlock>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </CRMLayout>
   );

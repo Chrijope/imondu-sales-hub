@@ -43,7 +43,8 @@ export default function Kalender() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in max-w-4xl min-h-screen dashboard-mesh-bg">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-4xl">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-10 h-1 rounded-full gradient-brand" />
         </div>
@@ -147,6 +148,7 @@ export default function Kalender() {
               </label>
             ))}
           </div>
+        </div>
         </div>
       </div>
     </CRMLayout>

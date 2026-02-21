@@ -169,7 +169,8 @@ function CollapsibleCard({ section }: { section: Section }) {
 export default function Unterlagen() {
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-4 animate-fade-in max-w-4xl min-h-screen dashboard-mesh-bg">
+      <div className="p-6 lg:p-8 space-y-4 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-4xl">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-10 h-1 rounded-full gradient-brand" />
@@ -182,6 +183,7 @@ export default function Unterlagen() {
           {sections.map((section) => (
             <CollapsibleCard key={section.title} section={section} />
           ))}
+        </div>
         </div>
       </div>
     </CRMLayout>

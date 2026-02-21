@@ -148,7 +148,8 @@ export default function RechnerWohnung() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in max-w-7xl mx-auto">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8">
           <Badge variant="secondary" className="mb-2">Entwicklungsrechner</Badge>
@@ -332,6 +333,7 @@ export default function RechnerWohnung() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </CRMLayout>

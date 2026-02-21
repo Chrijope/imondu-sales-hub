@@ -243,7 +243,7 @@ export default function B2BLeads() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">

@@ -119,7 +119,7 @@ export default function LeadDetail() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Back */}
         <button
           onClick={() => navigate(-1)}

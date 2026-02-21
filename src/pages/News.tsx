@@ -149,7 +149,8 @@ const categoryLabels: Record<string, string> = {
 export default function News() {
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl min-h-screen dashboard-mesh-bg">
+      <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-4xl">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -186,6 +187,7 @@ export default function News() {
               </div>
             </article>
           ))}
+        </div>
         </div>
       </div>
     </CRMLayout>

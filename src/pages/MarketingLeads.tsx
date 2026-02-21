@@ -180,7 +180,7 @@ export default function MarketingLeads() {
 
   return (
     <CRMLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 min-h-screen dashboard-mesh-bg">
         <div className="flex items-center gap-2">
           <div className="w-1 h-10 bg-accent rounded-full" />
           <div>

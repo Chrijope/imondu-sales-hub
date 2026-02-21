@@ -260,7 +260,8 @@ export default function Immorechner() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 animate-fade-in max-w-6xl">
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+       <div className="max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -605,6 +606,7 @@ export default function Immorechner() {
           >
             → WEITER
           </Button>
+        </div>
         </div>
       </div>
     </CRMLayout>

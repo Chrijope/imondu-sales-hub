@@ -65,7 +65,7 @@ export default function Abrechnungen() {
 
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-10 h-1 rounded-full gradient-brand" />
