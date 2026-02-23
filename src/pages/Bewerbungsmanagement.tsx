@@ -24,6 +24,7 @@ import {
   UserPlus, Search, ChevronRight, Mail, Phone, MapPin,
   CheckCircle2, Clock, XCircle, Eye, UserCheck, GraduationCap,
   Brain, ArrowRight, Calendar, FileText, Star, Users, CalendarIcon,
+  ExternalLink, Upload,
 } from "lucide-react";
 
 // ── Pipeline-Stufen ──
@@ -83,11 +84,14 @@ interface Bewerber {
   beworbenAm: string;
   stage: string;
   personalityType?: string;
+  personalityPdfName?: string;
   notizen: string;
   erfahrung: string;
   motivation: string;
   quelle: string;
   bewertung?: number;
+  beschaeftigungsart?: string;
+  vertriebsziel?: string;
   lebenslaufUrl?: string;
   onboardingDatum?: string;
   onboardingUhrzeit?: string;
@@ -206,6 +210,7 @@ function BewerberDetail({
   onUpdateOnboarding: (id: string, data: { onboardingDatum?: string; onboardingUhrzeit?: string; onboardingStandort?: string }) => void;
   onUpdateField: (id: string, field: keyof Bewerber, value: string | number) => void;
 }) {
+  const { toast } = useToast();
   const [tab, setTab] = useState("uebersicht");
   const [obDate, setObDate] = useState<Date | undefined>(bewerber.onboardingDatum ? new Date(bewerber.onboardingDatum) : undefined);
   const [obZeit, setObZeit] = useState(bewerber.onboardingUhrzeit || "");
@@ -246,7 +251,7 @@ function BewerberDetail({
         </div>
       </div>
 
-      {/* Pipeline Progress */}
+      {/* Pipeline Progress with Labels */}
       <div className="flex items-center gap-1">
         {PIPELINE_STAGES.filter((s) => s.id !== "abgelehnt").map((s, i) => {
           const stageIndex = PIPELINE_STAGES.findIndex((st) => st.id === bewerber.stage);
@@ -254,7 +259,10 @@ function BewerberDetail({
           const reached = bewerber.stage !== "abgelehnt" && thisIndex <= stageIndex;
           return (
             <div key={s.id} className="flex items-center flex-1">
-              <div className={`h-2 flex-1 rounded-full ${reached ? s.color : "bg-secondary"}`} />
+              <div className="flex-1 text-center">
+                <div className={`h-2 rounded-full ${reached ? s.color : "bg-secondary"}`} />
+                <p className="text-[10px] text-muted-foreground mt-1">{s.label}</p>
+              </div>
               {i < 5 && <ArrowRight className="h-3 w-3 text-muted-foreground/40 mx-0.5 shrink-0" />}
             </div>
           );
@@ -378,19 +386,76 @@ function BewerberDetail({
           </div>
         </TabsContent>
 
-        <TabsContent value="persoenlichkeit" className="mt-4">
+        <TabsContent value="persoenlichkeit" className="mt-4 space-y-4">
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/15">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">16 Personalities Test</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Der Bewerber soll den offiziellen Test absolvieren und das Ergebnis hier hochladen oder eingeben.
+            </p>
+            <a
+              href="https://www.16personalities.com/de/kostenloser-personlichkeitstest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs text-primary hover:underline font-medium"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Test auf 16personalities.com öffnen
+            </a>
+          </div>
+
           {bewerber.personalityType ? (
-            <div className="space-y-4">
-              <div className="glass-card rounded-xl p-6 text-center">
-                <Brain className="h-10 w-10 text-purple-500 mx-auto mb-3" />
-                <Badge className="gradient-brand text-white border-0 text-lg px-4 py-1 mb-2">{bewerber.personalityType}</Badge>
-                <h3 className="text-lg font-display font-bold text-foreground">{pType?.label}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{pType?.desc}</p>
-                <div className="mt-3"><FitBadge fit={pType?.fit || "niedrig"} /></div>
-              </div>
+            <div className="glass-card rounded-xl p-6 text-center">
+              <Brain className="h-10 w-10 text-primary mx-auto mb-3" />
+              <Badge className="gradient-brand text-white border-0 text-lg px-4 py-1 mb-2">{bewerber.personalityType}</Badge>
+              <h3 className="text-lg font-bold text-foreground">{pType?.label}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{pType?.desc}</p>
+              <div className="mt-3"><FitBadge fit={pType?.fit || "niedrig"} /></div>
+              {bewerber.personalityPdfName && (
+                <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
+                  <FileText className="h-3.5 w-3.5" /> {bewerber.personalityPdfName}
+                </p>
+              )}
             </div>
           ) : (
-            <PersonalityTest onComplete={(type) => onPersonalityComplete(bewerber.id, type)} />
+            <div className="space-y-4">
+              {/* Manual entry */}
+              <div className="glass-card rounded-xl p-4 space-y-3">
+                <p className="text-xs font-semibold text-foreground">Ergebnis manuell eintragen</p>
+                <div className="flex items-center gap-2">
+                  <Select onValueChange={(v) => onPersonalityComplete(bewerber.id, v)}>
+                    <SelectTrigger className="w-[200px] text-xs"><SelectValue placeholder="Typ wählen…" /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PERSONALITY_TYPES).map(([key, val]) => (
+                        <SelectItem key={key} value={key} className="text-xs">{key} – {val.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* PDF Upload */}
+              <div className="glass-card rounded-xl p-4 space-y-3">
+                <p className="text-xs font-semibold text-foreground">Oder PDF-Ergebnis hochladen</p>
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-primary hover:underline">
+                  <Upload className="h-4 w-4" />
+                  <span>PDF auswählen…</span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        onUpdateField(bewerber.id, "personalityPdfName", file.name);
+                        toast({ title: "PDF hochgeladen", description: file.name });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
           )}
         </TabsContent>
 
