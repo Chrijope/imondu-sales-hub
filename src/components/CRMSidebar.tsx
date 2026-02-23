@@ -156,7 +156,7 @@ function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount }: {
     >
       <div className="relative shrink-0">
         <Icon className="h-[16px] w-[16px]" />
-        {badgeCount && badgeCount > 0 && collapsed && (
+        {badgeCount != null && badgeCount > 0 && collapsed && (
           <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
             {badgeCount > 9 ? "9+" : badgeCount}
           </span>
@@ -165,7 +165,7 @@ function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount }: {
       {!collapsed && (
         <>
           <span className="flex-1">{label}</span>
-          {badgeCount && badgeCount > 0 && (
+          {badgeCount != null && badgeCount > 0 && (
             <span className="h-5 min-w-5 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
               {badgeCount > 99 ? "99+" : badgeCount}
             </span>
