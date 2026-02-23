@@ -48,6 +48,12 @@ const INITIAL_TASKS: InboxTask[] = [
   { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "09:00", contact: "Fr. Müller", done: false, day: "fr", leadId: "1" },
   { id: "9", title: "Kaltakquise-Block: 10 Anrufe", description: "Neue Eigentümer aus Lead-Liste kontaktieren", type: "call", priority: "medium", time: "10:00", done: false, day: "mi" },
   { id: "10", title: "Exposé für MFH Stuttgart erstellen", description: "Fotos + Daten aufbereiten", type: "todo", priority: "medium", time: "13:00", done: false, day: "do", leadId: "11" },
+  // HR / Bewerbermanagement Aufgaben
+  { id: "11", title: "Screening: Tim Hoffmann", description: "Lebenslauf und Bewerbungsunterlagen prüfen", type: "todo", priority: "high", time: "09:00", contact: "Tim Hoffmann", done: false, day: "mo" },
+  { id: "12", title: "Interview mit Lukas Weber vorbereiten", description: "Gesprächsleitfaden und Unterlagen zusammenstellen", type: "todo", priority: "medium", time: "11:00", contact: "Lukas Weber", done: false, day: "di" },
+  { id: "13", title: "Onboarding-Termin: Markus Braun", description: "Onboarding am 03.03. – Unterlagen und Raum vorbereiten", type: "deadline", priority: "high", time: "09:00", contact: "Markus Braun", done: false, day: "mi" },
+  { id: "14", title: "Absage an Anna Meier versenden", description: "Ablehnungs-E-Mail formulieren und senden", type: "follow-up", priority: "low", time: "14:00", contact: "Anna Meier", done: false, day: "do" },
+  { id: "15", title: "Neue Bewerbung sichten: Julia Richter", description: "Eingegangene Bewerbung im Portal prüfen", type: "todo", priority: "medium", time: "10:00", contact: "Julia Richter", done: false, day: "fr" },
 ];
 
 const typeIcons: Record<TaskType, React.ComponentType<{ className?: string }>> = {

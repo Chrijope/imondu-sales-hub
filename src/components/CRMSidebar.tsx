@@ -94,6 +94,19 @@ const sectionBewerber = [
   { path: "/einstellungen", icon: Settings, label: "Einstellungen" },
 ];
 
+// ── HR section ──
+const sectionHR = [
+  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/inbox", icon: Inbox, label: "Inbox" },
+  { path: "/email", icon: Mail, label: "E-Mail" },
+  { path: "/kalender", icon: CalendarDays, label: "Kalender" },
+  { path: "/bewerbungsmanagement", icon: ClipboardList, label: "Bewerbungsmanagement" },
+  { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
+  { path: "/statistik", icon: TrendingUp, label: "Statistik" },
+  { path: "/chat", icon: MessageSquare, label: "Chat" },
+  { path: "/einstellungen", icon: Settings, label: "Einstellungen" },
+];
+
 // ── Sections ──
 const sectionOverview = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -358,6 +371,13 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
         {currentRoleId === "bewerber" ? (
           <SectionGroup label="Bewerbung" collapsed={collapsed}>
             {filterItems(sectionBewerber).map((item) => (
+              <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
+                badgeCount={item.path === "/chat" ? chatUnread : undefined} />
+            ))}
+          </SectionGroup>
+        ) : currentRoleId === "hr" ? (
+          <SectionGroup label="HR" collapsed={collapsed}>
+            {filterItems(sectionHR).map((item) => (
               <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
                 badgeCount={item.path === "/chat" ? chatUnread : undefined} />
             ))}

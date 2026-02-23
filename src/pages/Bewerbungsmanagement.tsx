@@ -400,20 +400,40 @@ function BewerberDetail({
                 <Input placeholder="z.B. München – Leopoldstraße 42" value={obStandort} onChange={(e) => setObStandort(e.target.value)} className="h-9 text-xs" />
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs gap-1.5"
-              onClick={() => {
-                onUpdateOnboarding(bewerber.id, {
-                  onboardingDatum: obDate ? obDate.toISOString().slice(0, 10) : undefined,
-                  onboardingUhrzeit: obZeit || undefined,
-                  onboardingStandort: obStandort || undefined,
-                });
-              }}
-            >
-              <Calendar className="h-3.5 w-3.5" /> Onboarding-Termin speichern
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs gap-1.5"
+                onClick={() => {
+                  onUpdateOnboarding(bewerber.id, {
+                    onboardingDatum: obDate ? obDate.toISOString().slice(0, 10) : undefined,
+                    onboardingUhrzeit: obZeit || undefined,
+                    onboardingStandort: obStandort || undefined,
+                  });
+                }}
+              >
+                <Calendar className="h-3.5 w-3.5" /> Onboarding-Termin speichern
+              </Button>
+              <Button
+                size="sm"
+                className="text-xs gap-1.5 gradient-brand border-0 text-white"
+                disabled={!obDate || !obZeit}
+                onClick={() => {
+                  onUpdateOnboarding(bewerber.id, {
+                    onboardingDatum: obDate ? obDate.toISOString().slice(0, 10) : undefined,
+                    onboardingUhrzeit: obZeit || undefined,
+                    onboardingStandort: obStandort || undefined,
+                  });
+                  toast({
+                    title: "Einladung versendet ✓",
+                    description: `${bewerber.vorname} ${bewerber.nachname} wurde per Chat und E-Mail zum Onboarding am ${obDate ? format(obDate, "dd.MM.yyyy", { locale: de }) : "–"} um ${obZeit} Uhr eingeladen.`,
+                  });
+                }}
+              >
+                <Mail className="h-3.5 w-3.5" /> Einladung senden (Chat & E-Mail)
+              </Button>
+            </div>
           </div>
         </TabsContent>
 
