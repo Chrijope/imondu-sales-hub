@@ -35,19 +35,17 @@ function KpiTile({ label, value, sub, trend }: { label: string; value: string | 
 }
 
 /* ── Section Card (Collapsible) ─────────────────── */
-function SectionCard({ title, actions, children, defaultOpen = true }: { title: string; actions?: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
+function SectionCard({ title, actions, children }: { title: string; actions?: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
   return (
     <div className="glass-card rounded-xl p-5">
-      <div className="flex items-center justify-between mb-0 cursor-pointer" onClick={() => setOpen(!open)}>
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-1 bg-accent rounded-full" />
           <h2 className="font-semibold text-foreground">{title}</h2>
-          {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </div>
-        {actions && <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>{actions}</div>}
+        {actions && <div className="flex gap-1">{actions}</div>}
       </div>
-      {open && <div className="mt-4">{children}</div>}
+      <div>{children}</div>
     </div>
   );
 }
