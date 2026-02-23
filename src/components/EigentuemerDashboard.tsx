@@ -441,7 +441,7 @@ export default function EigentuemerDashboard() {
                     <MessageCircle className="h-3 w-3" /> Kontakt
                   </Link>
                   <Link
-                    to={`/entwickler`}
+                    to={`/entwickler?dev=${dev.id}`}
                     className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
                   >
                     <ClipboardList className="h-3 w-3" /> Profil
