@@ -221,6 +221,7 @@ export default function Statistik() {
   const [customRange, setCustomRange] = useState<DayPickerRange | undefined>(undefined);
   const [potenzialView, setPotenzialView] = useState<"immobilienwert" | "objekttyp" | "sanierung" | "region">("immobilienwert");
   const [uebersichtTab, setUebersichtTab] = useState<"b2c" | "b2b">("b2c");
+  const [aktivitaetTab, setAktivitaetTab] = useState<"b2c" | "b2b">("b2c");
   const [bewerberFilter, setBewerberFilter] = useState<string | null>(null);
   const [onboardingTermine, setOnboardingTermine] = useState<OnboardingTermin[]>(INITIAL_ONBOARDING_TERMINE);
   const [newTerminOpen, setNewTerminOpen] = useState(false);
@@ -492,45 +493,84 @@ export default function Statistik() {
             title="Aktivität"
             actions={
               <div className="flex gap-1">
-                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
-                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold"><BarChart3 className="h-3 w-3 inline" /></span>
+                <ToggleBtn label="Eigentümer (B2C)" active={aktivitaetTab === "b2c"} onClick={() => setAktivitaetTab("b2c")} />
+                <ToggleBtn label="Entwickler (B2B)" active={aktivitaetTab === "b2b"} onClick={() => setAktivitaetTab("b2b")} />
               </div>
             }
           >
-            <div className="grid grid-cols-3 gap-3">
-              <KpiTile label="Kontakte angelegt" value={filteredLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="Eigentümer (B2C)" value={b2cLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="Entwickler (B2B)" value={b2bLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="Inserate erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} />
-              <KpiTile label="B2B Partner gewonnen" value={b2bLeads.filter((l) => l.status === "b2b_won").length} />
-              <KpiTile label="Eigentümer registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} />
-            </div>
+            {aktivitaetTab === "b2c" ? (
+              <div className="grid grid-cols-3 gap-3">
+                <KpiTile label="Kontakte angelegt" value={b2cLeads.length} />
+                {B2C_PIPELINE_STAGES.filter(s => s.id !== "b2c_lost").map((stage) => (
+                  <KpiTile key={stage.id} label={stage.name} value={b2cLeads.filter((l) => l.status === stage.id).length} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                <KpiTile label="Kontakte angelegt" value={b2bLeads.length} />
+                {B2B_PIPELINE_STAGES.map((stage) => (
+                  <KpiTile key={stage.id} label={stage.name} value={b2bLeads.filter((l) => l.status === stage.id).length} />
+                ))}
+              </div>
+            )}
           </SectionCard>
 
           <SectionCard
             title="Effektivität"
             actions={
               <div className="flex gap-1">
-                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold"><Percent className="h-3 w-3 inline" /></span>
-                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
+                <ToggleBtn label="Eigentümer (B2C)" active={aktivitaetTab === "b2c"} onClick={() => setAktivitaetTab("b2c")} />
+                <ToggleBtn label="Entwickler (B2B)" active={aktivitaetTab === "b2b"} onClick={() => setAktivitaetTab("b2b")} />
               </div>
             }
           >
             {(() => {
-              const totalL = filteredLeads.length || 1;
-              const b2cIns = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
-              const b2bWon = b2bLeads.filter((l) => l.status === "b2b_won").length;
-              const b2cReg = b2cLeads.filter((l) => l.status === "b2c_registered").length;
-              return (
-                <div className="grid grid-cols-3 gap-3">
-                  <KpiTile label="Kontakt → Eigentümer" value={`${totalL > 0 ? Math.round((b2cLeads.length / totalL) * 100) : 0} %`} />
-                  <KpiTile label="Kontakt → Entwickler" value={`${totalL > 0 ? Math.round((b2bLeads.length / totalL) * 100) : 0} %`} />
-                  <KpiTile label="Eigentümer → Registriert" value={`${b2cLeads.length > 0 ? Math.round((b2cReg / b2cLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="Eigentümer → Inserat" value={`${b2cLeads.length > 0 ? Math.round((b2cIns / b2cLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="Entwickler → Gewonnen" value={`${b2bLeads.length > 0 ? Math.round((b2bWon / b2bLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="Gesamt-Vermittlungsquote" value={`${totalL > 0 ? Math.round(((b2cIns + b2bWon) / totalL) * 100) : 0} %`} />
-                </div>
-              );
+              if (aktivitaetTab === "b2c") {
+                const total = b2cLeads.length || 1;
+                const pct = (stageId: string) => {
+                  const prev = B2C_PIPELINE_STAGES.find(s => s.order === (B2C_PIPELINE_STAGES.find(s2 => s2.id === stageId)?.order ?? 0) - 1);
+                  const prevCount = prev ? b2cLeads.filter(l => l.status === prev.id).length || 1 : total;
+                  const cur = b2cLeads.filter(l => l.status === stageId).length;
+                  return `${Math.round((cur / prevCount) * 100)} %`;
+                };
+                // Show conversion between consecutive stages
+                const conversions = B2C_PIPELINE_STAGES.filter(s => s.id !== "b2c_new" && s.id !== "b2c_lost").map((stage, i) => {
+                  const prevStage = B2C_PIPELINE_STAGES[stage.order - 1];
+                  const prevCount = b2cLeads.filter(l => l.status === prevStage.id).length || 1;
+                  const curCount = b2cLeads.filter(l => l.status === stage.id).length;
+                  return {
+                    label: `${prevStage.name} → ${stage.name}`,
+                    value: `${Math.round((curCount / prevCount) * 100)} %`,
+                  };
+                });
+                return (
+                  <div className="grid grid-cols-3 gap-3">
+                    <KpiTile label="Neuer Lead → Kontaktversuch" value={`${Math.round((b2cLeads.filter(l => l.status === "b2c_contact").length / total) * 100)} %`} />
+                    {conversions.map((c) => (
+                      <KpiTile key={c.label} label={c.label} value={c.value} />
+                    ))}
+                  </div>
+                );
+              } else {
+                const total = b2bLeads.length || 1;
+                const conversions = B2B_PIPELINE_STAGES.filter(s => s.id !== "b2b_new").map((stage) => {
+                  const prevStage = B2B_PIPELINE_STAGES[stage.order - 1];
+                  const prevCount = b2bLeads.filter(l => l.status === prevStage.id).length || 1;
+                  const curCount = b2bLeads.filter(l => l.status === stage.id).length;
+                  return {
+                    label: `${prevStage.name} → ${stage.name}`,
+                    value: `${Math.round((curCount / prevCount) * 100)} %`,
+                  };
+                });
+                return (
+                  <div className="grid grid-cols-3 gap-3">
+                    <KpiTile label="Neuer Lead → Kontaktversuch" value={`${Math.round((b2bLeads.filter(l => l.status === "b2b_contact").length / total) * 100)} %`} />
+                    {conversions.map((c) => (
+                      <KpiTile key={c.label} label={c.label} value={c.value} />
+                    ))}
+                  </div>
+                );
+              }
             })()}
           </SectionCard>
         </div>
