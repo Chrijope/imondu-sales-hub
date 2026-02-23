@@ -273,7 +273,7 @@ export default function InseratDetailEntwickler({
             </div>
             <hr className="border-border" />
             <Button onClick={() => navigate(chatLink)} className="w-full gap-2 gradient-brand border-0 text-primary-foreground">
-              <MessageSquare className="h-4 w-4" /> Chat starten
+              <MessageSquare className="h-4 w-4" /> Eigentümer kontaktieren
             </Button>
           </div>
 
