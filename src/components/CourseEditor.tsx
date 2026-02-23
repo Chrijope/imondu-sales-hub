@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -92,11 +92,29 @@ function LessonRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(lesson);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const save = () => {
     onUpdate(draft);
     setEditing(false);
     toast.success("Lektion gespeichert");
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setDraft({ ...draft, videoUrl: url });
+    toast.success(`Video "${file.name}" hochgeladen`);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setDraft({ ...draft, imageUrl: url });
+    toast.success(`Bild "${file.name}" hochgeladen`);
   };
 
   if (editing) {
@@ -142,24 +160,62 @@ function LessonRow({
         {/* Video upload */}
         <div className="space-y-1.5">
           <Label className="text-xs">Video</Label>
-          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
-            <Video className="h-6 w-6 text-muted-foreground mx-auto mb-1.5" />
-            <p className="text-xs text-muted-foreground">Video hochladen oder per Drag & Drop ablegen</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">MP4, MOV, WebM · Max. 500 MB</p>
-            <Button variant="outline" size="sm" className="mt-2 text-xs gap-1">
-              <Upload className="h-3 w-3" /> Datei auswählen
-            </Button>
-          </div>
+          <input ref={videoInputRef} type="file" accept="video/mp4,video/mov,video/webm,video/*" className="hidden" onChange={handleVideoUpload} />
+          {draft.videoUrl ? (
+            <div className="rounded-lg border border-border overflow-hidden">
+              <video src={draft.videoUrl} controls className="w-full max-h-48 bg-black" />
+              <div className="flex items-center justify-between px-3 py-2 bg-secondary/30">
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Video className="h-3 w-3" /> Video hochgeladen</p>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={() => videoInputRef.current?.click()}>Ersetzen</Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2 text-destructive" onClick={() => setDraft({ ...draft, videoUrl: undefined })}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
+              onClick={() => videoInputRef.current?.click()}
+            >
+              <Video className="h-6 w-6 text-muted-foreground mx-auto mb-1.5" />
+              <p className="text-xs text-muted-foreground">Video hochladen oder per Drag & Drop ablegen</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">MP4, MOV, WebM · Max. 500 MB</p>
+              <Button variant="outline" size="sm" className="mt-2 text-xs gap-1" onClick={(e) => { e.stopPropagation(); videoInputRef.current?.click(); }}>
+                <Upload className="h-3 w-3" /> Datei auswählen
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Lesson image (optional) */}
         <div className="space-y-1.5">
           <Label className="text-xs">Lektionsbild (optional)</Label>
-          <div className="border-2 border-dashed border-border rounded-lg p-3 text-center hover:border-primary/50 transition-colors cursor-pointer">
-            <Image className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-            <p className="text-xs text-muted-foreground">Thumbnail hochladen</p>
-            <p className="text-[10px] text-muted-foreground">JPG, PNG, WebP · Max. 5 MB</p>
-          </div>
+          <input ref={imageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/*" className="hidden" onChange={handleImageUpload} />
+          {draft.imageUrl ? (
+            <div className="rounded-lg border border-border overflow-hidden">
+              <img src={draft.imageUrl} alt="Lektionsbild" className="w-full max-h-32 object-cover" />
+              <div className="flex items-center justify-between px-3 py-2 bg-secondary/30">
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Image className="h-3 w-3" /> Bild hochgeladen</p>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={() => imageInputRef.current?.click()}>Ersetzen</Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2 text-destructive" onClick={() => setDraft({ ...draft, imageUrl: undefined })}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="border-2 border-dashed border-border rounded-lg p-3 text-center hover:border-primary/50 transition-colors cursor-pointer"
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <Image className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Thumbnail hochladen</p>
+              <p className="text-[10px] text-muted-foreground">JPG, PNG, WebP · Max. 5 MB</p>
+            </div>
+          )}
         </div>
 
         {/* Settings row */}

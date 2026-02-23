@@ -140,43 +140,62 @@ function LessonPlayer({
         <span className="text-foreground font-medium">{lesson.title}</span>
       </div>
 
-      <div className="bg-foreground/5 rounded-xl aspect-video flex items-center justify-center border border-border relative overflow-hidden">
-        <div className="text-center px-6">
-          <div
-            className={`h-20 w-20 rounded-full ${isCert ? "bg-warning/20" : isQuiz ? "bg-accent" : "gradient-brand"} flex items-center justify-center mx-auto mb-4 cursor-pointer hover:scale-105 transition-transform`}
-            onClick={handleSimulateWatch}
-          >
-            {isCert ? (
-              <Award className="h-8 w-8 text-warning" />
-            ) : isQuiz ? (
-              <FileQuestion className="h-8 w-8 text-primary" />
-            ) : videoWatched ? (
-              <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
-            ) : (
-              <Play className="h-8 w-8 text-primary-foreground ml-1" />
-            )}
-          </div>
-          <p className="text-base font-semibold text-foreground">{lesson.title}</p>
-          <p className="text-xs text-muted-foreground mt-2 italic">
-            {videoWatched
-              ? "✓ Video angesehen"
-              : isCert
-              ? "Zertifikat wird nach bestandener Prüfung freigeschaltet…"
-              : isQuiz
-              ? "Klicke um das Quiz zu starten"
-              : "Klicke auf Play um das Video zu starten"}
-          </p>
+      {lesson.videoUrl ? (
+        <div className="rounded-xl border border-border overflow-hidden relative">
+          <video
+            src={lesson.videoUrl}
+            controls
+            className="w-full aspect-video bg-black"
+            onEnded={handleSimulateWatch}
+          />
+          {!isCert && (
+            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-foreground/10">
+              <div
+                className="h-full gradient-brand transition-all duration-500"
+                style={{ width: `${videoProgress}%` }}
+              />
+            </div>
+          )}
         </div>
-
-        {!isCert && (
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-foreground/10">
+      ) : (
+        <div className="bg-foreground/5 rounded-xl aspect-video flex items-center justify-center border border-border relative overflow-hidden">
+          <div className="text-center px-6">
             <div
-              className="h-full gradient-brand transition-all duration-500"
-              style={{ width: `${videoProgress}%` }}
-            />
+              className={`h-20 w-20 rounded-full ${isCert ? "bg-warning/20" : isQuiz ? "bg-accent" : "gradient-brand"} flex items-center justify-center mx-auto mb-4 cursor-pointer hover:scale-105 transition-transform`}
+              onClick={handleSimulateWatch}
+            >
+              {isCert ? (
+                <Award className="h-8 w-8 text-warning" />
+              ) : isQuiz ? (
+                <FileQuestion className="h-8 w-8 text-primary" />
+              ) : videoWatched ? (
+                <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
+              ) : (
+                <Play className="h-8 w-8 text-primary-foreground ml-1" />
+              )}
+            </div>
+            <p className="text-base font-semibold text-foreground">{lesson.title}</p>
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              {videoWatched
+                ? "✓ Video angesehen"
+                : isCert
+                ? "Zertifikat wird nach bestandener Prüfung freigeschaltet…"
+                : isQuiz
+                ? "Klicke um das Quiz zu starten"
+                : "Klicke auf Play um das Video zu starten"}
+            </p>
           </div>
-        )}
-      </div>
+
+          {!isCert && (
+            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-foreground/10">
+              <div
+                className="h-full gradient-brand transition-all duration-500"
+                style={{ width: `${videoProgress}%` }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center justify-between bg-card rounded-xl p-4 border border-border shadow-crm-sm">
         <div className="flex items-center gap-3">
