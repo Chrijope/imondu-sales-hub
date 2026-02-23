@@ -12,7 +12,9 @@ import {
   getB2BStufe,
 } from "@/data/karriereplan";
 
-const STORAGE_KEY = "imondu-zielplanung-v1";
+import { SAMPLE_USERS } from "@/data/nutzerverwaltung-data";
+
+const STORAGE_KEY_PREFIX = "imondu-zielplanung";
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
 interface MonthGoal {
@@ -36,7 +38,13 @@ function getEffectiveB2BProvision(base: number, kid: string) {
 export default function ZielplanungWidget() {
   const data = useMemo(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      // Find the current VP user (Lisa Weber = u3 as default VP)
+      const vpUser = SAMPLE_USERS.find(u => u.roleId === "vertriebspartner");
+      const vpId = vpUser?.id;
+
+      // Try partner-specific key first, then fallback to old generic key
+      let raw = vpId ? localStorage.getItem(`${STORAGE_KEY_PREFIX}-${vpId}`) : null;
+      if (!raw) raw = localStorage.getItem(`${STORAGE_KEY_PREFIX}-v1`);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       const goals: Record<number, MonthGoal> = parsed.goals || {};
