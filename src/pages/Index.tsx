@@ -17,6 +17,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 import EigentuemerDashboard from "@/components/EigentuemerDashboard";
 import EntwicklerDashboard from "@/components/EntwicklerDashboard";
 import BewerberPortal from "@/pages/BewerberPortal";
+import ZielplanungWidget from "@/components/ZielplanungWidget";
 import {
   BarChart,
   Bar,
@@ -316,6 +317,15 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+
+        {/* Zielplanung Widget for Vertriebspartner */}
+        {currentRoleId === "vertriebspartner" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div className="lg:col-span-5">
+              <ZielplanungWidget />
+            </div>
+          </div>
+        )}
 
         {/* Row 3: Social Media + Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

@@ -3,7 +3,7 @@ import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, TrendingUp, Euro, ArrowUpRight, Info } from "lucide-react";
+import { Target, TrendingUp, Euro, ArrowUpRight, Info, Lock } from "lucide-react";
 import {
   KARRIERESTUFEN,
   B2C_STAFFEL,
@@ -15,6 +15,7 @@ import {
   getB2BStufe,
 } from "@/data/karriereplan";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -57,6 +58,8 @@ function getEffectiveB2BProvision(baseProvision: number, karriereId: string): nu
 }
 
 export default function Zielplanung() {
+  const { currentRoleId } = useUserRole();
+  const canEdit = ["admin", "vertriebsleiter"].includes(currentRoleId);
   const stored = loadFromStorage();
   const [karriereStufeId, setKarriereStufeId] = useState(stored.karriereStufeId);
   const [goals, setGoals] = useState<Record<number, MonthGoal>>(stored.goals);
@@ -126,11 +129,19 @@ export default function Zielplanung() {
               <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Zielplanung</h1>
-            <p className="text-sm text-muted-foreground mt-1">Plane deine monatlichen Ziele & sieh deine Provisionsvorschau</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {canEdit ? "Plane monatliche Ziele & sieh die Provisionsvorschau" : "Deine festgelegten Ziele & Provisionsvorschau"}
+            </p>
+            {!canEdit && (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                <span>Ziele werden von der Vertriebsleitung festgelegt</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Karrierestufe:</span>
-            <Select value={karriereStufeId} onValueChange={setKarriereStufeId}>
+            <Select value={karriereStufeId} onValueChange={setKarriereStufeId} disabled={!canEdit}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue />
               </SelectTrigger>
@@ -212,6 +223,7 @@ export default function Zielplanung() {
                           onChange={(e) => updateGoal(c.monthIndex, "b2cInserate", e.target.value)}
                           className="w-20 h-8 text-center mx-auto text-sm"
                           placeholder="0"
+                          disabled={!canEdit}
                         />
                       </td>
                       <td className="px-4 py-2 text-center text-muted-foreground">{c.b2cProvision} €</td>
@@ -229,6 +241,7 @@ export default function Zielplanung() {
                           onChange={(e) => updateGoal(c.monthIndex, "b2bRegistrierungen", e.target.value)}
                           className="w-20 h-8 text-center mx-auto text-sm"
                           placeholder="0"
+                          disabled={!canEdit}
                         />
                       </td>
                       <td className="px-4 py-2 text-center text-muted-foreground">{c.b2bUmsatz.toLocaleString("de-DE")} €</td>
