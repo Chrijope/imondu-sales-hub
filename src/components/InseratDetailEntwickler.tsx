@@ -133,7 +133,7 @@ export default function InseratDetailEntwickler({
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="text-xs">Objekt-Nr. {inserat.objektNr}</Badge>
               <Button onClick={() => navigate(chatLink)} className="gap-2 gradient-brand border-0 text-primary-foreground">
-                <MessageSquare className="h-4 w-4" /> Eigentümer kontaktieren
+                <MessageSquare className="h-4 w-4" /> Chat starten
               </Button>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function InseratDetailEntwickler({
             </div>
             <hr className="border-border" />
             <Button onClick={() => navigate(chatLink)} className="w-full gap-2 gradient-brand border-0 text-primary-foreground">
-              <MessageSquare className="h-4 w-4" /> Jetzt kontaktieren
+              <MessageSquare className="h-4 w-4" /> Chat starten
             </Button>
           </div>
 
