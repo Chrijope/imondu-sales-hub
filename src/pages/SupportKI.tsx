@@ -47,8 +47,8 @@ function getAnswer(input: string): { answer: string; handoff: boolean } {
   }
 
   return {
-    answer: "Danke für deine Frage! Leider konnte ich dazu keine passende Antwort finden. Möchtest du mit einem Mitarbeiter verbunden werden? Schreib einfach **'Mitarbeiter'** und ich leite dich weiter.",
-    handoff: false,
+    answer: "Danke für deine Frage! Leider konnte ich dazu keine passende Antwort finden. Ich erstelle ein Support-Ticket für dich – unser Backoffice-Team meldet sich schnellstmöglich bei dir zurück.",
+    handoff: true,
   };
 }
 
@@ -131,8 +131,8 @@ export default function SupportKI() {
         createHelpdeskTicket(allUserMsgs);
         setMessages(prev => [
           ...prev,
-          { id: crypto.randomUUID(), role: "system", text: "Du wirst jetzt mit einem Imondu-Mitarbeiter verbunden. Bitte warte einen Moment…", time: now() },
-          { id: crypto.randomUUID(), role: "bot", text: "Ein Mitarbeiter wurde benachrichtigt und wird sich in Kürze bei dir melden. Dein Ticket wurde im Helpdesk erstellt. 🙌", time: now() },
+          { id: crypto.randomUUID(), role: "system", text: "📋 Ein Support-Ticket wurde für dich erstellt.", time: now() },
+          { id: crypto.randomUUID(), role: "bot", text: answer || "Ich habe ein Ticket für dein Anliegen erstellt. Unser Backoffice-Team wird sich schnellstmöglich bei dir melden. Du kannst hier gerne weitere Details zu deinem Anliegen schildern – alles wird an das Team weitergeleitet. 🙌", time: now() },
         ]);
       } else {
         setMessages(prev => [...prev, { id: crypto.randomUUID(), role: "bot", text: answer, time: now() }]);
@@ -153,7 +153,7 @@ export default function SupportKI() {
             <p className="text-xs text-muted-foreground">
               {handedOff ? (
                 <span className="flex items-center gap-1">
-                  <HeadphonesIcon className="h-3 w-3" /> Mit Mitarbeiter verbunden
+                  <HeadphonesIcon className="h-3 w-3" /> Ticket erstellt – Backoffice meldet sich
                 </span>
               ) : (
                 "KI-Assistent • Sofortige Hilfe rund um die Uhr"
@@ -161,7 +161,7 @@ export default function SupportKI() {
             </p>
           </div>
           {handedOff && (
-            <Badge variant="secondary" className="ml-auto">Live-Support</Badge>
+            <Badge variant="secondary" className="ml-auto">Ticket erstellt</Badge>
           )}
         </div>
 
@@ -213,16 +213,20 @@ export default function SupportKI() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
-              placeholder={handedOff ? "Nachricht an Mitarbeiter…" : "Frage an den Support-Assistenten…"}
+              placeholder={handedOff ? "Weitere Details zum Ticket hinzufügen…" : "Frage an den Support-Assistenten…"}
               className="flex-1"
             />
             <Button onClick={send} size="icon" disabled={!input.trim()}>
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          {!handedOff && (
+          {!handedOff ? (
             <p className="text-[10px] text-muted-foreground text-center mt-2">
-              Schreibe <span className="font-semibold">"Mitarbeiter"</span> um mit einem echten Ansprechpartner verbunden zu werden.
+              Bei Fragen die ich nicht beantworten kann, wird automatisch ein Ticket für unser Backoffice erstellt.
+            </p>
+          ) : (
+            <p className="text-[10px] text-muted-foreground text-center mt-2">
+              📋 Dein Ticket wurde erstellt. Unser Backoffice meldet sich schnellstmöglich bei dir.
             </p>
           )}
         </div>
