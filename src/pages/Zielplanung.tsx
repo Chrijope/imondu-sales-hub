@@ -3,7 +3,7 @@ import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, TrendingUp, Euro, ArrowUpRight, Info, Lock } from "lucide-react";
+import { Target, TrendingUp, Euro, ArrowUpRight, Info, Lock, Users } from "lucide-react";
 import {
   KARRIERESTUFEN,
   B2C_STAFFEL,
@@ -16,6 +16,7 @@ import {
 } from "@/data/karriereplan";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { SAMPLE_USERS } from "@/data/nutzerverwaltung-data";
 
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -24,7 +25,11 @@ interface MonthGoal {
   b2bRegistrierungen: number;
 }
 
-const STORAGE_KEY = "imondu-zielplanung-v1";
+const STORAGE_KEY_PREFIX = "imondu-zielplanung";
+
+function getStorageKey(userId?: string): string {
+  return userId ? `${STORAGE_KEY_PREFIX}-${userId}` : `${STORAGE_KEY_PREFIX}-v1`;
+}
 
 const emptyGoals = (): Record<number, MonthGoal> => {
   const g: Record<number, MonthGoal> = {};
@@ -32,12 +37,21 @@ const emptyGoals = (): Record<number, MonthGoal> => {
   return g;
 };
 
-function loadFromStorage(): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
+function loadFromStorage(userId?: string): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey(userId);
+    const raw = localStorage.getItem(key);
     if (raw) {
       const parsed = JSON.parse(raw);
       return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektassistent" };
+    }
+    // Fallback: try old key for backwards compat (only for "self" view)
+    if (!userId) {
+      const oldRaw = localStorage.getItem("imondu-zielplanung-v1");
+      if (oldRaw) {
+        const parsed = JSON.parse(oldRaw);
+        return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektassistent" };
+      }
     }
   } catch {}
   return { goals: emptyGoals(), karriereStufeId: "projektassistent" };
@@ -47,7 +61,7 @@ function loadFromStorage(): { goals: Record<number, MonthGoal>; karriereStufeId:
 function getEffectiveB2CProvision(baseProvision: number, karriereId: string): number {
   if (karriereId === "projektleiter") return Math.max(baseProvision, 12);
   if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 13.5);
-  return baseProvision; // projektassistent uses base staffel
+  return baseProvision;
 }
 
 function getEffectiveB2BProvision(baseProvision: number, karriereId: string): number {
@@ -60,16 +74,39 @@ function getEffectiveB2BProvision(baseProvision: number, karriereId: string): nu
 export default function Zielplanung() {
   const { currentRoleId } = useUserRole();
   const canEdit = ["admin", "vertriebsleiter"].includes(currentRoleId);
-  const stored = loadFromStorage();
+
+  // Admin/VL can select which partner to plan for
+  const vertriebspartner = SAMPLE_USERS.filter((u) => u.roleId === "vertriebspartner");
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string>(
+    canEdit && vertriebspartner.length > 0 ? vertriebspartner[0].id : ""
+  );
+
+  const selectedPartner = vertriebspartner.find((u) => u.id === selectedPartnerId);
+  // Use partner-specific storage key for admins, generic for VP
+  const storageUserId = canEdit ? selectedPartnerId : undefined;
+
+  const stored = loadFromStorage(storageUserId);
   const [karriereStufeId, setKarriereStufeId] = useState(stored.karriereStufeId);
   const [goals, setGoals] = useState<Record<number, MonthGoal>>(stored.goals);
 
   const karriere = KARRIERESTUFEN.find((k) => k.id === karriereStufeId) || KARRIERESTUFEN[0];
 
-  // Persist to localStorage
+  // Reload when partner changes (admin view)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ goals, karriereStufeId }));
-  }, [goals, karriereStufeId]);
+    const data = loadFromStorage(storageUserId);
+    setGoals(data.goals);
+    setKarriereStufeId(data.karriereStufeId);
+  }, [selectedPartnerId, storageUserId]);
+
+  // Persist to localStorage (partner-specific)
+  useEffect(() => {
+    const key = getStorageKey(storageUserId);
+    localStorage.setItem(key, JSON.stringify({ goals, karriereStufeId }));
+    // Also write to the partner-specific key so VP sees it
+    if (canEdit && selectedPartnerId) {
+      localStorage.setItem(getStorageKey(selectedPartnerId), JSON.stringify({ goals, karriereStufeId }));
+    }
+  }, [goals, karriereStufeId, storageUserId, canEdit, selectedPartnerId]);
 
   const updateGoal = (month: number, field: keyof MonthGoal, val: string) => {
     const num = Math.max(0, parseInt(val) || 0);
@@ -129,30 +166,54 @@ export default function Zielplanung() {
               <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Zielplanung</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {canEdit ? "Plane monatliche Ziele & sieh die Provisionsvorschau" : "Deine festgelegten Ziele & Provisionsvorschau"}
-            </p>
-            {!canEdit && (
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                <Lock className="h-3.5 w-3.5" />
-                <span>Ziele werden von der Vertriebsleitung festgelegt</span>
-              </div>
+            {canEdit ? (
+              <p className="text-sm text-muted-foreground mt-1">
+                Zielvereinbarung für {selectedPartner?.name || "Vertriebspartner"} festlegen
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground mt-1">Deine festgelegten Ziele & Provisionsvorschau</p>
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Ziele werden von der Vertriebsleitung festgelegt</span>
+                </div>
+              </>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Karrierestufe:</span>
-            <Select value={karriereStufeId} onValueChange={setKarriereStufeId} disabled={!canEdit}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {KARRIERESTUFEN.map((k) => (
-                  <SelectItem key={k.id} value={k.id}>
-                    {k.icon} {k.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col items-end gap-2">
+            {/* Partner selector for admin/VL */}
+            {canEdit && (
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Partner wählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vertriebspartner.map((vp) => (
+                      <SelectItem key={vp.id} value={vp.id}>
+                        {vp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Karrierestufe:</span>
+              <Select value={karriereStufeId} onValueChange={setKarriereStufeId} disabled={!canEdit}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KARRIERESTUFEN.map((k) => (
+                    <SelectItem key={k.id} value={k.id}>
+                      {k.icon} {k.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
