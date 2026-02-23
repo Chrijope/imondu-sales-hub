@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -315,6 +316,9 @@ const getFirmaBild = (idx: number) => firmaBilder[idx % firmaBilder.length];
 function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler; idx: number; onBack: () => void }) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [ratingStars, setRatingStars] = useState<number>(0);
+  const [ratingHover, setRatingHover] = useState<number>(0);
+  const [ratingComment, setRatingComment] = useState("");
   const chatLink = `/chat?newChat=${encodeURIComponent(entwickler.firmenname)}&category=entwickler`;
 
   return (
@@ -498,21 +502,47 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
-                    className="text-2xl text-muted-foreground/30 hover:text-amber-400 transition-colors"
-                    onClick={() => {
-                      toast({
-                        title: `${star} Stern${star > 1 ? "e" : ""} vergeben ⭐`,
-                        description: `Vielen Dank für Ihre Bewertung von ${entwickler.firmenname}!`,
-                      });
-                    }}
+                    className={`text-2xl transition-colors ${
+                      star <= (ratingHover || ratingStars) ? "text-amber-400" : "text-muted-foreground/30 hover:text-amber-400"
+                    }`}
+                    onMouseEnter={() => setRatingHover(star)}
+                    onMouseLeave={() => setRatingHover(0)}
+                    onClick={() => setRatingStars(star)}
                   >
                     ★
                   </button>
                 ))}
+                {ratingStars > 0 && (
+                  <span className="text-xs text-muted-foreground self-center ml-1">{ratingStars}/5</span>
+                )}
+              </div>
+              <Textarea
+                placeholder="Beschreiben Sie Ihre Erfahrung mit diesem Entwickler… (optional)"
+                value={ratingComment}
+                onChange={(e) => setRatingComment(e.target.value)}
+                rows={3}
+                maxLength={500}
+                className="resize-none text-sm mt-1"
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-muted-foreground">{ratingComment.length}/500 Zeichen</span>
+                <Button
+                  size="sm"
+                  disabled={ratingStars === 0}
+                  className="gap-1.5 gradient-brand border-0 text-primary-foreground text-xs"
+                  onClick={() => {
+                    toast({
+                      title: `Bewertung abgeschickt ⭐`,
+                      description: `Vielen Dank für Ihre ${ratingStars}-Sterne-Bewertung von ${entwickler.firmenname}!`,
+                    });
+                    setRatingStars(0);
+                    setRatingComment("");
+                  }}
+                >
+                  <Star className="h-3 w-3" /> Bewertung absenden
+                </Button>
               </div>
             </div>
-
-            {/* External review links */}
             <div className="space-y-2 pt-1">
               <p className="text-xs font-medium text-muted-foreground">Auch extern bewerten</p>
               <div className="flex flex-col gap-1.5">
