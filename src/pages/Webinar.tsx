@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import imonduLogo from "@/assets/imondu-logo.png";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import WebinarEntwickler from "@/components/WebinarEntwickler";
 
 const BEISPIELE = [
   {
@@ -58,8 +60,13 @@ const NICHT_IST = [
 ];
 
 export default function Webinar() {
+  const { currentRoleId } = useUserRole();
   const [activeBeispiel, setActiveBeispiel] = useState(0);
   const [isDark, setIsDark] = useState(true);
+
+  if (currentRoleId === "entwickler") {
+    return <WebinarEntwickler />;
+  }
 
   const scrollToWebinar = () => {
     document.getElementById("webinar-video")?.scrollIntoView({ behavior: "smooth" });
