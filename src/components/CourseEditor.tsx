@@ -201,6 +201,12 @@ function LessonRow({
     );
   }
 
+  const statusBadge = (() => {
+    const s = lesson.status || "published";
+    if (s === "draft") return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-warning/30 text-warning whitespace-nowrap shrink-0">Entwurf</Badge>;
+    return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-[hsl(var(--success))]/30 text-[hsl(var(--success))] whitespace-nowrap shrink-0">Veröffentlicht</Badge>;
+  })();
+
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 hover:bg-secondary/20 transition-colors group rounded-lg">
       <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 cursor-grab shrink-0" />
@@ -208,6 +214,7 @@ function LessonRow({
         <p className="text-sm text-foreground truncate">{lesson.title}</p>
         <p className="text-[11px] text-muted-foreground">{lesson.duration} {lesson.locked && "· 🔒 Gesperrt"}</p>
       </div>
+      {statusBadge}
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setDraft(lesson); setEditing(true); }}>
           <Pencil className="h-3 w-3" />
