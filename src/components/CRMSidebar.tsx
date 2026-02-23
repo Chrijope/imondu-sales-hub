@@ -9,7 +9,7 @@ import {
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
   Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal, Video
 } from "lucide-react";
-import imonduLogo from "@/assets/imondu-logo.png";
+import imonduLogo from "@/assets/imondu-logo-full.png";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
@@ -334,9 +334,9 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
       {/* Logo */}
       <div className="px-3 py-4 flex items-center justify-center bg-primary-foreground h-14">
         {collapsed ? (
-          <img src={imonduLogo} alt="Imondu" className="h-7 w-auto" />
+          <img src={imonduLogo} alt="Imondu" className="h-7 w-auto object-contain" />
         ) : (
-          <img src={imonduLogo} alt="Imondu" className="h-10 w-auto" />
+          <img src={imonduLogo} alt="Imondu" className="h-8 w-auto object-contain" />
         )}
       </div>
 
