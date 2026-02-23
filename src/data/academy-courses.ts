@@ -55,27 +55,27 @@ export const ONBOARDING_COURSE: Course = {
       description: "In diesem Modul lernst du die zentralen Werkzeuge kennen, mit denen du jeden Arbeitstag startest. Du erfährst, wie du das Dashboard als Kommandozentrale nutzt, Nachrichten im Blick behältst und deine Kommunikation über Anrufe, E-Mails und den Kalender effizient organisierst.",
       lessons: [
         {
-          id: "ob-l1", title: "Dashboard – Deine Zentrale", duration: "10:00", completed: false, locked: false,
+          id: "ob-l1", title: "Dashboard – Deine Zentrale", duration: "10:00", completed: false, locked: false, status: "published",
           description: "Das Dashboard ist deine persönliche Startseite im Backoffice. Hier siehst du auf einen Blick deine wichtigsten Kennzahlen (KPIs): offene Leads, anstehende Termine, aktuelle Provision und deine Abschlussquote. Du lernst, wie du die einzelnen Widgets liest, was die Zahlen bedeuten und wie du das Dashboard als Ausgangspunkt für deinen Arbeitstag nutzt.",
           exercise: "Öffne dein Dashboard und identifiziere die folgenden KPIs: Anzahl offener Leads, geplante Termine heute und deine aktuelle Monats-Provision. Notiere dir die Werte und vergleiche sie morgen erneut.",
         },
         {
-          id: "ob-l2", title: "Inbox – Alle Nachrichten im Überblick", duration: "8:00", completed: false, locked: false,
+          id: "ob-l2", title: "Inbox – Alle Nachrichten im Überblick", duration: "8:00", completed: false, locked: true,
           description: "Die Inbox bündelt alle eingehenden Benachrichtigungen, Systemnachrichten und Aufgaben an einem Ort. Du lernst, wie du zwischen verschiedenen Nachrichtentypen filterst, einzelne Nachrichten als gelesen markierst und direkt aus der Inbox heraus auf Leads oder Termine zugreifst, ohne den Kontext zu wechseln.",
           exercise: "Navigiere zur Inbox und filtere nach ungelesenen Nachrichten. Markiere mindestens zwei Nachrichten als gelesen und öffne eine Nachricht, um den zugehörigen Lead direkt aufzurufen.",
         },
         {
-          id: "ob-l3", title: "Anrufe – Telefonie effizient nutzen", duration: "12:00", completed: false, locked: false,
+          id: "ob-l3", title: "Anrufe – Telefonie effizient nutzen", duration: "12:00", completed: false, locked: true,
           description: "Die Anruf-Seite zeigt dir dein vollständiges Anrufprotokoll mit eingehenden und ausgehenden Anrufen. Du erfährst, wie du direkt aus dem Backoffice heraus Anrufe tätigst, Gesprächsnotizen anlegst und Anrufe bestimmten Leads zuordnest. Außerdem lernst du, wie du verpasste Anrufe nachverfolgst und Rückrufe planst.",
           exercise: "Rufe die Anruf-Seite auf und betrachte dein Anrufprotokoll. Klicke auf einen vergangenen Anruf und füge eine Gesprächsnotiz hinzu. Erstelle anschließend eine Rückruf-Erinnerung für morgen.",
         },
         {
-          id: "ob-l4", title: "E-Mail – Geschäftliche Kommunikation", duration: "10:00", completed: false, locked: false,
+          id: "ob-l4", title: "E-Mail – Geschäftliche Kommunikation", duration: "10:00", completed: false, locked: true,
           description: "Als imondu-Partner erhältst du eine professionelle geschäftliche E-Mail-Adresse (vorname.nachname@imondu.de). In dieser Lektion lernst du, wie du dein E-Mail-Konto einrichtest, E-Mail-Vorlagen nutzt, eine professionelle Signatur anlegst und E-Mails direkt aus dem CRM an Kontakte versendest.",
           exercise: "Gehe in die Einstellungen → E-Mail und überprüfe, ob deine E-Mail-Signatur korrekt eingerichtet ist. Passe sie an, falls nötig, und versende eine Test-E-Mail an dich selbst.",
         },
         {
-          id: "ob-l5", title: "Kalender – Termine & Planung", duration: "8:00", completed: false, locked: false,
+          id: "ob-l5", title: "Kalender – Termine & Planung", duration: "8:00", completed: false, locked: true,
           description: "Der integrierte Kalender hilft dir, Termine mit Eigentümern, Follow-ups und Teamaktivitäten zu organisieren. Du lernst, wie du deinen externen Kalender (Google, Outlook, Apple) verbindest, neue Termine anlegst und die bidirektionale Synchronisation nutzt, damit kein Termin verloren geht.",
           exercise: "Verbinde einen externen Kalender (Google Calendar, Outlook oder Apple) über die Einstellungen → Kalender. Erstelle anschließend einen Testtermin im Backoffice und prüfe, ob er in deinem externen Kalender erscheint.",
         },
