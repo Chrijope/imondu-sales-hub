@@ -96,6 +96,7 @@ function LessonPlayer({
   currentIndex,
   onBack,
   onNavigate,
+  onComplete,
 }: {
   lesson: Lesson;
   course: Course;
@@ -103,6 +104,7 @@ function LessonPlayer({
   currentIndex: number;
   onBack: () => void;
   onNavigate: (lessonId: string) => void;
+  onComplete: (lessonId: string) => void;
 }) {
   const [speed, setSpeed] = useState("1");
   const [videoWatched, setVideoWatched] = useState(lesson.completed);
@@ -119,6 +121,9 @@ function LessonPlayer({
   const handleSimulateWatch = () => {
     setVideoProgress(100);
     setVideoWatched(true);
+    if (!lesson.completed) {
+      onComplete(lesson.id);
+    }
   };
 
   return (
@@ -524,6 +529,28 @@ export default function Academy() {
     setEditingCourseId(null);
   };
 
+  const markLessonCompleted = (lessonId: string) => {
+    setCourses((prev) =>
+      prev.map((c) => {
+        const allFlat = c.modules.flatMap((m) => m.lessons);
+        const idx = allFlat.findIndex((l) => l.id === lessonId);
+        if (idx === -1) return c;
+        const nextLessonId = idx < allFlat.length - 1 ? allFlat[idx + 1].id : null;
+        return {
+          ...c,
+          modules: c.modules.map((m) => ({
+            ...m,
+            lessons: m.lessons.map((l) => {
+              if (l.id === lessonId) return { ...l, completed: true };
+              if (nextLessonId && l.id === nextLessonId) return { ...l, locked: false };
+              return l;
+            }),
+          })),
+        };
+      })
+    );
+  };
+
   const handleCreateCourse = () => {
     const newCourse: Course = {
       id: `course-${Math.random().toString(36).slice(2, 10)}`,
@@ -576,6 +603,7 @@ export default function Academy() {
               currentIndex={currentIndex}
               onBack={() => setActiveLessonId(null)}
               onNavigate={(id) => setActiveLessonId(id)}
+              onComplete={markLessonCompleted}
             />
           ) : course ? (
             <CourseDetail
