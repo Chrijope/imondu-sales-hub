@@ -363,6 +363,47 @@ function CourseDetail({
         </div>
       </div>
 
+      {/* Course overview stats */}
+      {(() => {
+        const totalModules = course.modules.length;
+        const totalVideos = allLessons.length;
+        const totalCompletedVideos = allLessons.filter(l => l.completed).length;
+        // Parse durations to calculate total
+        const totalMinutes = allLessons.reduce((sum, l) => {
+          const parts = l.duration.split(":");
+          return sum + (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+        }, 0);
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        const durationStr = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+        const videosWithUpload = allLessons.filter(l => l.videoUrl).length;
+
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="glass-card rounded-xl p-3 text-center">
+              <BookOpen className="h-4 w-4 text-primary mx-auto mb-1" />
+              <p className="text-lg font-display font-bold text-foreground">{totalModules}</p>
+              <p className="text-[11px] text-muted-foreground">Module</p>
+            </div>
+            <div className="glass-card rounded-xl p-3 text-center">
+              <Play className="h-4 w-4 text-primary mx-auto mb-1" />
+              <p className="text-lg font-display font-bold text-foreground">{totalVideos}</p>
+              <p className="text-[11px] text-muted-foreground">Videos gesamt</p>
+            </div>
+            <div className="glass-card rounded-xl p-3 text-center">
+              <CheckCircle2 className="h-4 w-4 text-success mx-auto mb-1" />
+              <p className="text-lg font-display font-bold text-foreground">{totalCompletedVideos}/{totalVideos}</p>
+              <p className="text-[11px] text-muted-foreground">Abgeschlossen</p>
+            </div>
+            <div className="glass-card rounded-xl p-3 text-center">
+              <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+              <p className="text-lg font-display font-bold text-foreground">{durationStr}</p>
+              <p className="text-[11px] text-muted-foreground">Gesamtdauer</p>
+            </div>
+          </div>
+        );
+      })()}
+
       {course.hasCertificate && (
         <div className={`rounded-xl p-4 border flex items-center gap-3 ${progress === 100 ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5" : "border-warning/30 bg-warning/5"}`}>
           <Award className={`h-5 w-5 shrink-0 ${progress === 100 ? "text-[hsl(var(--success))]" : "text-warning"}`} />
@@ -408,6 +449,9 @@ function CourseDetail({
                   <p className="text-sm font-semibold text-foreground">{mod.title}</p>
                   <p className="text-xs text-muted-foreground">{mod.description} · {modCompleted}/{mod.lessons.length} fertig</p>
                 </div>
+                <span className="text-xs text-muted-foreground shrink-0 mr-2 flex items-center gap-1">
+                  <Play className="h-3 w-3" /> {mod.lessons.length} Videos
+                </span>
                 {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
               </button>
               {isOpen && (
