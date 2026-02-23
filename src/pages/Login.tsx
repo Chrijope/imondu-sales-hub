@@ -51,7 +51,7 @@ export default function Login() {
               </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-md">
-              Verbinden Sie Eigentümer und Entwickler – intelligent, direkt und transparent.
+              Ob Eigentümer oder Entwickler – finden Sie den passenden Partner für Ihr Immobilienprojekt. Einfach, direkt und transparent.
             </p>
             
             <div className="flex gap-8 pt-4">
