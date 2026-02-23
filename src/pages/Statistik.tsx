@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -61,6 +62,32 @@ function ToggleBtn({ active, label, onClick }: { active: boolean; label: string;
     >
       {label}
     </button>
+  );
+}
+
+/* ── Filter Dropdown ───────────────────────────── */
+function FilterDropdown({ value, options, onChange }: { value: string; options: { key: string; label: string }[]; onChange: (v: any) => void }) {
+  const activeLabel = options.find(o => o.key === value)?.label || value;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="px-3 py-1 rounded text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/80 flex items-center gap-1.5 border border-border">
+          {activeLabel}
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-card border border-border shadow-lg z-50">
+        {options.map((opt) => (
+          <DropdownMenuItem
+            key={opt.key}
+            onClick={() => onChange(opt.key)}
+            className={`text-xs cursor-pointer ${value === opt.key ? "bg-accent text-accent-foreground font-semibold" : ""}`}
+          >
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -302,8 +329,7 @@ export default function Statistik() {
         {!isHR && (<>
         <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-3 flex-wrap">
           <span className="text-sm text-muted-foreground">Statistiken anzeigen für:</span>
-          <ToggleBtn label="Gesamt" active={scope === "gesamt"} onClick={() => setScope("gesamt")} />
-          <ToggleBtn label="Individuell" active={scope === "individuell"} onClick={() => setScope("individuell")} />
+          <FilterDropdown value={scope} options={[{ key: "gesamt", label: "Gesamt" }, { key: "individuell", label: "Individuell" }]} onChange={setScope} />
 
           {scope === "individuell" && (
             <Popover>
@@ -334,9 +360,7 @@ export default function Statistik() {
         {/* Time Range */}
         <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground mr-1">Zeitraum:</span>
-          {TIME_RANGE_OPTIONS.map((t) => (
-            <ToggleBtn key={t} label={t} active={timeRange === t} onClick={() => setTimeRange(t)} />
-          ))}
+          <FilterDropdown value={timeRange} options={TIME_RANGE_OPTIONS.map(t => ({ key: t, label: t }))} onChange={setTimeRange} />
           {activeDateRange && (
             <span className="text-[10px] text-muted-foreground ml-2">
               ({format(activeDateRange.from, "dd.MM.yyyy", { locale: de })} – {format(activeDateRange.to, "dd.MM.yyyy", { locale: de })})
@@ -350,10 +374,7 @@ export default function Statistik() {
           <SectionCard
             title="Übersicht"
             actions={
-              <div className="flex gap-1">
-                <ToggleBtn label="Eigentümer (B2C)" active={uebersichtTab === "b2c"} onClick={() => setUebersichtTab("b2c")} />
-                <ToggleBtn label="Entwickler (B2B)" active={uebersichtTab === "b2b"} onClick={() => setUebersichtTab("b2b")} />
-              </div>
+              <FilterDropdown value={uebersichtTab} options={[{ key: "b2c", label: "Eigentümer (B2C)" }, { key: "b2b", label: "Entwickler (B2B)" }]} onChange={setUebersichtTab} />
             }
           >
             <div className="grid grid-cols-3 gap-3 mb-4">
@@ -382,16 +403,16 @@ export default function Statistik() {
           <SectionCard
             title="Immobilien-Portfolio"
             actions={
-              <div className="flex gap-1">
-                {([
+              <FilterDropdown
+                value={potenzialView}
+                options={[
                   { key: "immobilienwert" as const, label: "Immobilienwert" },
                   { key: "objekttyp" as const, label: "Objekttyp" },
                   { key: "sanierung" as const, label: "Sanierung" },
                   { key: "region" as const, label: "Region" },
-                ]).map((v) => (
-                  <ToggleBtn key={v.key} label={v.label} active={potenzialView === v.key} onClick={() => setPotenzialView(v.key)} />
-                ))}
-              </div>
+                ]}
+                onChange={setPotenzialView}
+              />
             }
           >
             {(() => {
@@ -492,10 +513,7 @@ export default function Statistik() {
           <SectionCard
             title="Aktivität"
             actions={
-              <div className="flex gap-1">
-                <ToggleBtn label="Eigentümer (B2C)" active={aktivitaetTab === "b2c"} onClick={() => setAktivitaetTab("b2c")} />
-                <ToggleBtn label="Entwickler (B2B)" active={aktivitaetTab === "b2b"} onClick={() => setAktivitaetTab("b2b")} />
-              </div>
+              <FilterDropdown value={aktivitaetTab} options={[{ key: "b2c", label: "Eigentümer (B2C)" }, { key: "b2b", label: "Entwickler (B2B)" }]} onChange={setAktivitaetTab} />
             }
           >
             {aktivitaetTab === "b2c" ? (
@@ -518,10 +536,7 @@ export default function Statistik() {
           <SectionCard
             title="Effektivität"
             actions={
-              <div className="flex gap-1">
-                <ToggleBtn label="Eigentümer (B2C)" active={aktivitaetTab === "b2c"} onClick={() => setAktivitaetTab("b2c")} />
-                <ToggleBtn label="Entwickler (B2B)" active={aktivitaetTab === "b2b"} onClick={() => setAktivitaetTab("b2b")} />
-              </div>
+              <FilterDropdown value={aktivitaetTab} options={[{ key: "b2c", label: "Eigentümer (B2C)" }, { key: "b2b", label: "Entwickler (B2B)" }]} onChange={setAktivitaetTab} />
             }
           >
             {(() => {
