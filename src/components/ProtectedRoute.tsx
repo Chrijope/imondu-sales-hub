@@ -37,6 +37,7 @@ const ROUTE_TO_MENU_ID: Record<string, string> = {
   "/shop": "shop",
   "/immorechner": "immorechner",
   "/rechner": "rechner",
+  "/webinar": "webinar",
 };
 
 interface ProtectedRouteProps {
