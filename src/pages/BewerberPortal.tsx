@@ -28,7 +28,7 @@ const PERSONALITY_TYPES = [
   "INTJ", "INTP", "INFJ", "INFP", "ISTJ", "ISFJ", "ISTP", "ISFP",
 ];
 
-export default function BewerberPortal() {
+export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
   const { toast } = useToast();
   const [step, setStep] = useState(0);
 
@@ -71,10 +71,10 @@ export default function BewerberPortal() {
   };
 
   if (submitted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    const content = (
+      <div className="flex items-center justify-center p-6" style={{ minHeight: embedded ? "auto" : "100vh" }}>
         <div className="max-w-md w-full text-center space-y-6">
-          <img src={imonduLogo} alt="IMONDU" className="h-10 mx-auto" />
+          {!embedded && <img src={imonduLogo} alt="IMONDU" className="h-10 mx-auto" />}
           <div className="bg-card border border-border rounded-2xl p-8 space-y-4">
             <CheckCircle2 className="h-16 w-16 text-primary mx-auto" />
             <h1 className="text-2xl font-bold text-foreground">Bewerbung eingereicht!</h1>
@@ -94,17 +94,30 @@ export default function BewerberPortal() {
         </div>
       </div>
     );
+    if (embedded) return content;
+    return <div className="min-h-screen bg-background">{content}</div>;
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
-        <img src={imonduLogo} alt="IMONDU" className="h-8" />
-        <Badge variant="outline" className="text-xs">Bewerbungsportal</Badge>
-      </header>
+  const mainContent = (
+    <div className={embedded ? "p-6 lg:p-8" : "max-w-2xl mx-auto p-6"}>
+      {!embedded && (
+        <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between mb-6 -mx-6 -mt-6">
+          <img src={imonduLogo} alt="IMONDU" className="h-8" />
+          <Badge variant="outline" className="text-xs">Bewerbungsportal</Badge>
+        </header>
+      )}
 
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      {embedded && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-10 h-1 rounded-full gradient-brand" />
+          </div>
+          <h1 className="text-2xl font-display font-bold text-foreground">Meine Bewerbung</h1>
+          <p className="text-sm text-muted-foreground mt-1">Durchlaufe den Bewerbungsprozess Schritt für Schritt.</p>
+        </div>
+      )}
+
+      <div className="space-y-6 max-w-2xl">
         {/* Step Indicator */}
         <div className="flex items-center gap-1">
           {STEPS.map((s, i) => {
@@ -350,6 +363,9 @@ export default function BewerberPortal() {
       </div>
     </div>
   );
+
+  if (embedded) return mainContent;
+  return <div className="min-h-screen bg-background">{mainContent}</div>;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {

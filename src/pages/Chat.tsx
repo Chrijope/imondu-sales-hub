@@ -317,10 +317,38 @@ export default function Chat() {
   const { currentRoleId } = useUserRole();
   const isEigentuemer = currentRoleId === "eigentuemer";
   const isEntwickler = currentRoleId === "entwickler";
-  const isRoleRestricted = isEigentuemer || isEntwickler;
+  const isBewerber = currentRoleId === "bewerber";
+  const isRoleRestricted = isEigentuemer || isEntwickler || isBewerber;
 
-  // For Eigentümer: only show Entwickler chats; for Entwickler: only Eigentümer chats
-  const roleFilteredInitialChats = isEigentuemer
+  // Bewerber-specific chat with Admin
+  const bewerberChats: ChatThread[] = [
+    {
+      id: "bew-admin-1",
+      name: "IMONDU Recruiting",
+      initials: "IR",
+      lastMessage: "Willkommen! Wir freuen uns auf Deine Bewerbung.",
+      time: "10:00",
+      unread: 1,
+      pinned: true,
+      archived: false,
+      muted: false,
+      category: "intern",
+      members: [
+        { name: "IMONDU Recruiting", initials: "IR", role: "Admin" },
+        { name: "Bewerber", initials: "BW", role: "Bewerber" },
+      ],
+      messages: [
+        { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: new Date().toLocaleDateString("de-DE"), isOwn: false, isSystem: true },
+        { id: "m1", sender: "IMONDU Recruiting", initials: "IR", text: "Willkommen bei IMONDU! 🎉 Hier kannst Du uns jederzeit Fragen zu Deiner Bewerbung stellen.", time: "10:00", isOwn: false },
+        { id: "m2", sender: "IMONDU Recruiting", initials: "IR", text: "Fülle am besten zuerst den Bewerbungsprozess unter 'Meine Bewerbung' aus. Bei Fragen sind wir hier für Dich da!", time: "10:01", isOwn: false },
+      ],
+    },
+  ];
+
+  // For Eigentümer: only show Entwickler chats; for Entwickler: only Eigentümer chats; for Bewerber: only admin chats
+  const roleFilteredInitialChats = isBewerber
+    ? bewerberChats
+    : isEigentuemer
     ? initialChats.filter(c => c.category === "entwickler")
     : isEntwickler
     ? initialChats.filter(c => c.category === "eigentuemer")
@@ -399,10 +427,12 @@ export default function Chat() {
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !activeChat) return;
-    const senderName = currentRoleId === "eigentuemer" ? "Anna Schmidt"
+    const senderName = currentRoleId === "bewerber" ? "Bewerber"
+      : currentRoleId === "eigentuemer" ? "Anna Schmidt"
       : currentRoleId === "entwickler" ? "Thomas Huber"
       : "Christian Peetz";
-    const senderInitials = currentRoleId === "eigentuemer" ? "AS"
+    const senderInitials = currentRoleId === "bewerber" ? "BW"
+      : currentRoleId === "eigentuemer" ? "AS"
       : currentRoleId === "entwickler" ? "TH"
       : "CP";
     const newMsg: ChatMessage = {

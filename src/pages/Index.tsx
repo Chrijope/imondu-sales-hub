@@ -16,6 +16,7 @@ import { SAMPLE_LEADS } from "@/data/crm-data";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import EigentuemerDashboard from "@/components/EigentuemerDashboard";
 import EntwicklerDashboard from "@/components/EntwicklerDashboard";
+import BewerberPortal from "@/pages/BewerberPortal";
 import {
   BarChart,
   Bar,
@@ -106,6 +107,15 @@ export default function Dashboard() {
     return (
       <CRMLayout>
         <EntwicklerDashboard />
+      </CRMLayout>
+    );
+  }
+
+  // Bewerber gets their portal as dashboard
+  if (currentRoleId === "bewerber") {
+    return (
+      <CRMLayout>
+        <BewerberPortal embedded />
       </CRMLayout>
     );
   }

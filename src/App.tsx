@@ -56,6 +56,7 @@ import Bewerbungsmanagement from "./pages/Bewerbungsmanagement";
 import BewerberPortal from "./pages/BewerberPortal";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import CRMLayout from "./components/CRMLayout";
 
 const queryClient = new QueryClient();
 
@@ -121,7 +122,7 @@ const App = () => (
           <Route path="/lead-scouring" element={<P path="/lead-scouring"><LeadScouring /></P>} />
           <Route path="/webinar" element={<P path="/webinar"><Webinar /></P>} />
           <Route path="/bewerbungsmanagement" element={<P path="/bewerbungsmanagement"><Bewerbungsmanagement /></P>} />
-          <Route path="/bewerber-portal" element={<BewerberPortal />} />
+          <Route path="/bewerber-portal" element={<P path="/bewerber-portal"><CRMLayout><BewerberPortal embedded /></CRMLayout></P>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

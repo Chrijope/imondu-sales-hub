@@ -38,6 +38,8 @@ const ROUTE_TO_MENU_ID: Record<string, string> = {
   "/immorechner": "immorechner",
   "/rechner": "rechner",
   "/webinar": "webinar",
+  "/bewerber-portal": "bewerber-portal",
+  "/bewerbungsmanagement": "bewerbungsmanagement",
 };
 
 interface ProtectedRouteProps {
