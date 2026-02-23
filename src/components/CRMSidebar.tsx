@@ -14,6 +14,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import { getSupportUnreadCount, getHelpdeskUnreadCount } from "@/utils/support-notifications";
 
 // ── Menu-ID mapping ──
 const PATH_TO_MENU_ID: Record<string, string> = {
@@ -133,8 +134,8 @@ const sectionTeam = [
 
 // ── Components ──
 
-function NavItem({ path, icon: Icon, label, isActive, collapsed }: {
-  path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean; collapsed: boolean;
+function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount }: {
+  path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean; collapsed: boolean; badgeCount?: number;
 }) {
   const handleClick = () => {
     const nav = document.getElementById('crm-sidebar-nav');
@@ -151,8 +152,24 @@ function NavItem({ path, icon: Icon, label, isActive, collapsed }: {
           : "text-foreground/70 hover:bg-background hover:text-foreground"
       } ${collapsed ? "justify-center px-2" : ""}`}
     >
-      <Icon className="h-[16px] w-[16px] shrink-0" />
-      {!collapsed && label}
+      <div className="relative shrink-0">
+        <Icon className="h-[16px] w-[16px]" />
+        {badgeCount && badgeCount > 0 && collapsed && (
+          <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
+            {badgeCount > 9 ? "9+" : badgeCount}
+          </span>
+        )}
+      </div>
+      {!collapsed && (
+        <>
+          <span className="flex-1">{label}</span>
+          {badgeCount && badgeCount > 0 && (
+            <span className="h-5 min-w-5 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+              {badgeCount > 99 ? "99+" : badgeCount}
+            </span>
+          )}
+        </>
+      )}
     </Link>
   );
 }
@@ -257,6 +274,25 @@ interface CRMSidebarProps {
 export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
   const location = useLocation();
   const { currentRoleId, setCurrentRoleId, allowedMenuItems, roles } = useUserRole();
+  const [supportUnread, setSupportUnread] = useState(0);
+  const [helpdeskUnread, setHelpdeskUnread] = useState(0);
+
+  // Poll unread counts
+  useEffect(() => {
+    const update = () => {
+      setSupportUnread(getSupportUnreadCount());
+      setHelpdeskUnread(getHelpdeskUnreadCount());
+    };
+    update();
+    const interval = setInterval(update, 2000);
+    window.addEventListener("storage", update);
+    window.addEventListener("focus", update);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", update);
+      window.removeEventListener("focus", update);
+    };
+  }, []);
 
   // Restore sidebar scroll position after navigation
   useEffect(() => {
@@ -369,7 +405,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
               {showRechner && <CollapsibleGroup label="Entwicklungsrechner" icon={Calculator} items={rechnerSubItems} color="text-foreground" collapsed={collapsed} />}
               {showMarketing && <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" collapsed={collapsed} />}
               {toolItems.map((item) => (
-                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed} />
+                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
+                  badgeCount={item.path === "/support-ki" ? supportUnread : undefined} />
               ))}
             </SectionGroup>
           );
@@ -382,7 +419,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
           return (
             <SectionGroup label="Team & Admin" collapsed={collapsed}>
               {items.map((item) => (
-                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed} />
+                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
+                  badgeCount={item.path === "/helpdesk" ? helpdeskUnread : undefined} />
               ))}
             </SectionGroup>
           );

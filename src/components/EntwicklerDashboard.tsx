@@ -15,8 +15,10 @@ import {
   CheckCircle2,
   TrendingUp,
   Users,
+  BotMessageSquare,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getSupportUnreadCount } from "@/utils/support-notifications";
 
 // Mock developer profile
 const ENTWICKLER_PROFIL = {
@@ -94,7 +96,15 @@ function getScoreColor(score: number) {
 
 export default function EntwicklerDashboard() {
   const profil = ENTWICKLER_PROFIL;
+  const [supportUnread, setSupportUnread] = useState(0);
 
+  useEffect(() => {
+    const update = () => setSupportUnread(getSupportUnreadCount());
+    update();
+    const interval = setInterval(update, 2000);
+    window.addEventListener("storage", update);
+    return () => { clearInterval(interval); window.removeEventListener("storage", update); };
+  }, []);
   return (
     <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
       {/* Header */}
@@ -332,7 +342,12 @@ export default function EntwicklerDashboard() {
           </div>
           <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">Chat öffnen</span>
         </Link>
-        <Link to="/support-ki" className="glass-card rounded-2xl p-5 flex flex-col items-center gap-3 group">
+        <Link to="/support-ki" className="glass-card rounded-2xl p-5 flex flex-col items-center gap-3 group relative">
+          {supportUnread > 0 && (
+            <span className="absolute top-2 right-2 h-5 min-w-5 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+              {supportUnread}
+            </span>
+          )}
           <div className="h-11 w-11 rounded-full gradient-brand flex items-center justify-center">
             <HeadphonesIcon className="h-5 w-5 text-primary-foreground" />
           </div>

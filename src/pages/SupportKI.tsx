@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Bot, User, HeadphonesIcon, Ticket, CheckCircle2, Clock, AlertCircle, XCircle } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useToast } from "@/hooks/use-toast";
+import {
+  getTrackedTickets, saveTrackedTickets, TrackedTicket,
+  clearSupportUnread, incrementHelpdeskUnread,
+} from "@/utils/support-notifications";
 
 interface Message {
   id: string;
@@ -86,12 +90,38 @@ function TicketCard({ ticketId, betreff, status }: { ticketId: string; betreff: 
 }
 
 export default function SupportKI() {
-  const [messages, setMessages] = useState<Message[]>([WELCOME]);
+  // Restore tracked tickets from localStorage on mount
+  const [tickets, setTickets] = useState<TrackedTicket[]>(() => getTrackedTickets());
+  const [messages, setMessages] = useState<Message[]>(() => {
+    // Restore messages from localStorage
+    try {
+      const saved = localStorage.getItem("support-ki-messages");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [WELCOME];
+  });
   const [input, setInput] = useState("");
-  const [tickets, setTickets] = useState<{ id: string; betreff: string; status: string; lastMsgCount: number }[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { currentRoleId } = useUserRole();
   const { toast } = useToast();
+
+  // Persist messages to localStorage
+  useEffect(() => {
+    localStorage.setItem("support-ki-messages", JSON.stringify(messages));
+  }, [messages]);
+
+  // Persist tracked tickets
+  useEffect(() => {
+    saveTrackedTickets(tickets);
+  }, [tickets]);
+
+  // Clear unread count when viewing Support KI
+  useEffect(() => {
+    clearSupportUnread();
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -105,56 +135,63 @@ export default function SupportKI() {
       const raw = localStorage.getItem("helpdesk-new-tickets");
       if (!raw) return;
       const allTickets = JSON.parse(raw);
+      const trackedTickets = getTrackedTickets();
+      if (trackedTickets.length === 0) return;
 
-      setTickets(prev => {
-        let changed = false;
-        const updated = prev.map(t => {
-          const hdTicket = allTickets.find((ht: any) => ht.id === t.id);
-          if (!hdTicket) return t;
+      let anyChanged = false;
+      const newMessages: Message[] = [];
+      const updatedTracked = trackedTickets.map(t => {
+        const hdTicket = allTickets.find((ht: any) => ht.id === t.id);
+        if (!hdTicket) return t;
 
-          // Check for new messages from support
-          const supportMsgs = (hdTicket.messages || []).filter((m: any) => m.role === "support");
-          if (supportMsgs.length > t.lastMsgCount) {
-            const newMsgs = supportMsgs.slice(t.lastMsgCount);
-            newMsgs.forEach((m: any) => {
-              setMessages(prev => [...prev, {
-                id: crypto.randomUUID(),
-                role: "support" as const,
-                text: m.text,
-                time: m.time || now(),
-                ticketId: t.id,
-              }]);
-            });
-            changed = true;
-          }
-
-          // Check for status changes
-          if (hdTicket.status !== t.status) {
-            const isResolved = hdTicket.status === "geloest" || hdTicket.status === "geschlossen";
-            setMessages(prev => [...prev, {
+        // Check for new messages from support
+        const supportMsgs = (hdTicket.messages || []).filter((m: any) => m.role === "support");
+        if (supportMsgs.length > t.lastSupportMsgCount) {
+          const newSupportMsgs = supportMsgs.slice(t.lastSupportMsgCount);
+          newSupportMsgs.forEach((m: any) => {
+            newMessages.push({
               id: crypto.randomUUID(),
-              role: "ticket-card" as const,
-              text: "",
-              time: now(),
+              role: "support" as const,
+              text: m.text,
+              time: m.time || now(),
               ticketId: t.id,
-              ticketStatus: hdTicket.status,
-            }]);
-            if (isResolved) {
-              setMessages(prev => [...prev, {
-                id: crypto.randomUUID(),
-                role: "system" as const,
-                text: `Ticket ${t.id} wurde vom Backoffice als "${STATUS_LABELS[hdTicket.status]?.label || hdTicket.status}" markiert.`,
-                time: now(),
-              }]);
-            }
-            changed = true;
+            });
+          });
+          anyChanged = true;
+        }
+
+        // Check for status changes
+        if (hdTicket.status !== t.status) {
+          const isResolved = hdTicket.status === "geloest" || hdTicket.status === "geschlossen";
+          newMessages.push({
+            id: crypto.randomUUID(),
+            role: "ticket-card" as const,
+            text: "",
+            time: now(),
+            ticketId: t.id,
+            ticketStatus: hdTicket.status,
+          });
+          if (isResolved) {
+            newMessages.push({
+              id: crypto.randomUUID(),
+              role: "system" as const,
+              text: `Ticket ${t.id} wurde vom Backoffice als "${STATUS_LABELS[hdTicket.status]?.label || hdTicket.status}" markiert.`,
+              time: now(),
+            });
           }
+          anyChanged = true;
+        }
 
-          return { ...t, status: hdTicket.status, lastMsgCount: supportMsgs.length };
-        });
-
-        return changed ? updated : prev;
+        return { ...t, status: hdTicket.status, lastSupportMsgCount: supportMsgs.length };
       });
+
+      if (anyChanged) {
+        if (newMessages.length > 0) {
+          setMessages(prev => [...prev, ...newMessages]);
+        }
+        setTickets(updatedTracked);
+        saveTrackedTickets(updatedTracked);
+      }
     } catch {}
   }, []);
 
@@ -214,8 +251,18 @@ export default function SupportKI() {
       window.dispatchEvent(new Event("storage"));
     } catch {}
 
-    // Track this ticket locally
-    setTickets(prev => [...prev, { id: ticketId, betreff, status: "neu", lastMsgCount: 0 }]);
+    // Track this ticket locally with message counts
+    const newTracked: TrackedTicket = {
+      id: ticketId,
+      betreff,
+      status: "neu",
+      lastSupportMsgCount: 0,
+      lastKundeMsgCount: ticket.messages.filter(m => m.role === "kunde").length,
+    };
+    setTickets(prev => [...prev, newTracked]);
+
+    // Increment helpdesk unread count
+    incrementHelpdeskUnread();
 
     toast({
       title: "Ticket erstellt",
@@ -251,6 +298,8 @@ export default function SupportKI() {
           all[idx].zuletztAktualisiert = new Date().toISOString();
           localStorage.setItem("helpdesk-new-tickets", JSON.stringify(all));
           window.dispatchEvent(new Event("storage"));
+          // Increment helpdesk unread
+          incrementHelpdeskUnread();
         }
       } catch {}
       return; // Don't process through KI if ticket is open
@@ -264,7 +313,6 @@ export default function SupportKI() {
         const ticketId = createHelpdeskTicket(allMsgs);
         setMessages(prev => [
           ...prev,
-          // Show ticket card
           { id: crypto.randomUUID(), role: "ticket-card" as const, text: "", time: now(), ticketId, ticketStatus: "neu" },
           { id: crypto.randomUUID(), role: "bot", text: answer || `Ich habe Ticket **${ticketId}** für dein Anliegen erstellt. Unser Backoffice-Team wird sich schnellstmöglich bei dir melden. Du kannst hier gerne weitere Details schildern – alles wird an das Team weitergeleitet. 🙌`, time: now() },
         ]);
