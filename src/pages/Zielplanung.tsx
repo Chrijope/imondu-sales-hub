@@ -3,7 +3,7 @@ import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, TrendingUp, Euro, ArrowUpRight, Info, Lock, Users } from "lucide-react";
+import { Target, TrendingUp, Euro, ArrowUpRight, Info, Lock, Users, Save, CheckCircle2 } from "lucide-react";
 import {
   KARRIERESTUFEN,
   B2C_STAFFEL,
@@ -17,6 +17,8 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { SAMPLE_USERS } from "@/data/nutzerverwaltung-data";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -26,9 +28,16 @@ interface MonthGoal {
 }
 
 const STORAGE_KEY_PREFIX = "imondu-zielplanung";
+const DRAFT_KEY_PREFIX = "imondu-zielplanung-draft";
 
+// Published key = what the VP sees
 function getStorageKey(userId?: string): string {
   return userId ? `${STORAGE_KEY_PREFIX}-${userId}` : `${STORAGE_KEY_PREFIX}-v1`;
+}
+
+// Draft key = admin's local working copy before saving
+function getDraftKey(userId: string): string {
+  return `${DRAFT_KEY_PREFIX}-${userId}`;
 }
 
 const emptyGoals = (): Record<number, MonthGoal> => {
@@ -37,24 +46,19 @@ const emptyGoals = (): Record<number, MonthGoal> => {
   return g;
 };
 
-function loadFromStorage(userId?: string): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
+function loadData(key: string): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
   try {
-    const key = getStorageKey(userId);
     const raw = localStorage.getItem(key);
     if (raw) {
       const parsed = JSON.parse(raw);
       return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektassistent" };
     }
-    // Fallback: try old key for backwards compat (only for "self" view)
-    if (!userId) {
-      const oldRaw = localStorage.getItem("imondu-zielplanung-v1");
-      if (oldRaw) {
-        const parsed = JSON.parse(oldRaw);
-        return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektassistent" };
-      }
-    }
   } catch {}
   return { goals: emptyGoals(), karriereStufeId: "projektassistent" };
+}
+
+function loadFromStorage(userId?: string): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
+  return loadData(getStorageKey(userId));
 }
 
 // Career-level-specific minimum B2C provision & B2B provision adjustments
@@ -75,42 +79,85 @@ export default function Zielplanung() {
   const { currentRoleId } = useUserRole();
   const canEdit = ["admin", "vertriebsleiter"].includes(currentRoleId);
 
-  // Admin/VL can select which partner to plan for
   const vertriebspartner = SAMPLE_USERS.filter((u) => u.roleId === "vertriebspartner");
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>(
     canEdit && vertriebspartner.length > 0 ? vertriebspartner[0].id : ""
   );
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const selectedPartner = vertriebspartner.find((u) => u.id === selectedPartnerId);
-  // Use partner-specific storage key for admins, generic for VP
-  const storageUserId = canEdit ? selectedPartnerId : undefined;
 
-  const stored = loadFromStorage(storageUserId);
-  const [karriereStufeId, setKarriereStufeId] = useState(stored.karriereStufeId);
-  const [goals, setGoals] = useState<Record<number, MonthGoal>>(stored.goals);
+  // For admins: load draft if exists, otherwise load published version
+  // For VP: always load published version
+  const initialData = useMemo(() => {
+    if (canEdit && selectedPartnerId) {
+      const draft = loadData(getDraftKey(selectedPartnerId));
+      const published = loadFromStorage(selectedPartnerId);
+      // If draft has any data, use it
+      const hasDraft = localStorage.getItem(getDraftKey(selectedPartnerId));
+      return hasDraft ? draft : published;
+    }
+    return loadFromStorage();
+  }, [canEdit, selectedPartnerId]);
+
+  const [karriereStufeId, setKarriereStufeId] = useState(initialData.karriereStufeId);
+  const [goals, setGoals] = useState<Record<number, MonthGoal>>(initialData.goals);
 
   const karriere = KARRIERESTUFEN.find((k) => k.id === karriereStufeId) || KARRIERESTUFEN[0];
 
   // Reload when partner changes (admin view)
   useEffect(() => {
-    const data = loadFromStorage(storageUserId);
-    setGoals(data.goals);
-    setKarriereStufeId(data.karriereStufeId);
-  }, [selectedPartnerId, storageUserId]);
-
-  // Persist to localStorage (partner-specific)
-  useEffect(() => {
-    const key = getStorageKey(storageUserId);
-    localStorage.setItem(key, JSON.stringify({ goals, karriereStufeId }));
-    // Also write to the partner-specific key so VP sees it
     if (canEdit && selectedPartnerId) {
-      localStorage.setItem(getStorageKey(selectedPartnerId), JSON.stringify({ goals, karriereStufeId }));
+      const hasDraft = localStorage.getItem(getDraftKey(selectedPartnerId));
+      const data = hasDraft ? loadData(getDraftKey(selectedPartnerId)) : loadFromStorage(selectedPartnerId);
+      setGoals(data.goals);
+      setKarriereStufeId(data.karriereStufeId);
+      setHasUnsavedChanges(!!hasDraft);
+    } else {
+      const data = loadFromStorage();
+      setGoals(data.goals);
+      setKarriereStufeId(data.karriereStufeId);
+      setHasUnsavedChanges(false);
     }
-  }, [goals, karriereStufeId, storageUserId, canEdit, selectedPartnerId]);
+  }, [selectedPartnerId, canEdit]);
+
+  // For admins: auto-save to draft only (not published)
+  // For VP: save to own key (read-only anyway, but keeps state)
+  useEffect(() => {
+    if (canEdit && selectedPartnerId) {
+      localStorage.setItem(getDraftKey(selectedPartnerId), JSON.stringify({ goals, karriereStufeId }));
+    } else if (!canEdit) {
+      // VP doesn't save — their data comes from admin publishing
+    }
+  }, [goals, karriereStufeId, canEdit, selectedPartnerId]);
+
+  const handleSaveAndPublish = () => {
+    if (!selectedPartnerId) return;
+    // Write to the published key that the VP reads
+    const publishedKey = getStorageKey(selectedPartnerId);
+    localStorage.setItem(publishedKey, JSON.stringify({ goals, karriereStufeId }));
+    // Remove draft
+    localStorage.removeItem(getDraftKey(selectedPartnerId));
+    setHasUnsavedChanges(false);
+    toast.success(`Zielvereinbarung für ${selectedPartner?.name || "Partner"} gespeichert`, {
+      description: "Die Ziele werden dem Vertriebspartner ab sofort angezeigt.",
+    });
+  };
+
+  const handleDiscardDraft = () => {
+    if (!selectedPartnerId) return;
+    localStorage.removeItem(getDraftKey(selectedPartnerId));
+    const published = loadFromStorage(selectedPartnerId);
+    setGoals(published.goals);
+    setKarriereStufeId(published.karriereStufeId);
+    setHasUnsavedChanges(false);
+    toast.info("Entwurf verworfen – veröffentlichte Ziele wiederhergestellt.");
+  };
 
   const updateGoal = (month: number, field: keyof MonthGoal, val: string) => {
     const num = Math.max(0, parseInt(val) || 0);
     setGoals((prev) => ({ ...prev, [month]: { ...prev[month], [field]: num } }));
+    setHasUnsavedChanges(true);
   };
 
   const calculations = useMemo(() => {
@@ -201,7 +248,7 @@ export default function Zielplanung() {
             )}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Karrierestufe:</span>
-              <Select value={karriereStufeId} onValueChange={setKarriereStufeId} disabled={!canEdit}>
+              <Select value={karriereStufeId} onValueChange={(v) => { setKarriereStufeId(v); setHasUnsavedChanges(true); }} disabled={!canEdit}>
                 <SelectTrigger className="w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -216,6 +263,46 @@ export default function Zielplanung() {
             </div>
           </div>
         </div>
+
+        {/* Save Bar for Admin/VL */}
+        {canEdit && (
+          <div className={`rounded-xl p-4 border flex items-center justify-between transition-all ${
+            hasUnsavedChanges 
+              ? "bg-primary/5 border-primary/30 shadow-crm-sm" 
+              : "bg-muted/30 border-border"
+          }`}>
+            <div className="flex items-center gap-2">
+              {hasUnsavedChanges ? (
+                <>
+                  <div className="h-2 w-2 rounded-full bg-warning animate-pulse" />
+                  <span className="text-sm text-foreground font-medium">Ungespeicherte Änderungen</span>
+                  <span className="text-xs text-muted-foreground">– Entwurf wird lokal zwischengespeichert</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span className="text-sm text-muted-foreground">Alle Änderungen gespeichert & veröffentlicht</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {hasUnsavedChanges && (
+                <Button variant="ghost" size="sm" onClick={handleDiscardDraft} className="text-xs">
+                  Verwerfen
+                </Button>
+              )}
+              <Button 
+                size="sm" 
+                onClick={handleSaveAndPublish} 
+                disabled={!hasUnsavedChanges}
+                className="gap-1.5"
+              >
+                <Save className="h-3.5 w-3.5" />
+                Speichern & Übernehmen
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
