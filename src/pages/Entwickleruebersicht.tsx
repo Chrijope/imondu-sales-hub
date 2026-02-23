@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CRMLayout from "@/components/CRMLayout";
@@ -103,6 +104,7 @@ interface Entwickler {
   zertifikate: string[];
   antwortzeit: string;
   erfolgsquote: number;
+  vermitteltDurch?: string; // Vertriebspartner who referred this developer
 }
 
 const SAMPLE_ENTWICKLER: Entwickler[] = [
@@ -121,6 +123,7 @@ const SAMPLE_ENTWICKLER: Entwickler[] = [
     objekttypen: ["Einfamilienhaus", "Mehrfamilienhaus", "Gewerbeobjekt"],
     regionen: ["Berlin", "Brandenburg"], zertifikate: ["DGNB Auditor", "Energieberater (dena)"],
     antwortzeit: "< 24h", erfolgsquote: 94,
+    vermitteltDurch: "vertriebspartner",
   },
   {
     id: "e2", firmenname: "FensterPro AG", gewerk: "Fensterbauer",
@@ -153,6 +156,7 @@ const SAMPLE_ENTWICKLER: Entwickler[] = [
     objekttypen: ["Einfamilienhaus", "Mehrfamilienhaus", "Wohnung"],
     regionen: ["NRW", "Hessen"], zertifikate: ["dena-Energieberater", "BAFA-gelistet", "KfW-Sachverständiger"],
     antwortzeit: "< 6h", erfolgsquote: 99,
+    vermitteltDurch: "vertriebspartner",
   },
   {
     id: "e4", firmenname: "DachTech GmbH", gewerk: "Dachdecker",
@@ -185,6 +189,7 @@ const SAMPLE_ENTWICKLER: Entwickler[] = [
     objekttypen: ["Einfamilienhaus", "Mehrfamilienhaus", "Wohnung"],
     regionen: ["Hessen"], zertifikate: ["Meisterbetrieb HWK", "Wärmepumpen-Spezialist"],
     antwortzeit: "< 4h", erfolgsquote: 96,
+    vermitteltDurch: "vertriebspartner",
   },
   {
     id: "e6", firmenname: "Elektro Schmidt GmbH", gewerk: "Elektriker",
@@ -590,6 +595,8 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
 
 export default function Entwickleruebersicht() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { currentRoleId } = useUserRole();
+  const isVertriebspartner = currentRoleId === "vertriebspartner";
   const [search, setSearch] = useState("");
   const [gewerkFilter, setGewerkFilter] = useState<GewerkFilter>("alle");
   const [standortFilter, setStandortFilter] = useState("alle");
@@ -611,9 +618,14 @@ export default function Entwickleruebersicht() {
   const selectedIdx = SAMPLE_ENTWICKLER.findIndex((e) => e.id === selectedId);
   const selected = selectedIdx >= 0 ? SAMPLE_ENTWICKLER[selectedIdx] : null;
 
+  // Vertriebspartner only sees developers referred by them
+  const baseList = isVertriebspartner
+    ? SAMPLE_ENTWICKLER.filter((e) => e.vermitteltDurch === "vertriebspartner")
+    : SAMPLE_ENTWICKLER;
+
   const filtered = gewerkFilter === "alle"
-    ? SAMPLE_ENTWICKLER
-    : SAMPLE_ENTWICKLER.filter((e) => e.gewerk === gewerkFilter);
+    ? baseList
+    : baseList.filter((e) => e.gewerk === gewerkFilter);
 
   const withStandort = standortFilter === "alle"
     ? filtered
@@ -634,8 +646,8 @@ export default function Entwickleruebersicht() {
       )
     : withMatchScore;
 
-  const usedGewerke = [...new Set(SAMPLE_ENTWICKLER.map((e) => e.gewerk))];
-  const usedOrte = [...new Set(SAMPLE_ENTWICKLER.map((e) => e.ort))];
+  const usedGewerke = [...new Set(baseList.map((e) => e.gewerk))];
+  const usedOrte = [...new Set(baseList.map((e) => e.ort))];
 
   return (
     <CRMLayout>
@@ -649,18 +661,18 @@ export default function Entwickleruebersicht() {
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-10 h-1 rounded-full gradient-brand" />
               </div>
-              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Entwicklerübersicht</h1>
-              <p className="text-sm text-muted-foreground mt-1">Alle registrierten Entwicklungspartner & Gewerbebetriebe</p>
+              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">{isVertriebspartner ? "Meine Entwickler" : "Entwicklerübersicht"}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{isVertriebspartner ? "Entwickler, die über dich vermittelt oder mit deinem Rabattcode registriert wurden" : "Alle registrierten Entwicklungspartner & Gewerbebetriebe"}</p>
             </div>
 
             {/* KPIs */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
-                <p className="text-3xl font-display font-bold text-foreground">{SAMPLE_ENTWICKLER.length}</p>
-                <p className="text-xs text-muted-foreground mt-1">Entwickler gesamt</p>
+                <p className="text-3xl font-display font-bold text-foreground">{baseList.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">{isVertriebspartner ? "Meine Entwickler" : "Entwickler gesamt"}</p>
               </div>
               <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
-                <p className="text-3xl font-display font-bold text-success">{SAMPLE_ENTWICKLER.filter((e) => e.status === "aktiv").length}</p>
+                <p className="text-3xl font-display font-bold text-success">{baseList.filter((e) => e.status === "aktiv").length}</p>
                 <p className="text-xs text-muted-foreground mt-1">Aktiv</p>
               </div>
               <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
@@ -669,13 +681,13 @@ export default function Entwickleruebersicht() {
               </div>
               <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
                 <p className="text-3xl font-display font-bold text-foreground">
-                  {SAMPLE_ENTWICKLER.reduce((s, e) => s + e.projekte, 0)}
+                  {baseList.reduce((s, e) => s + e.projekte, 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Projekte gesamt</p>
               </div>
               <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
                 <p className="text-3xl font-display font-bold text-primary">
-                  {Math.round(SAMPLE_ENTWICKLER.reduce((s, e, i) => s + getMatchScore(e, i), 0) / SAMPLE_ENTWICKLER.length)}%
+                  {baseList.length > 0 ? Math.round(baseList.reduce((s, e, i) => s + getMatchScore(e, i), 0) / baseList.length) : 0}%
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Ø Matching Score</p>
               </div>

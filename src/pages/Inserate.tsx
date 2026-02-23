@@ -85,6 +85,7 @@ interface Inserat {
   lat: number;
   lng: number;
   matchingScore?: number;
+  vermitteltDurch?: string; // Vertriebspartner who referred this listing
 }
 // City coordinates for DACH region
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -139,7 +140,7 @@ const generateInserate = (): Inserat[] => {
     }
   });
 
-  // Demo inserate
+  // Demo inserate – some linked to Vertriebspartner "Lisa Weber"
   inserate.push(
     {
       id: "ins-demo-1", leadId: "1", eigentuemerName: "Anna Schmidt",
@@ -155,6 +156,7 @@ const generateInserate = (): Inserat[] => {
       matchingScore: 92,
       immobilienwert: "380000",
       lat: 52.52, lng: 13.405,
+      vermitteltDurch: "vertriebspartner",
     },
     {
       id: "ins-demo-2", leadId: "3", eigentuemerName: "Peter Klein",
@@ -169,6 +171,7 @@ const generateInserate = (): Inserat[] => {
       tags: ["Mehrfamilienhaus", "Immobilienverkauf"],
       matchingScore: 87,
       lat: 48.137, lng: 11.576,
+      vermitteltDurch: "vertriebspartner",
     },
     {
       id: "ins-demo-3", leadId: "5", eigentuemerName: "Maria Hoffmann",
@@ -225,6 +228,7 @@ const generateInserate = (): Inserat[] => {
       tags: ["Gewerbeobjekt", "Immobilienverkauf"],
       matchingScore: 81,
       lat: 48.208, lng: 16.373,
+      vermitteltDurch: "vertriebspartner",
     },
     {
       id: "ins-demo-7", leadId: "3", eigentuemerName: "Lisa Müller",
@@ -315,6 +319,7 @@ export default function Inserate() {
   const navigate = useNavigate();
   const { currentRoleId } = useUserRole();
   const isEntwickler = currentRoleId === "entwickler";
+  const isVertriebspartner = currentRoleId === "vertriebspartner";
   const [inserate] = useState<Inserat[]>(generateInserate);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
@@ -328,6 +333,8 @@ export default function Inserate() {
     let list = inserate;
     // Entwickler only sees active listings
     if (isEntwickler) list = list.filter((i) => i.status === "aktiv");
+    // Vertriebspartner only sees their own referrals
+    if (isVertriebspartner) list = list.filter((i) => i.vermitteltDurch === "vertriebspartner");
     if (statusFilter !== "alle") list = list.filter((i) => i.status === statusFilter);
     if (isEntwickler && matchScoreFilter > 0) {
       list = list.filter((i) => (i.matchingScore || 0) >= matchScoreFilter);
@@ -343,7 +350,7 @@ export default function Inserate() {
       );
     }
     return list;
-  }, [inserate, search, statusFilter, isEntwickler, matchScoreFilter]);
+  }, [inserate, search, statusFilter, isEntwickler, isVertriebspartner, matchScoreFilter]);
 
   const counts = {
     alle: inserate.length,
@@ -386,15 +393,17 @@ export default function Inserate() {
               <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
-              {isEntwickler ? "Verfügbare Inserate" : "Inserate"}
+              {isEntwickler ? "Verfügbare Inserate" : isVertriebspartner ? "Meine Inserate" : "Inserate"}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {isEntwickler
                 ? "Durchsuche aktive Immobilien-Inserate und finde passende Projekte"
+                : isVertriebspartner
+                ? "Inserate, die über dich vermittelt oder mit deinem Rabattcode erstellt wurden"
                 : "Alle Immobilien-Inserate deiner Eigentümer"}
             </p>
           </div>
-          {!isEntwickler && (
+          {!isEntwickler && !isVertriebspartner && (
             <Button onClick={() => setShowFunnel(true)} className="gap-2 gradient-brand border-0 text-primary-foreground shadow-crm-sm hover:opacity-90">
               <Plus className="h-4 w-4" /> Neues Inserat
             </Button>
