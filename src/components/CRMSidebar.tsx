@@ -34,6 +34,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/lead-scouring": "lead-scouring",
   "/webinar": "webinar",
   "/bewerbungsmanagement": "bewerbungsmanagement",
+  "/bewerber-portal": "bewerber-portal",
 };
 
 const GROUP_MENU_ID: Record<string, string> = {
@@ -84,6 +85,12 @@ const immorechnerSubItems = [
 const marketingSubItems = [
   { path: "/marketing-leads", icon: MapPin, label: "DACH-Karte" },
   { path: "/social-media-creator", icon: Sparkles, label: "Social Media Creator" },
+];
+
+// ── Bewerber section ──
+const sectionBewerber = [
+  { path: "/bewerber-portal", icon: ClipboardList, label: "Meine Bewerbung" },
+  { path: "/chat", icon: MessageSquare, label: "Chat" },
 ];
 
 // ── Sections ──
@@ -346,6 +353,16 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
 
       {/* Navigation */}
       <nav id="crm-sidebar-nav" className="flex-1 py-1 px-2 overflow-y-auto space-y-0.5 text-primary-foreground bg-muted">
+        {/* BEWERBER-SPECIFIC SECTION */}
+        {currentRoleId === "bewerber" ? (
+          <SectionGroup label="Bewerbung" collapsed={collapsed}>
+            {filterItems(sectionBewerber).map((item) => (
+              <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
+                badgeCount={item.path === "/chat" ? chatUnread : undefined} />
+            ))}
+          </SectionGroup>
+        ) : (
+        <>
         {/* ÜBERSICHT */}
         <SectionGroup label="Übersicht" collapsed={collapsed}>
           {filterItems(sectionOverview).map((item) => (
@@ -437,6 +454,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
           <SectionGroup label="Shop" collapsed={collapsed}>
             <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" collapsed={collapsed} />
           </SectionGroup>
+        )}
+        </>
         )}
       </nav>
 
