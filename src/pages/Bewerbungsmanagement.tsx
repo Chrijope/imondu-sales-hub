@@ -86,20 +86,24 @@ interface Bewerber {
   notizen: string;
   erfahrung: string;
   motivation: string;
+  quelle: string;
+  bewertung?: number;
   lebenslaufUrl?: string;
   onboardingDatum?: string;
   onboardingUhrzeit?: string;
   onboardingStandort?: string;
 }
 
+const QUELLEN = ["Empfehlung", "LinkedIn", "Jobportal", "Website", "Social Media", "Messe", "Sonstiges"];
+
 const INITIAL_BEWERBER: Bewerber[] = [
-  { id: "b1", vorname: "Max", nachname: "Bauer", email: "max.bauer@gmail.com", telefon: "+49 171 1234567", ort: "München", beworbenAm: "2026-02-20", stage: "interview", personalityType: "ENTJ", notizen: "Sehr motiviert, Vertriebserfahrung bei ImmoScout.", erfahrung: "3 Jahre Immobilienvertrieb", motivation: "Möchte selbstständig im Vertrieb arbeiten." },
-  { id: "b2", vorname: "Sarah", nachname: "Klein", email: "s.klein@web.de", telefon: "+49 176 9876543", ort: "Berlin", beworbenAm: "2026-02-19", stage: "persoenlichkeitstest", notizen: "", erfahrung: "Quereinsteigerin aus dem Marketing", motivation: "Suche eine neue Herausforderung im Vertrieb." },
-  { id: "b3", vorname: "Tim", nachname: "Hoffmann", email: "tim.h@outlook.de", telefon: "+49 152 5551234", ort: "Hamburg", beworbenAm: "2026-02-18", stage: "screening", notizen: "Lebenslauf sieht gut aus.", erfahrung: "5 Jahre B2B-Sales", motivation: "Will im Immobiliensektor Fuß fassen." },
-  { id: "b4", vorname: "Julia", nachname: "Richter", email: "julia.r@gmx.de", telefon: "+49 160 7778899", ort: "Köln", beworbenAm: "2026-02-17", stage: "eingang", notizen: "", erfahrung: "Keine Vertriebserfahrung", motivation: "Interesse an Immobilien." },
-  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42" },
-  { id: "b6", vorname: "Anna", nachname: "Meier", email: "a.meier@t-online.de", telefon: "+49 157 6667788", ort: "Stuttgart", beworbenAm: "2026-02-14", stage: "abgelehnt", personalityType: "ISFP", notizen: "Persönlichkeitsprofil passt nicht zum Vertrieb.", erfahrung: "Grafikdesignerin", motivation: "Nebenjob im Vertrieb." },
-  { id: "b7", vorname: "Lukas", nachname: "Weber", email: "l.weber@yahoo.de", telefon: "+49 179 1112233", ort: "Düsseldorf", beworbenAm: "2026-02-21", stage: "entscheidung", personalityType: "ESTP", notizen: "Zweites Gespräch war sehr gut.", erfahrung: "4 Jahre Vertrieb Telekommunikation", motivation: "Suche mehr Eigenverantwortung." },
+  { id: "b1", vorname: "Max", nachname: "Bauer", email: "max.bauer@gmail.com", telefon: "+49 171 1234567", ort: "München", beworbenAm: "2026-02-20", stage: "interview", personalityType: "ENTJ", notizen: "Sehr motiviert, Vertriebserfahrung bei ImmoScout.", erfahrung: "3 Jahre Immobilienvertrieb", motivation: "Möchte selbstständig im Vertrieb arbeiten.", quelle: "LinkedIn", bewertung: 4 },
+  { id: "b2", vorname: "Sarah", nachname: "Klein", email: "s.klein@web.de", telefon: "+49 176 9876543", ort: "Berlin", beworbenAm: "2026-02-19", stage: "persoenlichkeitstest", notizen: "", erfahrung: "Quereinsteigerin aus dem Marketing", motivation: "Suche eine neue Herausforderung im Vertrieb.", quelle: "Jobportal", bewertung: 3 },
+  { id: "b3", vorname: "Tim", nachname: "Hoffmann", email: "tim.h@outlook.de", telefon: "+49 152 5551234", ort: "Hamburg", beworbenAm: "2026-02-18", stage: "screening", notizen: "Lebenslauf sieht gut aus.", erfahrung: "5 Jahre B2B-Sales", motivation: "Will im Immobiliensektor Fuß fassen.", quelle: "Empfehlung", bewertung: 5 },
+  { id: "b4", vorname: "Julia", nachname: "Richter", email: "julia.r@gmx.de", telefon: "+49 160 7778899", ort: "Köln", beworbenAm: "2026-02-17", stage: "eingang", notizen: "", erfahrung: "Keine Vertriebserfahrung", motivation: "Interesse an Immobilien.", quelle: "Website" },
+  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", quelle: "Empfehlung", bewertung: 5, onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42" },
+  { id: "b6", vorname: "Anna", nachname: "Meier", email: "a.meier@t-online.de", telefon: "+49 157 6667788", ort: "Stuttgart", beworbenAm: "2026-02-14", stage: "abgelehnt", personalityType: "ISFP", notizen: "Persönlichkeitsprofil passt nicht zum Vertrieb.", erfahrung: "Grafikdesignerin", motivation: "Nebenjob im Vertrieb.", quelle: "Social Media", bewertung: 1 },
+  { id: "b7", vorname: "Lukas", nachname: "Weber", email: "l.weber@yahoo.de", telefon: "+49 179 1112233", ort: "Düsseldorf", beworbenAm: "2026-02-21", stage: "entscheidung", personalityType: "ESTP", notizen: "Zweites Gespräch war sehr gut.", erfahrung: "4 Jahre Vertrieb Telekommunikation", motivation: "Suche mehr Eigenverantwortung.", quelle: "Messe", bewertung: 4 },
 ];
 
 function StageBadge({ stageId }: { stageId: string }) {
@@ -192,6 +196,7 @@ function BewerberDetail({
   onPersonalityComplete,
   onActivate,
   onUpdateOnboarding,
+  onUpdateField,
 }: {
   bewerber: Bewerber;
   onClose: () => void;
@@ -199,6 +204,7 @@ function BewerberDetail({
   onPersonalityComplete: (id: string, type: string) => void;
   onActivate: (id: string) => void;
   onUpdateOnboarding: (id: string, data: { onboardingDatum?: string; onboardingUhrzeit?: string; onboardingStandort?: string }) => void;
+  onUpdateField: (id: string, field: keyof Bewerber, value: string | number) => void;
 }) {
   const [tab, setTab] = useState("uebersicht");
   const [obDate, setObDate] = useState<Date | undefined>(bewerber.onboardingDatum ? new Date(bewerber.onboardingDatum) : undefined);
@@ -263,10 +269,14 @@ function BewerberDetail({
         </TabsList>
 
         <TabsContent value="uebersicht" className="mt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="glass-card rounded-xl p-4">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Beworben am</p>
               <p className="text-sm font-semibold text-foreground flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{new Date(bewerber.beworbenAm).toLocaleDateString("de-DE")}</p>
+            </div>
+            <div className="glass-card rounded-xl p-4">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Quelle</p>
+              <p className="text-sm font-semibold text-foreground">{bewerber.quelle || "–"}</p>
             </div>
             <div className="glass-card rounded-xl p-4">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Erfahrung</p>
@@ -274,17 +284,41 @@ function BewerberDetail({
             </div>
           </div>
 
+          {/* Bewertung */}
           <div className="glass-card rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Motivation</p>
-            <p className="text-sm text-foreground">{bewerber.motivation}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Admin-Bewertung</p>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((v) => (
+                <button key={v} onClick={() => onUpdateField(bewerber.id, "bewertung", v)} className="transition-transform hover:scale-110">
+                  <Star className={`h-5 w-5 ${(bewerber.bewertung || 0) >= v ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`} />
+                </button>
+              ))}
+              <span className="text-xs text-muted-foreground ml-2">{bewerber.bewertung ? `${bewerber.bewertung}/5` : "Nicht bewertet"}</span>
+            </div>
           </div>
 
-          {bewerber.notizen && (
-            <div className="glass-card rounded-xl p-4">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Notizen</p>
-              <p className="text-sm text-foreground">{bewerber.notizen}</p>
-            </div>
-          )}
+          {/* Motivation – editable */}
+          <div className="glass-card rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Motivation</p>
+            <Textarea
+              value={bewerber.motivation}
+              onChange={(e) => onUpdateField(bewerber.id, "motivation", e.target.value)}
+              rows={2}
+              className="resize-none text-sm mt-1"
+            />
+          </div>
+
+          {/* Notizen – editable */}
+          <div className="glass-card rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Notizen</p>
+            <Textarea
+              value={bewerber.notizen}
+              onChange={(e) => onUpdateField(bewerber.id, "notizen", e.target.value)}
+              rows={3}
+              className="resize-none text-sm mt-1"
+              placeholder="Notizen zum Bewerber hinzufügen…"
+            />
+          </div>
 
           {pType && (
             <div className="glass-card rounded-xl p-4">
@@ -407,7 +441,7 @@ export default function Bewerbungsmanagement() {
   const [filterStage, setFilterStage] = useState("alle");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
-  const [newForm, setNewForm] = useState({ vorname: "", nachname: "", email: "", telefon: "", ort: "", erfahrung: "", motivation: "" });
+  const [newForm, setNewForm] = useState({ vorname: "", nachname: "", email: "", telefon: "", ort: "", erfahrung: "", motivation: "", quelle: "" });
 
   const selected = bewerber.find((b) => b.id === selectedId);
 
@@ -443,10 +477,11 @@ export default function Bewerbungsmanagement() {
       beworbenAm: new Date().toISOString().slice(0, 10),
       stage: "eingang",
       notizen: "",
+      quelle: newForm.quelle || "Sonstiges",
     };
     setBewerber((prev) => [nb, ...prev]);
     setNewDialogOpen(false);
-    setNewForm({ vorname: "", nachname: "", email: "", telefon: "", ort: "", erfahrung: "", motivation: "" });
+    setNewForm({ vorname: "", nachname: "", email: "", telefon: "", ort: "", erfahrung: "", motivation: "", quelle: "" });
     toast({ title: "Bewerber hinzugefügt", description: `${nb.vorname} ${nb.nachname} wurde erfasst.` });
   };
 
@@ -473,6 +508,9 @@ export default function Bewerbungsmanagement() {
               onUpdateOnboarding={(id, data) => {
                 setBewerber((prev) => prev.map((b) => b.id === id ? { ...b, ...data } : b));
                 toast({ title: "Onboarding-Termin gespeichert ✓", description: `Termin wurde für den Bewerber hinterlegt.` });
+              }}
+              onUpdateField={(id, field, value) => {
+                setBewerber((prev) => prev.map((b) => b.id === id ? { ...b, [field]: value } : b));
               }}
             />
           ) : (
@@ -543,8 +581,10 @@ export default function Bewerbungsmanagement() {
                       <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
                       <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Kontakt</th>
                       <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Ort</th>
+                      <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quelle</th>
                       <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Beworben</th>
                       <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                      <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Bewertung</th>
                       <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Typ</th>
                       <th className="py-3 px-4" />
                     </tr>
@@ -566,8 +606,16 @@ export default function Bewerbungsmanagement() {
                         </td>
                         <td className="py-3 px-4 text-xs text-muted-foreground">{b.email}</td>
                         <td className="py-3 px-4 text-xs text-muted-foreground">{b.ort}</td>
+                        <td className="py-3 px-4 text-xs text-muted-foreground">{b.quelle || "–"}</td>
                         <td className="py-3 px-4 text-xs text-muted-foreground">{new Date(b.beworbenAm).toLocaleDateString("de-DE")}</td>
                         <td className="py-3 px-4"><StageBadge stageId={b.stage} /></td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((v) => (
+                              <Star key={v} className={`h-3 w-3 ${(b.bewertung || 0) >= v ? "text-amber-400 fill-amber-400" : "text-muted-foreground/20"}`} />
+                            ))}
+                          </div>
+                        </td>
                         <td className="py-3 px-4">
                           {b.personalityType ? (
                             <Badge variant="outline" className="text-[10px]">{b.personalityType}</Badge>
@@ -579,7 +627,7 @@ export default function Bewerbungsmanagement() {
                       </tr>
                     ))}
                     {filtered.length === 0 && (
-                      <tr><td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">Keine Bewerber gefunden.</td></tr>
+                      <tr><td colSpan={9} className="py-8 text-center text-sm text-muted-foreground">Keine Bewerber gefunden.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -620,6 +668,15 @@ export default function Bewerbungsmanagement() {
                 <Label className="text-sm font-semibold">Ort</Label>
                 <Input value={newForm.ort} onChange={(e) => setNewForm((p) => ({ ...p, ort: e.target.value }))} />
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Quelle</Label>
+              <Select value={newForm.quelle} onValueChange={(v) => setNewForm((p) => ({ ...p, quelle: v }))}>
+                <SelectTrigger><SelectValue placeholder="Quelle wählen" /></SelectTrigger>
+                <SelectContent>
+                  {QUELLEN.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Erfahrung</Label>
