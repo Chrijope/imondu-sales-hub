@@ -84,7 +84,7 @@ const REGIONS = [
   "Hessen", "Sachsen", "Niedersachsen", "Schleswig-Holstein", "Brandenburg",
 ];
 
-const ASSIGNEES = ["Max Müller", "Lisa Weber", "Jan Fischer"];
+const ASSIGNEES = ["Christian Peetz", "Manuel Schilling", "Lisa Weber"];
 
 export default function LeadScouring() {
   const { toast } = useToast();

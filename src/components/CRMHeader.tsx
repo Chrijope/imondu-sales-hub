@@ -18,12 +18,18 @@ export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHead
   const currentRole = roles.find((r) => r.id === currentRoleId);
 
   // Role-specific user profiles
-  const userProfiles: Record<string, { name: string; initials: string }> = {
+  const userProfiles: Record<string, { name: string; initials: string; subtitle?: string }> = {
+    admin: { name: "Christian Peetz", initials: "CP" },
+    vertriebsleiter: { name: "Manuel Schilling", initials: "MS" },
+    vertriebspartner: { name: "Lisa Weber", initials: "LW" },
+    marketing: { name: "Oliver Gjorgijev", initials: "OG" },
+    backoffice: { name: "Julia Fischer", initials: "JF" },
+    buchhaltung: { name: "Karin Martini", initials: "KM" },
+    individuell: { name: "Sandra Hoffmann", initials: "SH" },
     eigentuemer: { name: "Anna Schmidt", initials: "AS" },
-    entwickler: { name: "Thomas Huber", initials: "TH" },
+    entwickler: { name: "Thomas Huber", initials: "TH", subtitle: "Elektro Huber & Partner" },
   };
-  const defaultProfile = { name: "Christian Peetz", initials: "CP" };
-  const profile = userProfiles[currentRoleId] || defaultProfile;
+  const profile = userProfiles[currentRoleId] || userProfiles.admin;
 
   return (
     <header
@@ -49,7 +55,7 @@ export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHead
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-foreground leading-none">{profile.name}</p>
               <p className="text-[11px] text-muted-foreground">
-                {currentRoleId === "entwickler" ? "Elektro Huber & Partner" : (currentRole?.name || "Admin")}
+                {profile.subtitle || (currentRole?.name || "Admin")}
               </p>
             </div>
             <div

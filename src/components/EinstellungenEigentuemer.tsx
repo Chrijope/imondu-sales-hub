@@ -34,10 +34,10 @@ function SectionBlock({ title, description, children }: { title: string; descrip
 export default function EinstellungenEigentuemer() {
   const { toast } = useToast();
   const [profilbild, setProfilbild] = useState<string | null>(null);
-  const [vorname, setVorname] = useState("Klaus");
-  const [nachname, setNachname] = useState("Wagner");
-  const [email, setEmail] = useState("klaus.wagner@email.de");
-  const [telefon, setTelefon] = useState("+49 170 1234567");
+  const [vorname, setVorname] = useState("Anna");
+  const [nachname, setNachname] = useState("Schmidt");
+  const [email, setEmail] = useState("anna.schmidt@email.de");
+  const [telefon, setTelefon] = useState("+49 170 9876543");
 
   const [showPassword, setShowPassword] = useState(false);
   const [currentPw, setCurrentPw] = useState("");
