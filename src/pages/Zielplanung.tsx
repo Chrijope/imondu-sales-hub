@@ -51,7 +51,7 @@ function getEffectiveB2CProvision(baseProvision: number, karriereId: string): nu
 
 function getEffectiveB2BProvision(baseProvision: number, karriereId: string): number {
   if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 35);
-  if (karriereId === "projektleiter") return baseProvision; // 25-35% as normal
+  if (karriereId === "projektleiter") return Math.max(baseProvision, 30);
   if (karriereId === "projektassistent") return baseProvision;
   return baseProvision;
 }
