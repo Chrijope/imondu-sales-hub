@@ -80,6 +80,14 @@ export default function Zielplanung() {
   const canEdit = ["admin", "vertriebsleiter"].includes(currentRoleId);
 
   const vertriebspartner = SAMPLE_USERS.filter((u) => u.roleId === "vertriebspartner");
+
+  // Map current role to their user record (for VP viewing their own targets)
+  const ROLE_USER_MAP: Record<string, string> = {
+    admin: "u1", vertriebsleiter: "u2", vertriebspartner: "u3",
+    marketing: "u5", backoffice: "u6", buchhaltung: "u7", individuell: "u8",
+  };
+  const currentUserId = ROLE_USER_MAP[currentRoleId] || "";
+
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>(
     canEdit && vertriebspartner.length > 0 ? vertriebspartner[0].id : ""
   );
@@ -97,8 +105,9 @@ export default function Zielplanung() {
       const hasDraft = localStorage.getItem(getDraftKey(selectedPartnerId));
       return hasDraft ? draft : published;
     }
-    return loadFromStorage();
-  }, [canEdit, selectedPartnerId]);
+    // VP: load published data using their own user ID
+    return loadFromStorage(currentUserId || undefined);
+  }, [canEdit, selectedPartnerId, currentUserId]);
 
   const [karriereStufeId, setKarriereStufeId] = useState(initialData.karriereStufeId);
   const [goals, setGoals] = useState<Record<number, MonthGoal>>(initialData.goals);
@@ -114,12 +123,12 @@ export default function Zielplanung() {
       setKarriereStufeId(data.karriereStufeId);
       setHasUnsavedChanges(!!hasDraft);
     } else {
-      const data = loadFromStorage();
+      const data = loadFromStorage(currentUserId || undefined);
       setGoals(data.goals);
       setKarriereStufeId(data.karriereStufeId);
       setHasUnsavedChanges(false);
     }
-  }, [selectedPartnerId, canEdit]);
+  }, [selectedPartnerId, canEdit, currentUserId]);
 
   // For admins: auto-save to draft only (not published)
   // For VP: save to own key (read-only anyway, but keeps state)
