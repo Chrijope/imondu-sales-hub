@@ -41,6 +41,7 @@ export const ALL_MENU_ITEMS = [
   { id: "shop", label: "Shop" },
   { id: "einstellungen", label: "Einstellungen" },
   { id: "lead-scouring", label: "Lead Scouring" },
+  { id: "webinar", label: "Webinar" },
 ];
 
 const ALL_MENU_IDS = ALL_MENU_ITEMS.map((m) => m.id);
@@ -138,14 +139,14 @@ export const DEFAULT_ROLES: RoleDef[] = [
     name: "Eigentümer",
     color: "hsl(30, 80%, 50%)",
     fixed: true,
-    menuItems: ["dashboard", "entwickler", "support-ki", "chat", "analysetool"],
+    menuItems: ["dashboard", "entwickler", "support-ki", "chat", "analysetool", "webinar"],
   },
   {
     id: "entwickler",
     name: "Entwickler",
     color: "hsl(180, 60%, 40%)",
     fixed: true,
-    menuItems: ["dashboard", "inserate", "support-ki", "chat"],
+    menuItems: ["dashboard", "inserate", "support-ki", "chat", "webinar"],
   },
 ];
 

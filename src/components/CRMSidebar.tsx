@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar, Download,
   CalendarDays, Trophy, Archive, Sparkles, GraduationCap, Home,
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
-  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal
+  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal, Video
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo.png";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -32,6 +32,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/einstellungen": "einstellungen", "/marketing-leads": "marketing",
   "/social-media-creator": "marketing",
   "/lead-scouring": "lead-scouring",
+  "/webinar": "webinar",
 };
 
 const GROUP_MENU_ID: Record<string, string> = {
@@ -122,6 +123,7 @@ const sectionTools = [
   { path: "/unterlagen", icon: FileText, label: "Unterlagen" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
   { path: "/support-ki", icon: BotMessageSquare, label: "Support KI" },
+  { path: "/webinar", icon: Video, label: "Webinar" },
 ];
 
 const sectionTeam = [
