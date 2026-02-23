@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Settings, PanelLeftClose, PanelLeft } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   DropdownMenu,
@@ -48,7 +49,9 @@ export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHead
         )}
       </button>
 
-      {/* Right: User profile */}
+      {/* Right: Theme + User profile */}
+      <div className="flex items-center gap-1">
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
@@ -75,6 +78,7 @@ export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHead
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   );
 }
