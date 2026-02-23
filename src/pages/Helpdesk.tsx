@@ -270,12 +270,26 @@ function TicketDetail({ ticket, onBack, onStatusChange, onAddTeilnehmer }: {
 
   const sendReply = () => {
     if (!reply.trim()) return;
-    setMessages(prev => [...prev, {
+    const newMsg = {
       id: crypto.randomUUID(), sender: "Max Müller", role: "support" as const,
       text: reply, time: now(),
-    }]);
+    };
+    setMessages(prev => [...prev, newMsg]);
     setReply("");
     if (ticket.status === "neu") onStatusChange(ticket.id, "in_bearbeitung");
+
+    // Persist reply to localStorage for Support-KI sync
+    try {
+      const all = JSON.parse(localStorage.getItem("helpdesk-new-tickets") || "[]");
+      const idx = all.findIndex((t: any) => t.id === ticket.id);
+      if (idx >= 0) {
+        all[idx].messages.push(newMsg);
+        all[idx].zuletztAktualisiert = new Date().toISOString();
+        if (all[idx].status === "neu") all[idx].status = "in_bearbeitung";
+        localStorage.setItem("helpdesk-new-tickets", JSON.stringify(all));
+        window.dispatchEvent(new Event("storage"));
+      }
+    } catch {}
   };
 
   const handleInvite = (member: TicketTeilnehmer) => {
@@ -468,6 +482,18 @@ export default function Helpdesk() {
 
   const handleStatusChange = (id: string, status: TicketStatus) => {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status, zuletztAktualisiert: new Date().toISOString() } : t));
+
+    // Persist status change to localStorage for Support-KI sync
+    try {
+      const all = JSON.parse(localStorage.getItem("helpdesk-new-tickets") || "[]");
+      const idx = all.findIndex((t: any) => t.id === id);
+      if (idx >= 0) {
+        all[idx].status = status;
+        all[idx].zuletztAktualisiert = new Date().toISOString();
+        localStorage.setItem("helpdesk-new-tickets", JSON.stringify(all));
+        window.dispatchEvent(new Event("storage"));
+      }
+    } catch {}
   };
 
   const filtered = tickets.filter(t => {
