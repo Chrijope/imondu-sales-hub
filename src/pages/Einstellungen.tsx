@@ -1,5 +1,8 @@
 import { useState } from "react";
 import CRMLayout from "@/components/CRMLayout";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import EinstellungenEigentuemer from "@/components/EinstellungenEigentuemer";
+import EinstellungenEntwickler from "@/components/EinstellungenEntwickler";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,6 +123,7 @@ function SectionBlock({ title, description, children }: { title: string; descrip
 }
 
 export default function Einstellungen() {
+  const { currentRoleId } = useUserRole();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [profilbild, setProfilbild] = useState<string | null>(null);
@@ -153,6 +157,27 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
   // Onboarding state
   const [completedSteps, setCompletedSteps] = useState<string[]>(["passwort"]);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+
+  // Role-specific settings for Eigentümer and Entwickler
+  if (currentRoleId === "eigentuemer") {
+    return (
+      <CRMLayout>
+        <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+          <EinstellungenEigentuemer />
+        </div>
+      </CRMLayout>
+    );
+  }
+
+  if (currentRoleId === "entwickler") {
+    return (
+      <CRMLayout>
+        <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+          <EinstellungenEntwickler />
+        </div>
+      </CRMLayout>
+    );
+  }
 
   const onboardingProgress = Math.round((completedSteps.length / ONBOARDING_STEPS.length) * 100);
   const allOnboardingDone = completedSteps.length === ONBOARDING_STEPS.length;
