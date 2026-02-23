@@ -201,6 +201,7 @@ export default function Statistik() {
   const [expandedTerminId, setExpandedTerminId] = useState<string | null>(null);
 
   const isHR = currentRoleId === "hr";
+  const canSeeBewerber = currentRoleId === "admin" || currentRoleId === "hr" || currentRoleId === "vertriebsleiter";
 
   const handleAddTermin = () => {
     if (!newTermin.datum || !newTermin.uhrzeit || !newTermin.standort) return;
@@ -578,7 +579,7 @@ export default function Statistik() {
         </>)}
 
         {/* ── BEWERBER-STATISTIKEN ──────────── */}
-        {(currentRoleId === "admin" || currentRoleId === "hr") && (
+        {canSeeBewerber && (
           <CollapsibleSectionHeader icon={Users} title="Bewerber-Statistiken">
             {/* Clickable KPI Tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">

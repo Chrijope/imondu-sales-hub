@@ -73,7 +73,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     menuItems: [
       "dashboard", "inbox", "anrufe", "email", "kalender", "news",
       "kontakte", "kundenmaske", "b2c", "b2b", "pipeline", "automations", "dialer",
-      "inserate", "entwickler",
+      "inserate", "entwickler", "bewerbungsmanagement",
       "auswertungen", "statistik", "analysetool", "abrechnungen", "wettbewerb",
       "immorechner", "rechner", "marketing",
       "zielplanung", "teampartner", "nutzerverwaltung", "ansprechpartner",
