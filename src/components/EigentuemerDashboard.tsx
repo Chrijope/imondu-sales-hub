@@ -223,6 +223,93 @@ export default function EigentuemerDashboard() {
         </div>
       </div>
 
+      {/* Nachrichten & Angebote Übersicht */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Chat-Nachrichten */}
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-6 h-1 rounded-full gradient-brand" />
+            <h2 className="text-sm font-semibold text-foreground">Nachrichten</h2>
+          </div>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <MessageCircle className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-3xl font-display font-bold text-foreground">4</p>
+              <p className="text-xs text-muted-foreground">Ungelesene Chats</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[
+              { von: "BauPlan München GmbH", text: "Gerne sende ich Ihnen ein Angebot für die Dachsanierung…", zeit: "vor 2 Std.", ungelesen: true },
+              { von: "Elektro Huber & Partner", text: "Vielen Dank für Ihre Anfrage. Wir können am Donnerstag…", zeit: "vor 5 Std.", ungelesen: true },
+              { von: "DachTech Bayern AG", text: "Anbei unser überarbeitetes Angebot mit 5% Frühbucher-Rabatt.", zeit: "gestern", ungelesen: true },
+              { von: "IsoTherm Süd GmbH", text: "Die Besichtigung ist für nächste Woche eingeplant.", zeit: "gestern", ungelesen: true },
+            ].map((msg, i) => (
+              <Link key={i} to="/chat" className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                  {msg.von.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-foreground truncate">{msg.von}</p>
+                    <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{msg.zeit}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{msg.text}</p>
+                </div>
+                {msg.ungelesen && <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />}
+              </Link>
+            ))}
+          </div>
+          <Link to="/chat" className="flex items-center gap-1 text-xs text-accent font-medium mt-3 hover:underline">
+            Alle Nachrichten <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+
+        {/* Erhaltene Angebote */}
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-6 h-1 rounded-full gradient-brand" />
+            <h2 className="text-sm font-semibold text-foreground">Erhaltene Angebote</h2>
+          </div>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-14 w-14 rounded-full bg-green-500/10 flex items-center justify-center">
+              <ClipboardList className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-3xl font-display font-bold text-foreground">3</p>
+              <p className="text-xs text-muted-foreground">Angebote erhalten</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[
+              { von: "BauPlan München GmbH", gewerk: "Architekt", betrag: "12.500 €", status: "Neu", zeit: "vor 1 Tag", statusColor: "bg-green-100 text-green-700" },
+              { von: "DachTech Bayern AG", gewerk: "Dachdecker", betrag: "28.900 €", status: "Neu", zeit: "vor 2 Tagen", statusColor: "bg-green-100 text-green-700" },
+              { von: "Elektro Huber & Partner", gewerk: "Elektriker", betrag: "8.750 €", status: "Angesehen", zeit: "vor 3 Tagen", statusColor: "bg-muted text-muted-foreground" },
+            ].map((ang, i) => (
+              <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                  {ang.von.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-foreground truncate">{ang.von}</p>
+                    <Badge variant="secondary" className="text-[10px]">{ang.gewerk}</Badge>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs font-semibold text-foreground">{ang.betrag}</span>
+                    <span className="text-[10px] text-muted-foreground">· {ang.zeit}</span>
+                  </div>
+                </div>
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${ang.statusColor}`}>{ang.status}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 italic">Angebotsseite kommt in Kürze…</p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Analyse-Ergebnis */}
         <div className="lg:col-span-5 glass-card rounded-2xl p-5">
