@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -313,6 +314,7 @@ const getFirmaBild = (idx: number) => firmaBilder[idx % firmaBilder.length];
 
 function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler; idx: number; onBack: () => void }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const chatLink = `/chat?newChat=${encodeURIComponent(entwickler.firmenname)}&category=entwickler`;
 
   return (
@@ -475,6 +477,60 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
             <Button onClick={() => navigate("/helpdesk")} variant="outline" className="w-full gap-2 mt-2 text-xs">
               <HeadphonesIcon className="h-4 w-4" /> Expertensupport kontaktieren
             </Button>
+          </div>
+
+          {/* Bewertung abgeben */}
+          <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-primary/20 ring-1 ring-primary/10 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-6 h-1 rounded-full gradient-brand" />
+              <h2 className="text-sm font-semibold text-foreground">Bewertung abgeben</h2>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Sie haben mit <span className="font-medium text-foreground">{entwickler.firmenname}</span> zusammengearbeitet? Teilen Sie Ihre Erfahrung!
+            </p>
+
+            {/* Star Rating */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Ihre Bewertung</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    className="text-2xl text-muted-foreground/30 hover:text-amber-400 transition-colors"
+                    onClick={() => {
+                      toast({
+                        title: `${star} Stern${star > 1 ? "e" : ""} vergeben ⭐`,
+                        description: `Vielen Dank für Ihre Bewertung von ${entwickler.firmenname}!`,
+                      });
+                    }}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* External review links (if the developer has configured them) */}
+            <div className="space-y-2 pt-1">
+              <p className="text-xs font-medium text-muted-foreground">Auch extern bewerten</p>
+              <div className="flex flex-col gap-1.5">
+                {[
+                  { platform: "Google", url: "#" },
+                  { platform: "ProvenExpert", url: "#" },
+                ].map((link) => (
+                  <a
+                    key={link.platform}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 transition-colors text-xs font-medium text-foreground"
+                  >
+                    <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                    Auf {link.platform} bewerten
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Auf einen Blick */}

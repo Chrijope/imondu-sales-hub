@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Camera, Save, Key, Eye, EyeOff } from "lucide-react";
+import { Camera, Save, Key, Eye, EyeOff, Star, Plus, Trash2, ExternalLink } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +59,14 @@ export default function EinstellungenEntwickler() {
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
 
+  // Bewertungslinks
+  const [bewertungsLinks, setBewertungsLinks] = useState([
+    { id: "1", platform: "Google", url: "https://g.page/elektro-huber/review" },
+    { id: "2", platform: "ProvenExpert", url: "https://www.provenexpert.com/elektro-huber" },
+  ]);
+  const [newPlatform, setNewPlatform] = useState("");
+  const [newUrl, setNewUrl] = useState("");
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -97,6 +105,7 @@ export default function EinstellungenEntwickler() {
         <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto gap-0">
           {[
             { value: "profil", label: "Profil & Firma" },
+            { value: "bewertungen", label: "Bewertungslinks" },
             { value: "sicherheit", label: "Passwort & Sicherheit" },
             { value: "benachrichtigungen", label: "Benachrichtigungen" },
           ].map((tab) => (
@@ -197,6 +206,78 @@ export default function EinstellungenEntwickler() {
                 <Field label="Beschreibung" hint="Kurze Beschreibung Ihres Unternehmens für Ihr Profil.">
                   <Textarea value={beschreibung} onChange={(e) => setBeschreibung(e.target.value)} rows={3} className="resize-none" />
                 </Field>
+              </div>
+            </div>
+          </SectionBlock>
+
+          <div className="flex justify-end pt-2 pb-8">
+            <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+              <Save className="h-4 w-4" /> Speichern
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* Bewertungslinks */}
+        <TabsContent value="bewertungen" className="space-y-6 mt-0">
+          <Separator />
+          <SectionBlock title="Bewertungslinks verwalten" description="Hinterlege Links zu Bewertungsportalen, auf denen Eigentümer dich bewerten können. Diese werden auf deinem öffentlichen Profil angezeigt.">
+            <div className="space-y-4 max-w-lg">
+              {/* Existing links */}
+              {bewertungsLinks.map((link) => (
+                <div key={link.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
+                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{link.platform}</p>
+                    <p className="text-xs text-muted-foreground truncate">{link.url}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    onClick={() => {
+                      setBewertungsLinks(bewertungsLinks.filter((l) => l.id !== link.id));
+                      toast({ title: "Link entfernt", description: `${link.platform} wurde entfernt.` });
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+
+              {/* Add new link */}
+              <div className="p-4 rounded-lg border border-dashed border-border space-y-3">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Plus className="h-3 w-3" /> Neuen Bewertungslink hinzufügen
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Plattform">
+                    <Input
+                      placeholder="z.B. Google, ProvenExpert, Trustpilot"
+                      value={newPlatform}
+                      onChange={(e) => setNewPlatform(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Bewertungs-URL">
+                    <Input
+                      placeholder="https://..."
+                      value={newUrl}
+                      onChange={(e) => setNewUrl(e.target.value)}
+                    />
+                  </Field>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!newPlatform.trim() || !newUrl.trim()}
+                  onClick={() => {
+                    setBewertungsLinks([...bewertungsLinks, { id: Date.now().toString(), platform: newPlatform.trim(), url: newUrl.trim() }]);
+                    setNewPlatform("");
+                    setNewUrl("");
+                    toast({ title: "Link hinzugefügt ✓", description: `${newPlatform} wurde als Bewertungslink gespeichert.` });
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Hinzufügen
+                </Button>
               </div>
             </div>
           </SectionBlock>
