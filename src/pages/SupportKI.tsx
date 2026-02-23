@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Send, Bot, User, HeadphonesIcon } from "lucide-react";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -55,12 +57,60 @@ export default function SupportKI() {
   const [input, setInput] = useState("");
   const [handedOff, setHandedOff] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { currentRoleId } = useUserRole();
+  const { toast } = useToast();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const now = () => new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+  // Create a helpdesk ticket from the conversation
+  const createHelpdeskTicket = (userMessages: Message[]) => {
+    const kategorie = currentRoleId === "entwickler" ? "entwickler" : "eigentümer";
+    const name = currentRoleId === "entwickler" ? "Elektro Huber & Partner" : "Hans Müller";
+    const email = currentRoleId === "entwickler" ? "info@elektro-huber.de" : "h.mueller@mail.de";
+    const firma = currentRoleId === "entwickler" ? "Elektro Huber & Partner" : undefined;
+    const betreff = userMessages.length > 0
+      ? userMessages[0].text.slice(0, 60) + (userMessages[0].text.length > 60 ? "…" : "")
+      : "Support-Anfrage";
+
+    const ticket = {
+      id: `T-${Date.now()}`,
+      betreff,
+      kategorie,
+      name,
+      firma,
+      email,
+      status: "neu",
+      prioritaet: "mittel",
+      erstelltAm: new Date().toISOString(),
+      zuletztAktualisiert: new Date().toISOString(),
+      tags: ["Support-KI", "Weiterleitung"],
+      teilnehmer: [],
+      messages: userMessages.map((m, i) => ({
+        id: `m-${i}`,
+        sender: m.role === "user" ? name : "Support-KI",
+        role: m.role === "user" ? "kunde" : "ki",
+        text: m.text,
+        time: m.time,
+      })),
+    };
+
+    // Save to localStorage so Helpdesk can pick it up
+    try {
+      const existing = JSON.parse(localStorage.getItem("helpdesk-new-tickets") || "[]");
+      existing.push(ticket);
+      localStorage.setItem("helpdesk-new-tickets", JSON.stringify(existing));
+      window.dispatchEvent(new Event("storage"));
+    } catch {}
+
+    toast({
+      title: "Ticket erstellt",
+      description: `Ihr Anliegen wurde als Ticket ${ticket.id} an das Support-Team weitergeleitet.`,
+    });
+  };
 
   const send = () => {
     const text = input.trim();
@@ -70,17 +120,19 @@ export default function SupportKI() {
     setMessages(prev => [...prev, userMsg]);
     setInput("");
 
-    if (handedOff) return; // already handed off, messages go to agent
+    if (handedOff) return;
 
     setTimeout(() => {
       const { answer, handoff } = getAnswer(text);
 
       if (handoff) {
         setHandedOff(true);
+        const allUserMsgs = [...messages, userMsg].filter(m => m.role !== "system");
+        createHelpdeskTicket(allUserMsgs);
         setMessages(prev => [
           ...prev,
           { id: crypto.randomUUID(), role: "system", text: "Du wirst jetzt mit einem Imondu-Mitarbeiter verbunden. Bitte warte einen Moment…", time: now() },
-          { id: crypto.randomUUID(), role: "bot", text: "Ein Mitarbeiter wurde benachrichtigt und wird sich in Kürze bei dir melden. Du kannst hier schon dein Anliegen schildern – die Nachricht wird weitergeleitet. 🙌", time: now() },
+          { id: crypto.randomUUID(), role: "bot", text: "Ein Mitarbeiter wurde benachrichtigt und wird sich in Kürze bei dir melden. Dein Ticket wurde im Helpdesk erstellt. 🙌", time: now() },
         ]);
       } else {
         setMessages(prev => [...prev, { id: crypto.randomUUID(), role: "bot", text: answer, time: now() }]);

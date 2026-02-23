@@ -15,6 +15,7 @@ import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import EigentuemerDashboard from "@/components/EigentuemerDashboard";
+import EntwicklerDashboard from "@/components/EntwicklerDashboard";
 import {
   BarChart,
   Bar,
@@ -96,6 +97,15 @@ export default function Dashboard() {
     return (
       <CRMLayout>
         <EigentuemerDashboard />
+      </CRMLayout>
+    );
+  }
+
+  // Entwickler gets their own dashboard
+  if (currentRoleId === "entwickler") {
+    return (
+      <CRMLayout>
+        <EntwicklerDashboard />
       </CRMLayout>
     );
   }
