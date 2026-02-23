@@ -139,14 +139,14 @@ export const DEFAULT_ROLES: RoleDef[] = [
     name: "Eigentümer",
     color: "hsl(30, 80%, 50%)",
     fixed: true,
-    menuItems: ["dashboard", "entwickler", "support-ki", "chat", "analysetool", "webinar"],
+    menuItems: ["dashboard", "entwickler", "support-ki", "chat", "analysetool", "webinar", "einstellungen"],
   },
   {
     id: "entwickler",
     name: "Entwickler",
     color: "hsl(180, 60%, 40%)",
     fixed: true,
-    menuItems: ["dashboard", "inserate", "support-ki", "chat", "webinar"],
+    menuItems: ["dashboard", "inserate", "support-ki", "chat", "webinar", "einstellungen"],
   },
 ];
 
