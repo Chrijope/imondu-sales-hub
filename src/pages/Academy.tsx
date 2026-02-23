@@ -19,8 +19,11 @@ import {
   Award,
   SkipForward,
   Gauge,
+  Pencil,
+  Plus,
+  Settings2,
 } from "lucide-react";
-import { COURSES, type Course, type Lesson } from "@/data/academy-courses";
+import { COURSES as INITIAL_COURSES, type Course, type Lesson } from "@/data/academy-courses";
 import {
   Select,
   SelectContent,
@@ -28,16 +31,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import CourseEditor from "@/components/CourseEditor";
+import { toast } from "sonner";
 
 // ── Course Card (list view) ──
-function CourseCard({ course, onSelect }: { course: Course; onSelect: () => void }) {
+function CourseCard({
+  course,
+  onSelect,
+  canEdit,
+  onEdit,
+}: {
+  course: Course;
+  onSelect: () => void;
+  canEdit?: boolean;
+  onEdit?: () => void;
+}) {
   const allLessons = course.modules.flatMap((m) => m.lessons);
   const completedCount = allLessons.filter((l) => l.completed).length;
   const progress = Math.round((completedCount / allLessons.length) * 100);
 
   return (
-    <button onClick={onSelect} className="glass-card rounded-xl p-5 hover:shadow-crm-md transition-all text-left w-full group">
-      <div className="flex items-start gap-4">
+    <div className="glass-card rounded-xl p-5 hover:shadow-crm-md transition-all w-full group relative">
+      <button onClick={onSelect} className="flex items-start gap-4 text-left w-full">
         <div className="text-4xl shrink-0">{course.thumbnail}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -57,8 +73,18 @@ function CourseCard({ course, onSelect }: { course: Course; onSelect: () => void
           <p className="text-[11px] text-muted-foreground mt-1">{completedCount}/{allLessons.length} Lektionen abgeschlossen</p>
         </div>
         <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0 group-hover:text-primary transition-colors mt-2" />
-      </div>
-    </button>
+      </button>
+      {canEdit && onEdit && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="absolute top-3 right-3 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        >
+          <Pencil className="h-3 w-3" /> Bearbeiten
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -85,14 +111,11 @@ function LessonPlayer({
   const isQuiz = lesson.id.includes("l32") || lesson.id.includes("l33") || lesson.id.includes("l7");
   const isCert = lesson.id.includes("l34") || lesson.id.includes("l8");
 
-  // Find the module this lesson belongs to
   const parentModule = course.modules.find((m) => m.lessons.some((l) => l.id === lesson.id));
 
-  // Next lesson
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
   const nextLocked = nextLesson?.locked && !videoWatched;
 
-  // Simulate watching
   const handleSimulateWatch = () => {
     setVideoProgress(100);
     setVideoWatched(true);
@@ -100,12 +123,10 @@ function LessonPlayer({
 
   return (
     <div className="space-y-6">
-      {/* Back navigation */}
       <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground gap-1 -ml-2">
         <ChevronLeft className="h-4 w-4" /> Zurück zum Kurs
       </Button>
 
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span>{course.title}</span>
         <ChevronRight className="h-3 w-3" />
@@ -114,7 +135,6 @@ function LessonPlayer({
         <span className="text-foreground font-medium">{lesson.title}</span>
       </div>
 
-      {/* Video Player */}
       <div className="bg-foreground/5 rounded-xl aspect-video flex items-center justify-center border border-border relative overflow-hidden">
         <div className="text-center px-6">
           <div
@@ -143,7 +163,6 @@ function LessonPlayer({
           </p>
         </div>
 
-        {/* Video progress bar */}
         {!isCert && (
           <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-foreground/10">
             <div
@@ -154,7 +173,6 @@ function LessonPlayer({
         )}
       </div>
 
-      {/* Controls bar */}
       <div className="flex items-center justify-between bg-card rounded-xl p-4 border border-border shadow-crm-sm">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -210,9 +228,7 @@ function LessonPlayer({
         </div>
       </div>
 
-      {/* Description & Exercise section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Description */}
         <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
           <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" /> Beschreibung
@@ -232,7 +248,6 @@ function LessonPlayer({
           )}
         </div>
 
-        {/* Exercise / Task */}
         <div className="bg-card rounded-xl p-5 border border-border shadow-crm-sm">
           <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <FileQuestion className="h-4 w-4 text-primary" /> Übung / Aufgabe
@@ -279,10 +294,14 @@ function CourseDetail({
   course,
   onBack,
   onOpenLesson,
+  canEdit,
+  onEdit,
 }: {
   course: Course;
   onBack: () => void;
   onOpenLesson: (lessonId: string) => void;
+  canEdit?: boolean;
+  onEdit?: () => void;
 }) {
   const [openModules, setOpenModules] = useState<string[]>([course.modules[0]?.id]);
   const allLessons = course.modules.flatMap((m) => m.lessons);
@@ -294,9 +313,16 @@ function CourseDetail({
 
   return (
     <div className="space-y-5">
-      <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground gap-1 -ml-2">
-        ← Zurück zur Übersicht
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground gap-1 -ml-2">
+          ← Zurück zur Übersicht
+        </Button>
+        {canEdit && onEdit && (
+          <Button variant="outline" size="sm" className="text-xs gap-1" onClick={onEdit}>
+            <Pencil className="h-3 w-3" /> Kurs bearbeiten
+          </Button>
+        )}
+      </div>
 
       {/* Course header */}
       <div className="flex items-center gap-4">
@@ -307,7 +333,6 @@ function CourseDetail({
         </div>
       </div>
 
-      {/* Certificate banner */}
       {course.hasCertificate && (
         <div className={`rounded-xl p-4 border flex items-center gap-3 ${progress === 100 ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5" : "border-warning/30 bg-warning/5"}`}>
           <Award className={`h-5 w-5 shrink-0 ${progress === 100 ? "text-[hsl(var(--success))]" : "text-warning"}`} />
@@ -324,7 +349,6 @@ function CourseDetail({
         </div>
       )}
 
-      {/* Progress */}
       <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-foreground">Kursfortschritt</h2>
@@ -337,7 +361,6 @@ function CourseDetail({
         <p className="text-xs text-muted-foreground mt-1.5">{completedCount} von {allLessons.length} Lektionen abgeschlossen</p>
       </div>
 
-      {/* Modules */}
       <div className="space-y-2">
         {course.modules.map((mod, mi) => {
           const isOpen = openModules.includes(mod.id);
@@ -400,33 +423,82 @@ function CourseDetail({
 export default function Academy() {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
+  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
+  const { currentRoleId } = useUserRole();
 
-  const course = COURSES.find((c) => c.id === selectedCourse);
+  // Role-based edit permissions
+  const isAdmin = currentRoleId === "admin";
+  const isVertriebsleiter = currentRoleId === "vertriebsleiter";
+  const isHR = currentRoleId === "hr";
+  const canManage = isAdmin || isVertriebsleiter || isHR;
+
+  const canEditCourse = (courseId: string) => {
+    if (isAdmin || isVertriebsleiter) return true;
+    if (isHR) return courseId === "backoffice-onboarding";
+    return false;
+  };
+
+  const course = courses.find((c) => c.id === selectedCourse);
+  const editingCourse = editingCourseId ? courses.find((c) => c.id === editingCourseId) : null;
   const allLessons = course ? course.modules.flatMap((m) => m.lessons) : [];
   const activeLesson = activeLessonId ? allLessons.find((l) => l.id === activeLessonId) : null;
   const currentIndex = activeLesson ? allLessons.indexOf(activeLesson) : -1;
 
-  const totalLessons = COURSES.reduce((s, c) => s + c.modules.reduce((s2, m) => s2 + m.lessons.length, 0), 0);
-  const completedLessons = COURSES.reduce((s, c) => s + c.modules.reduce((s2, m) => s2 + m.lessons.filter((l) => l.completed).length, 0), 0);
+  const totalLessons = courses.reduce((s, c) => s + c.modules.reduce((s2, m) => s2 + m.lessons.length, 0), 0);
+  const completedLessons = courses.reduce((s, c) => s + c.modules.reduce((s2, m) => s2 + m.lessons.filter((l) => l.completed).length, 0), 0);
   const overallProgress = Math.round((completedLessons / totalLessons) * 100);
+
+  const handleSaveCourse = (updated: Course) => {
+    setCourses((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    setEditingCourseId(null);
+  };
+
+  const handleCreateCourse = () => {
+    const newCourse: Course = {
+      id: `course-${Math.random().toString(36).slice(2, 10)}`,
+      title: "Neuer Kurs",
+      description: "Beschreibung hinzufügen…",
+      thumbnail: "📚",
+      category: "Vertrieb",
+      totalDuration: "0h 0min",
+      modules: [],
+    };
+    setCourses((prev) => [...prev, newCourse]);
+    setEditingCourseId(newCourse.id);
+    toast.success("Neuer Kurs erstellt");
+  };
 
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         <div className="max-w-5xl space-y-5">
-          {/* Header – hidden when in lesson player */}
-          {!activeLessonId && (
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-10 h-1 rounded-full gradient-brand" />
+          {/* Header – hidden when in lesson player or editor */}
+          {!activeLessonId && !editingCourseId && (
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-10 h-1 rounded-full gradient-brand" />
+                </div>
+                <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Academy</h1>
+                <p className="text-sm text-muted-foreground mt-1">Deine Lernplattform – Kurse, Lektionen & Zertifikate</p>
               </div>
-              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Academy</h1>
-              <p className="text-sm text-muted-foreground mt-1">Deine Lernplattform – Kurse, Lektionen & Zertifikate</p>
+              {canManage && (isAdmin || isVertriebsleiter) && (
+                <Button size="sm" className="text-xs gap-1 gradient-brand border-0 text-white" onClick={handleCreateCourse}>
+                  <Plus className="h-3.5 w-3.5" /> Neuen Kurs erstellen
+                </Button>
+              )}
             </div>
           )}
 
-          {/* 3 views: lesson player > course detail > course list */}
-          {activeLesson && course ? (
+          {/* 4 views: editor > lesson player > course detail > course list */}
+          {editingCourse ? (
+            <CourseEditor
+              course={editingCourse}
+              onBack={() => setEditingCourseId(null)}
+              onSaveCourse={handleSaveCourse}
+            />
+          ) : activeLesson && course ? (
             <LessonPlayer
               lesson={activeLesson}
               course={course}
@@ -440,6 +512,8 @@ export default function Academy() {
               course={course}
               onBack={() => setSelectedCourse(null)}
               onOpenLesson={(id) => setActiveLessonId(id)}
+              canEdit={canEditCourse(course.id)}
+              onEdit={() => setEditingCourseId(course.id)}
             />
           ) : (
             <>
@@ -447,7 +521,7 @@ export default function Academy() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="glass-card rounded-xl p-4 text-center">
                   <GraduationCap className="h-5 w-5 text-primary mx-auto mb-1" />
-                  <p className="text-2xl font-display font-bold text-foreground">{COURSES.length}</p>
+                  <p className="text-2xl font-display font-bold text-foreground">{courses.length}</p>
                   <p className="text-xs text-muted-foreground">Kurse</p>
                 </div>
                 <div className="glass-card rounded-xl p-4 text-center">
@@ -464,8 +538,14 @@ export default function Academy() {
 
               {/* Course list */}
               <div className="space-y-3">
-                {COURSES.map((c) => (
-                  <CourseCard key={c.id} course={c} onSelect={() => setSelectedCourse(c.id)} />
+                {courses.map((c) => (
+                  <CourseCard
+                    key={c.id}
+                    course={c}
+                    onSelect={() => setSelectedCourse(c.id)}
+                    canEdit={canEditCourse(c.id)}
+                    onEdit={() => setEditingCourseId(c.id)}
+                  />
                 ))}
               </div>
             </>
