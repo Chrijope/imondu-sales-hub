@@ -43,6 +43,7 @@ export const ALL_MENU_ITEMS = [
   { id: "lead-scouring", label: "Lead Scouring" },
   { id: "webinar", label: "Webinar" },
   { id: "bewerbungsmanagement", label: "Bewerbungsmanagement" },
+  { id: "bewerber-portal", label: "Meine Bewerbung" },
 ];
 
 const ALL_MENU_IDS = ALL_MENU_ITEMS.map((m) => m.id);
@@ -149,6 +150,13 @@ export const DEFAULT_ROLES: RoleDef[] = [
     color: "hsl(180, 60%, 40%)",
     fixed: true,
     menuItems: ["dashboard", "inserate", "support-ki", "chat", "webinar", "einstellungen"],
+  },
+  {
+    id: "bewerber",
+    name: "Bewerber",
+    color: "hsl(262, 100%, 62%)",
+    fixed: true,
+    menuItems: ["bewerber-portal"],
   },
 ];
 
