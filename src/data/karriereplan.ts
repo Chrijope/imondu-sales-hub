@@ -61,11 +61,11 @@ export const KARRIERESTUFEN: Karrierestufe[] = [
     title: "Projektleiter",
     icon: "🔥",
     b2cMin: "ab 12 € (Mindeststufe)",
-    b2bRange: "25–35 %",
+    b2bRange: "30–35 %",
     vorteile: [
       "Eigenständiges Closing",
       "Mindeststufe 12 € im B2C",
-      "25–35 % im B2B",
+      "30–35 % im B2B",
       "Zugang zu exklusiven Leads",
       "Aufbau eigener Projektassistenten",
       "Overhead-Provision auf Teamumsatz",
