@@ -8,6 +8,8 @@ export interface Lesson {
   exercise?: string;
   status?: "draft" | "published";
   sectionId?: string;
+  videoUrl?: string;
+  imageUrl?: string;
 }
 
 export interface Section {
