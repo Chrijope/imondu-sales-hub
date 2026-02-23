@@ -33,6 +33,7 @@ const PATH_TO_MENU_ID: Record<string, string> = {
   "/social-media-creator": "marketing",
   "/lead-scouring": "lead-scouring",
   "/webinar": "webinar",
+  "/bewerbungsmanagement": "bewerbungsmanagement",
 };
 
 const GROUP_MENU_ID: Record<string, string> = {
@@ -128,6 +129,7 @@ const sectionTools = [
 
 const sectionTeam = [
   { path: "/teampartner", icon: UserPlus, label: "Teampartner" },
+  { path: "/bewerbungsmanagement", icon: ClipboardList, label: "Bewerbungsmanagement" },
   { path: "/nutzerverwaltung", icon: UsersRound, label: "Nutzerverwaltung" },
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
   { path: "/berater-microseite", icon: Globe, label: "Berater-Microseite" },

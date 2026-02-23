@@ -42,6 +42,7 @@ export const ALL_MENU_ITEMS = [
   { id: "einstellungen", label: "Einstellungen" },
   { id: "lead-scouring", label: "Lead Scouring" },
   { id: "webinar", label: "Webinar" },
+  { id: "bewerbungsmanagement", label: "Bewerbungsmanagement" },
 ];
 
 const ALL_MENU_IDS = ALL_MENU_ITEMS.map((m) => m.id);
@@ -64,6 +65,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
   },
   {
     id: "vertriebsleiter",
+
     name: "Vertriebsleiter",
     color: "hsl(250, 60%, 52%)",
     fixed: true,
