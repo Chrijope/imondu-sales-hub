@@ -87,10 +87,9 @@ export default function InseratDetailEntwickler({
 }) {
   const navigate = useNavigate();
   const ownerData = getMockOwnerData(inserat);
-  const redactedName = inserat.eigentuemerName.split(" ").map((n, i) => i === 0 ? n[0] + "." : "███").join(" ");
-  const redactedEmail = "████████@████.de";
-  const redactedPhone = "+49 ███ ██████";
   const chatLink = `/chat?newChat=${encodeURIComponent(inserat.eigentuemerName)}&category=eigentuemer`;
+  const ownerEmail = inserat.eigentuemerName.split(" ").join(".").toLowerCase() + "@email.de";
+  const ownerPhone = "+49 " + (170 + Math.floor(inserat.id.charCodeAt(4) % 30)) + " " + String(1000000 + inserat.id.charCodeAt(3) * 12345).slice(0, 7);
 
   return (
     <div className="space-y-5">
@@ -248,7 +247,7 @@ export default function InseratDetailEntwickler({
 
         {/* Right Column */}
         <div className="space-y-5">
-          {/* Kontaktdaten – geschwärzt */}
+          {/* Kontaktdaten */}
           <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border space-y-3">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-6 h-1 rounded-full gradient-brand" />
@@ -257,26 +256,20 @@ export default function InseratDetailEntwickler({
             <div className="space-y-2.5 text-sm">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground/60 select-none">{redactedName}</span>
+                <span className="font-medium text-foreground">{inserat.eigentuemerName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground/40 select-none blur-[3px]">████████ ██, █████ ████</span>
+                <span className="text-muted-foreground">{inserat.adresse}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground/40 select-none blur-[3px]">{redactedEmail}</span>
+                <a href={`mailto:${ownerEmail}`} className="text-primary hover:underline">{ownerEmail}</a>
               </div>
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground/40 select-none blur-[3px]">{redactedPhone}</span>
+                <span className="text-foreground">{ownerPhone}</span>
               </div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/30 border border-border flex items-start gap-2">
-              <Shield className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Kontaktdaten sind aus Datenschutzgründen geschützt. Nutze den Chat für den Erstkontakt.
-              </p>
             </div>
             <hr className="border-border" />
             <Button onClick={() => navigate(chatLink)} className="w-full gap-2 gradient-brand border-0 text-primary-foreground">
