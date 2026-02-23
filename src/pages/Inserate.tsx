@@ -81,6 +81,7 @@ interface Inserat {
   anfragen: number;
   beschreibung: string;
   tags: string[];
+  immobilienwert?: string;
   lat: number;
   lng: number;
   matchingScore?: number;
@@ -132,6 +133,7 @@ const generateInserate = (): Inserat[] => {
         beschreibung: lead.notes || "Immobilie des Eigentümers.",
         tags: [lead.objekttyp || "Haus", "Immobilienverkauf", "Immobilienbestand"],
         matchingScore: Math.floor(Math.random() * 35) + 60,
+        immobilienwert: `${(Math.floor(Math.random() * 8) + 2) * 50000}`,
         lat, lng,
       });
     }
@@ -151,6 +153,7 @@ const generateInserate = (): Inserat[] => {
       beschreibung: "Freistehendes EFH in ruhiger Lage. Sanierungsbedarf vorhanden.",
       tags: ["Haus", "Immobilienverkauf", "Immobilienbestand"],
       matchingScore: 92,
+      immobilienwert: "380000",
       lat: 52.52, lng: 13.405,
     },
     {

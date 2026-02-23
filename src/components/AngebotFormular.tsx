@@ -36,18 +36,20 @@ function parseNum(s: string) {
 export default function AngebotFormular({
   inseratTitel,
   eigentuemerName,
+  initialImmobilienwert,
   onSubmit,
   onCancel,
 }: {
   inseratTitel: string;
   eigentuemerName: string;
+  initialImmobilienwert?: string;
   onSubmit?: () => void;
   onCancel?: () => void;
 }) {
   const { toast } = useToast();
 
   // Projektbewertung
-  const [aktuellerWert, setAktuellerWert] = useState("");
+  const [aktuellerWert, setAktuellerWert] = useState(initialImmobilienwert || "");
   const [zielWert, setZielWert] = useState("");
   const [entwicklungskosten, setEntwicklungskosten] = useState("");
 
