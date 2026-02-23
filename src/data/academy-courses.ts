@@ -6,6 +6,7 @@ export interface Lesson {
   locked: boolean;
   description?: string;
   exercise?: string;
+  status?: "draft" | "published";
 }
 
 export interface Module {

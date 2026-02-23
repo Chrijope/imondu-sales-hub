@@ -165,12 +165,19 @@ function LessonRow({
             <Label htmlFor={`locked-${draft.id}`} className="text-xs">Gesperrt</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch
-              checked={draft.completed}
-              onCheckedChange={(v) => setDraft({ ...draft, completed: v })}
-              id={`completed-${draft.id}`}
-            />
-            <Label htmlFor={`completed-${draft.id}`} className="text-xs">Als abgeschlossen markieren</Label>
+            <Label className="text-xs">Status</Label>
+            <Select
+              value={draft.status || "published"}
+              onValueChange={(v) => setDraft({ ...draft, status: v as "draft" | "published" })}
+            >
+              <SelectTrigger className="h-7 w-[140px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Entwurf</SelectItem>
+                <SelectItem value="published">Veröffentlicht</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
