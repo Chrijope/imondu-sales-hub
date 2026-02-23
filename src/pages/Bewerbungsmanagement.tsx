@@ -442,6 +442,18 @@ function BewerberDetail({
                 size="sm"
                 className="text-xs gap-1.5 gradient-brand border-0 text-white"
                 onClick={() => {
+                  const datumStr = new Date(assignedTermin.datum).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+                  // Send chat notification to the applicant
+                  import("@/utils/chat-notifications").then(({ addChatNotification }) => {
+                    addChatNotification({
+                      targetChatId: "bew-admin-1",
+                      targetRole: "bewerber",
+                      text: `🎉 Du wurdest zum Onboarding eingeladen!\n\n📅 ${datumStr} um ${assignedTermin.uhrzeit} Uhr\n📍 ${assignedTermin.standort}\n\nBitte bestätige deine Teilnahme.`,
+                      sender: "IMONDU Recruiting",
+                      senderInitials: "IR",
+                      type: "onboarding-einladung",
+                    });
+                  });
                   toast({
                     title: "Einladung versendet ✓",
                     description: `${bewerber.vorname} ${bewerber.nachname} wurde per Chat und E-Mail zum Onboarding am ${new Date(assignedTermin.datum).toLocaleDateString("de-DE")} um ${assignedTermin.uhrzeit} Uhr eingeladen.`,
