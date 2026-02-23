@@ -13,6 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { GEWERK_OPTIONS } from "@/data/crm-data";
 import type { Gewerk } from "@/data/crm-data";
 import {
@@ -498,6 +506,10 @@ export default function Entwickleruebersicht() {
   const [standortFilter, setStandortFilter] = useState("alle");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [matchScoreFilter, setMatchScoreFilter] = useState<number>(0);
+
+  // Compute matching score for each developer (deterministic)
+  const getMatchScore = (e: Entwickler, idx: number) => 65 + ((idx * 17 + 3) % 30);
 
   const selectedIdx = SAMPLE_ENTWICKLER.findIndex((e) => e.id === selectedId);
   const selected = selectedIdx >= 0 ? SAMPLE_ENTWICKLER[selectedIdx] : null;
@@ -510,13 +522,20 @@ export default function Entwickleruebersicht() {
     ? filtered
     : filtered.filter((e) => e.ort === standortFilter);
 
+  const withMatchScore = matchScoreFilter > 0
+    ? withStandort.filter((e) => {
+        const idx = SAMPLE_ENTWICKLER.indexOf(e);
+        return getMatchScore(e, idx) >= matchScoreFilter;
+      })
+    : withStandort;
+
   const searched = search.trim()
-    ? withStandort.filter((e) =>
+    ? withMatchScore.filter((e) =>
         e.firmenname.toLowerCase().includes(search.toLowerCase()) ||
         e.kontaktperson.toLowerCase().includes(search.toLowerCase()) ||
         e.ort.toLowerCase().includes(search.toLowerCase())
       )
-    : withStandort;
+    : withMatchScore;
 
   const usedGewerke = [...new Set(SAMPLE_ENTWICKLER.map((e) => e.gewerk))];
   const usedOrte = [...new Set(SAMPLE_ENTWICKLER.map((e) => e.ort))];
@@ -590,6 +609,33 @@ export default function Entwickleruebersicht() {
                   ))}
                 </SelectContent>
               </Select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    {matchScoreFilter > 0 ? `≥ ${matchScoreFilter}%` : "Alle Matches"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-popover">
+                  <DropdownMenuLabel className="text-xs">Matching Score filtern</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {[
+                    { value: 0, label: "Alle anzeigen" },
+                    { value: 60, label: "≥ 60% Match" },
+                    { value: 70, label: "≥ 70% Match" },
+                    { value: 80, label: "≥ 80% Match" },
+                    { value: 90, label: "≥ 90% Match" },
+                  ].map((opt) => (
+                    <DropdownMenuItem
+                      key={opt.value}
+                      onClick={() => setMatchScoreFilter(opt.value)}
+                      className={matchScoreFilter === opt.value ? "font-semibold text-primary" : ""}
+                    >
+                      {opt.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <div className="flex items-center gap-1 ml-auto">
                 <Button variant={viewMode === "grid" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("grid")}>
                   <LayoutGrid className="h-4 w-4" />
@@ -740,6 +786,7 @@ export default function Entwickleruebersicht() {
                       <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Standort</th>
                       <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Bewertung</th>
                       <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Projekte</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Match</th>
                       <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground">Status</th>
                     </tr>
                   </thead>
@@ -765,6 +812,18 @@ export default function Entwickleruebersicht() {
                             <span className="flex items-center gap-1"><Star className="h-3 w-3 text-warning fill-warning" />{e.bewertung}</span>
                           </td>
                           <td className="py-3 px-4 font-medium text-primary">{e.projekte}</td>
+                          <td className="py-3 px-4">
+                            {(() => {
+                              const score = getMatchScore(e, globalIdx);
+                              return (
+                                <span className={`inline-flex items-center gap-1 text-xs font-bold ${
+                                  score >= 85 ? "text-success" : score >= 70 ? "text-warning" : "text-muted-foreground"
+                                }`}>
+                                  <Sparkles className="h-3 w-3" />{score}%
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className="py-3 px-4">
                             <Badge variant="outline" className={`text-[10px] ${statusColors[e.status]}`}>{e.status}</Badge>
                           </td>

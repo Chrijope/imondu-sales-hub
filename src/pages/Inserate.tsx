@@ -319,12 +319,16 @@ export default function Inserate() {
   const [showFunnel, setShowFunnel] = useState(false);
   const [objektFilter, setObjektFilter] = useState<ObjektFilterType>("Alle");
   const [selectedInserat, setSelectedInserat] = useState<Inserat | null>(null);
+  const [matchScoreFilter, setMatchScoreFilter] = useState<number>(0);
 
   const filtered = useMemo(() => {
     let list = inserate;
     // Entwickler only sees active listings
     if (isEntwickler) list = list.filter((i) => i.status === "aktiv");
     if (statusFilter !== "alle") list = list.filter((i) => i.status === statusFilter);
+    if (isEntwickler && matchScoreFilter > 0) {
+      list = list.filter((i) => (i.matchingScore || 0) >= matchScoreFilter);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -336,7 +340,7 @@ export default function Inserate() {
       );
     }
     return list;
-  }, [inserate, search, statusFilter, isEntwickler]);
+  }, [inserate, search, statusFilter, isEntwickler, matchScoreFilter]);
 
   const counts = {
     alle: inserate.length,
@@ -451,27 +455,58 @@ export default function Inserate() {
               className="pl-9"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Filter className="h-4 w-4" />
-                {statusFilter === "alle" ? "Alle Status" : statusConfig[statusFilter].label}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="bg-popover">
-              <DropdownMenuLabel className="text-xs">Status filtern</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {(["alle", "aktiv", "entwurf", "pausiert", "abgelaufen"] as StatusFilter[]).map((s) => (
-                <DropdownMenuItem
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={statusFilter === s ? "font-semibold text-primary" : ""}
-                >
-                  {s === "alle" ? "Alle" : statusConfig[s].label} ({counts[s]})
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {!isEntwickler && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  {statusFilter === "alle" ? "Alle Status" : statusConfig[statusFilter].label}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-popover">
+                <DropdownMenuLabel className="text-xs">Status filtern</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {(["alle", "aktiv", "entwurf", "pausiert", "abgelaufen"] as StatusFilter[]).map((s) => (
+                  <DropdownMenuItem
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className={statusFilter === s ? "font-semibold text-primary" : ""}
+                  >
+                    {s === "alle" ? "Alle" : statusConfig[s].label} ({counts[s]})
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          {isEntwickler && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {matchScoreFilter > 0 ? `≥ ${matchScoreFilter}% Match` : "Alle Matches"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-popover">
+                <DropdownMenuLabel className="text-xs">Matching Score filtern</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {[
+                  { value: 0, label: "Alle anzeigen" },
+                  { value: 60, label: "≥ 60% Match" },
+                  { value: 70, label: "≥ 70% Match" },
+                  { value: 80, label: "≥ 80% Match" },
+                  { value: 90, label: "≥ 90% Match" },
+                ].map((opt) => (
+                  <DropdownMenuItem
+                    key={opt.value}
+                    onClick={() => setMatchScoreFilter(opt.value)}
+                    className={matchScoreFilter === opt.value ? "font-semibold text-primary" : ""}
+                  >
+                    {opt.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <div className="flex items-center gap-1 ml-auto">
             <Button variant={viewMode === "grid" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("grid")}>
               <LayoutGrid className="h-4 w-4" />
