@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar, Download,
   CalendarDays, Trophy, Archive, Sparkles, GraduationCap, Home,
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
-  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal, Video
+  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal, Video, Settings
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo-full.png";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -91,6 +91,7 @@ const marketingSubItems = [
 const sectionBewerber = [
   { path: "/bewerber-portal", icon: ClipboardList, label: "Meine Bewerbung" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
+  { path: "/einstellungen", icon: Settings, label: "Einstellungen" },
 ];
 
 // ── Sections ──
