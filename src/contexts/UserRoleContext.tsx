@@ -156,7 +156,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     name: "Bewerber",
     color: "hsl(262, 100%, 62%)",
     fixed: true,
-    menuItems: ["dashboard", "bewerber-portal", "chat"],
+    menuItems: ["dashboard", "bewerber-portal", "chat", "einstellungen"],
   },
 ];
 
