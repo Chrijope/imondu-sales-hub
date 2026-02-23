@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Badge } from "@/components/ui/badge";
+import {
+  clearHelpdeskUnread, incrementSupportUnread,
+} from "@/utils/support-notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -288,6 +291,8 @@ function TicketDetail({ ticket, onBack, onStatusChange, onAddTeilnehmer }: {
         if (all[idx].status === "neu") all[idx].status = "in_bearbeitung";
         localStorage.setItem("helpdesk-new-tickets", JSON.stringify(all));
         window.dispatchEvent(new Event("storage"));
+        // Increment support unread for the user
+        incrementSupportUnread();
       }
     } catch {}
   };
@@ -452,8 +457,9 @@ export default function Helpdesk() {
   const [katFilter, setKatFilter] = useState<"alle" | TicketKategorie>("alle");
   const [view, setView] = useState<"liste" | "dashboard">("liste");
 
-  // Load tickets from Support-KI handoffs
+  // Load tickets from Support-KI handoffs + clear unread
   useEffect(() => {
+    clearHelpdeskUnread();
     const loadNewTickets = () => {
       try {
         const raw = localStorage.getItem("helpdesk-new-tickets");
@@ -463,7 +469,18 @@ export default function Helpdesk() {
             setTickets(prev => {
               const existingIds = new Set(prev.map(t => t.id));
               const fresh = newTickets.filter(t => !existingIds.has(t.id));
-              return fresh.length > 0 ? [...fresh, ...prev] : prev;
+              if (fresh.length > 0) {
+                clearHelpdeskUnread();
+                return [...fresh, ...prev];
+              }
+              // Also update existing tickets with new messages
+              return prev.map(t => {
+                const updated = newTickets.find(nt => nt.id === t.id);
+                if (updated) {
+                  return { ...t, messages: updated.messages, status: updated.status as any, zuletztAktualisiert: updated.zuletztAktualisiert };
+                }
+                return t;
+              });
             });
           }
         }
@@ -492,6 +509,8 @@ export default function Helpdesk() {
         all[idx].zuletztAktualisiert = new Date().toISOString();
         localStorage.setItem("helpdesk-new-tickets", JSON.stringify(all));
         window.dispatchEvent(new Event("storage"));
+        // Notify support user about status change
+        incrementSupportUnread();
       }
     } catch {}
   };

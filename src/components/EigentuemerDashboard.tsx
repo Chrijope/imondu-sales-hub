@@ -14,8 +14,10 @@ import {
   Phone,
   Mail,
   Award,
+  HeadphonesIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getSupportUnreadCount } from "@/utils/support-notifications";
 
 // Mock inserate for the Eigentümer
 const EIGENTUEMER_INSERATE = [
@@ -138,7 +140,15 @@ function getBewertungStars(rating: number) {
 export default function EigentuemerDashboard() {
   const [selectedInserat, setSelectedInserat] = useState(EIGENTUEMER_INSERATE[0]);
   const [analyse, setAnalyse] = useState<AnalyseErgebnis | null>(null);
+  const [supportUnread, setSupportUnread] = useState(0);
 
+  useEffect(() => {
+    const update = () => setSupportUnread(getSupportUnreadCount());
+    update();
+    const interval = setInterval(update, 2000);
+    window.addEventListener("storage", update);
+    return () => { clearInterval(interval); window.removeEventListener("storage", update); };
+  }, []);
   // Load last analysis from localStorage
   useEffect(() => {
     const load = () => {
@@ -463,9 +473,14 @@ export default function EigentuemerDashboard() {
           </div>
           <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">Chat öffnen</span>
         </Link>
-        <Link to="/support-ki" className="glass-card rounded-2xl p-5 flex flex-col items-center gap-3 group">
+        <Link to="/support-ki" className="glass-card rounded-2xl p-5 flex flex-col items-center gap-3 group relative">
+          {supportUnread > 0 && (
+            <span className="absolute top-2 right-2 h-5 min-w-5 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+              {supportUnread}
+            </span>
+          )}
           <div className="h-11 w-11 rounded-full gradient-brand flex items-center justify-center">
-            <Phone className="h-5 w-5 text-primary-foreground" />
+            <HeadphonesIcon className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">Support kontaktieren</span>
         </Link>
