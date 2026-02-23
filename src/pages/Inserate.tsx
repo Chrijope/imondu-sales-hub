@@ -355,6 +355,20 @@ export default function Inserate() {
     );
   }
 
+  // Show Entwickler detail view (full page, like EntwicklerDetail)
+  if (isEntwickler && selectedInserat) {
+    return (
+      <CRMLayout>
+        <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+          <InseratDetailEntwickler
+            inserat={selectedInserat}
+            onBack={() => setSelectedInserat(null)}
+          />
+        </div>
+      </CRMLayout>
+    );
+  }
+
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
@@ -689,14 +703,6 @@ export default function Inserate() {
           </div>
         )}
 
-        {/* Entwickler Detail Dialog */}
-        {isEntwickler && (
-          <InseratDetailEntwickler
-            inserat={selectedInserat}
-            open={!!selectedInserat}
-            onClose={() => setSelectedInserat(null)}
-          />
-        )}
       </div>
     </CRMLayout>
   );
