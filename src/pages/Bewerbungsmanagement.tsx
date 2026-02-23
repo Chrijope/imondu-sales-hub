@@ -92,6 +92,7 @@ interface Bewerber {
   bewertung?: number;
   beschaeftigungsart?: string;
   vertriebsziel?: string;
+  lebenslaufName?: string;
   lebenslaufUrl?: string;
   onboardingDatum?: string;
   onboardingUhrzeit?: string;
@@ -101,13 +102,13 @@ interface Bewerber {
 const QUELLEN = ["Empfehlung", "LinkedIn", "Jobportal", "Website", "Social Media", "Messe", "Sonstiges"];
 
 const INITIAL_BEWERBER: Bewerber[] = [
-  { id: "b1", vorname: "Max", nachname: "Bauer", email: "max.bauer@gmail.com", telefon: "+49 171 1234567", ort: "München", beworbenAm: "2026-02-20", stage: "interview", personalityType: "ENTJ", notizen: "Sehr motiviert, Vertriebserfahrung bei ImmoScout.", erfahrung: "3 Jahre Immobilienvertrieb", motivation: "Möchte selbstständig im Vertrieb arbeiten.", quelle: "LinkedIn", bewertung: 4 },
-  { id: "b2", vorname: "Sarah", nachname: "Klein", email: "s.klein@web.de", telefon: "+49 176 9876543", ort: "Berlin", beworbenAm: "2026-02-19", stage: "persoenlichkeitstest", notizen: "", erfahrung: "Quereinsteigerin aus dem Marketing", motivation: "Suche eine neue Herausforderung im Vertrieb.", quelle: "Jobportal", bewertung: 3 },
-  { id: "b3", vorname: "Tim", nachname: "Hoffmann", email: "tim.h@outlook.de", telefon: "+49 152 5551234", ort: "Hamburg", beworbenAm: "2026-02-18", stage: "screening", notizen: "Lebenslauf sieht gut aus.", erfahrung: "5 Jahre B2B-Sales", motivation: "Will im Immobiliensektor Fuß fassen.", quelle: "Empfehlung", bewertung: 5 },
+  { id: "b1", vorname: "Max", nachname: "Bauer", email: "max.bauer@gmail.com", telefon: "+49 171 1234567", ort: "München", beworbenAm: "2026-02-20", stage: "interview", personalityType: "ENTJ", notizen: "Sehr motiviert, Vertriebserfahrung bei ImmoScout.", erfahrung: "3 Jahre Immobilienvertrieb", motivation: "Möchte selbstständig im Vertrieb arbeiten.", quelle: "LinkedIn", bewertung: 4, beschaeftigungsart: "freier_handelsvertreter", vertriebsziel: "Eigenständige Kundenakquise, 100k+ Jahreseinkommen" },
+  { id: "b2", vorname: "Sarah", nachname: "Klein", email: "s.klein@web.de", telefon: "+49 176 9876543", ort: "Berlin", beworbenAm: "2026-02-19", stage: "persoenlichkeitstest", notizen: "", erfahrung: "Quereinsteigerin aus dem Marketing", motivation: "Suche eine neue Herausforderung.", quelle: "Jobportal", bewertung: 3, beschaeftigungsart: "nebenberuflich", vertriebsziel: "Zweites Standbein aufbauen" },
+  { id: "b3", vorname: "Tim", nachname: "Hoffmann", email: "tim.h@outlook.de", telefon: "+49 152 5551234", ort: "Hamburg", beworbenAm: "2026-02-18", stage: "screening", notizen: "Lebenslauf sieht gut aus.", erfahrung: "5 Jahre B2B-Sales", motivation: "Will im Immobiliensektor Fuß fassen.", quelle: "Empfehlung", bewertung: 5, beschaeftigungsart: "hauptberuflich", vertriebsziel: "Teamleitung innerhalb von 2 Jahren", lebenslaufName: "Tim_Hoffmann_CV.pdf" },
   { id: "b4", vorname: "Julia", nachname: "Richter", email: "julia.r@gmx.de", telefon: "+49 160 7778899", ort: "Köln", beworbenAm: "2026-02-17", stage: "eingang", notizen: "", erfahrung: "Keine Vertriebserfahrung", motivation: "Interesse an Immobilien.", quelle: "Website" },
-  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", quelle: "Empfehlung", bewertung: 5, onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42" },
-  { id: "b6", vorname: "Anna", nachname: "Meier", email: "a.meier@t-online.de", telefon: "+49 157 6667788", ort: "Stuttgart", beworbenAm: "2026-02-14", stage: "abgelehnt", personalityType: "ISFP", notizen: "Persönlichkeitsprofil passt nicht zum Vertrieb.", erfahrung: "Grafikdesignerin", motivation: "Nebenjob im Vertrieb.", quelle: "Social Media", bewertung: 1 },
-  { id: "b7", vorname: "Lukas", nachname: "Weber", email: "l.weber@yahoo.de", telefon: "+49 179 1112233", ort: "Düsseldorf", beworbenAm: "2026-02-21", stage: "entscheidung", personalityType: "ESTP", notizen: "Zweites Gespräch war sehr gut.", erfahrung: "4 Jahre Vertrieb Telekommunikation", motivation: "Suche mehr Eigenverantwortung.", quelle: "Messe", bewertung: 4 },
+  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", quelle: "Empfehlung", bewertung: 5, onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42", beschaeftigungsart: "hauptberuflich", vertriebsziel: "Senior Partner innerhalb von 12 Monaten" },
+  { id: "b6", vorname: "Anna", nachname: "Meier", email: "a.meier@t-online.de", telefon: "+49 157 6667788", ort: "Stuttgart", beworbenAm: "2026-02-14", stage: "abgelehnt", personalityType: "ISFP", notizen: "Persönlichkeitsprofil passt nicht.", erfahrung: "Grafikdesignerin", motivation: "Nebenjob.", quelle: "Social Media", bewertung: 1, beschaeftigungsart: "nebenberuflich" },
+  { id: "b7", vorname: "Lukas", nachname: "Weber", email: "l.weber@yahoo.de", telefon: "+49 179 1112233", ort: "Düsseldorf", beworbenAm: "2026-02-21", stage: "entscheidung", personalityType: "ESTP", notizen: "Zweites Gespräch war sehr gut.", erfahrung: "4 Jahre Vertrieb Telekommunikation", motivation: "Suche mehr Eigenverantwortung.", quelle: "Messe", bewertung: 4, beschaeftigungsart: "angestellt_fixum", vertriebsziel: "Vertriebsleitung mit Team aufbauen" },
 ];
 
 function StageBadge({ stageId }: { stageId: string }) {
@@ -288,9 +289,39 @@ function BewerberDetail({
             </div>
             <div className="glass-card rounded-xl p-4">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Erfahrung</p>
-              <p className="text-sm font-semibold text-foreground">{bewerber.erfahrung}</p>
+              <p className="text-sm font-semibold text-foreground">{bewerber.erfahrung || "–"}</p>
             </div>
           </div>
+
+          {/* Beschäftigungsart & Vertriebsziel */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="glass-card rounded-xl p-4">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Beschäftigungsart</p>
+              <p className="text-sm font-semibold text-foreground">
+                {bewerber.beschaeftigungsart === "nebenberuflich" ? "Nebenberuflich" :
+                 bewerber.beschaeftigungsart === "hauptberuflich" ? "Hauptberuflich" :
+                 bewerber.beschaeftigungsart === "freier_handelsvertreter" ? "Freier Handelsvertreter" :
+                 bewerber.beschaeftigungsart === "angestellt_fixum" ? "Angestellt mit Fixum + Provision" :
+                 "–"}
+              </p>
+            </div>
+            <div className="glass-card rounded-xl p-4">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Ziele</p>
+              <p className="text-sm text-foreground">{bewerber.vertriebsziel || "–"}</p>
+            </div>
+          </div>
+
+          {/* Lebenslauf */}
+          {bewerber.lebenslaufName && (
+            <div className="glass-card rounded-xl p-4">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Lebenslauf</p>
+              <div className="flex items-center gap-2 mt-1">
+                <FileText className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">{bewerber.lebenslaufName}</span>
+                <Badge variant="outline" className="text-[10px] ml-auto">Hochgeladen</Badge>
+              </div>
+            </div>
+          )}
 
           {/* Bewertung */}
           <div className="glass-card rounded-xl p-4">
@@ -620,6 +651,41 @@ export default function Bewerbungsmanagement() {
                   })}
                 </div>
               </div>
+
+              {/* Nächste Onboarding-Termine */}
+              {(() => {
+                const onboardings = bewerber
+                  .filter((b) => b.onboardingDatum && b.stage === "onboarding")
+                  .sort((a, b) => (a.onboardingDatum || "").localeCompare(b.onboardingDatum || ""));
+                return onboardings.length > 0 ? (
+                  <div className="glass-card rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <GraduationCap className="h-4 w-4 text-primary" />
+                      <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Nächste Onboarding-Termine</p>
+                    </div>
+                    <div className="space-y-2">
+                      {onboardings.map((b) => (
+                        <div key={b.id} onClick={() => setSelectedId(b.id)} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 border border-border/50 hover:bg-secondary/40 cursor-pointer transition-colors">
+                          <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            {b.vorname[0]}{b.nachname[0]}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{b.vorname} {b.nachname}</p>
+                            <p className="text-xs text-muted-foreground">{b.ort}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-semibold text-foreground">
+                              {b.onboardingDatum ? new Date(b.onboardingDatum).toLocaleDateString("de-DE") : "–"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{b.onboardingUhrzeit || "–"} Uhr · {b.onboardingStandort || "–"}</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
 
               {/* Filter */}
               <div className="flex items-center gap-3">
