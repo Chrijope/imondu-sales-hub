@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   MapPin, Home, Building2, Sparkles, MessageSquare,
   FileText, Lock, Eye, CheckCircle2, Info, Shield,
   ChevronLeft, Calendar, Ruler, Star, Target, Users,
-  Briefcase, Award,
+  Briefcase, Award, Send,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import AngebotFormular from "@/components/AngebotFormular";
 
 // Property images
 import efh1 from "@/assets/inserate/einfamilienhaus-1.jpg";
@@ -86,6 +91,7 @@ export default function InseratDetailEntwickler({
   onBack: () => void;
 }) {
   const navigate = useNavigate();
+  const [angebotOpen, setAngebotOpen] = useState(false);
   const ownerData = getMockOwnerData(inserat);
   const chatLink = `/chat?newChat=${encodeURIComponent(inserat.eigentuemerName)}&category=eigentuemer`;
   const ownerEmail = inserat.eigentuemerName.split(" ").join(".").toLowerCase() + "@email.de";
@@ -132,6 +138,9 @@ export default function InseratDetailEntwickler({
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="text-xs">Objekt-Nr. {inserat.objektNr}</Badge>
+              <Button variant="outline" onClick={() => setAngebotOpen(true)} className="gap-2 border-primary text-primary hover:bg-primary/10">
+                <Send className="h-4 w-4" /> Angebot starten
+              </Button>
               <Button onClick={() => navigate(chatLink)} className="gap-2 gradient-brand border-0 text-primary-foreground">
                 <MessageSquare className="h-4 w-4" /> Chat starten
               </Button>
@@ -311,6 +320,22 @@ export default function InseratDetailEntwickler({
           <p className="text-[10px] text-muted-foreground text-center">Objekt-Nr.: {inserat.objektNr}</p>
         </div>
       </div>
+
+      {/* Angebot Dialog */}
+      <Dialog open={angebotOpen} onOpenChange={setAngebotOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Angebot für {inserat.titel}</DialogTitle>
+            <DialogDescription>Erstellen Sie ein Angebot für {inserat.eigentuemerName}.</DialogDescription>
+          </DialogHeader>
+          <AngebotFormular
+            inseratTitel={inserat.titel}
+            eigentuemerName={inserat.eigentuemerName}
+            onSubmit={() => setAngebotOpen(false)}
+            onCancel={() => setAngebotOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
