@@ -52,6 +52,7 @@ import Kundenmaske from "./pages/Kundenmaske";
 import Wettbewerb from "./pages/Wettbewerb";
 import LeadScouring from "./pages/LeadScouring";
 import Webinar from "./pages/Webinar";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Index />} />
           <Route path="/pipeline" element={<P path="/pipeline"><Pipeline /></P>} />
           <Route path="/leads" element={<Leads />} />

@@ -10,7 +10,7 @@ import {
   Star, ArrowRight, Smartphone
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import imonduLogo from "@/assets/imondu-logo.png";
+import imonduLogo from "@/assets/imondu-logo-full.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
