@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CRMLayout from "@/components/CRMLayout";
@@ -501,12 +501,21 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
 }
 
 export default function Entwickleruebersicht() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [gewerkFilter, setGewerkFilter] = useState<GewerkFilter>("alle");
   const [standortFilter, setStandortFilter] = useState("alle");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(searchParams.get("dev"));
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [matchScoreFilter, setMatchScoreFilter] = useState<number>(0);
+
+  // Sync URL param on mount
+  useEffect(() => {
+    const devParam = searchParams.get("dev");
+    if (devParam && devParam !== selectedId) {
+      setSelectedId(devParam);
+    }
+  }, [searchParams]);
 
   // Compute matching score for each developer (deterministic)
   const getMatchScore = (e: Entwickler, idx: number) => 65 + ((idx * 17 + 3) % 30);
@@ -544,7 +553,7 @@ export default function Entwickleruebersicht() {
     <CRMLayout>
       <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
         {selected ? (
-          <EntwicklerDetail entwickler={selected} idx={selectedIdx} onBack={() => setSelectedId(null)} />
+          <EntwicklerDetail entwickler={selected} idx={selectedIdx} onBack={() => { setSelectedId(null); setSearchParams({}); }} />
         ) : (
           <>
             {/* Header */}
@@ -557,7 +566,7 @@ export default function Entwickleruebersicht() {
             </div>
 
             {/* KPIs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
                 <p className="text-3xl font-display font-bold text-foreground">{SAMPLE_ENTWICKLER.length}</p>
                 <p className="text-xs text-muted-foreground mt-1">Entwickler gesamt</p>
@@ -575,6 +584,12 @@ export default function Entwickleruebersicht() {
                   {SAMPLE_ENTWICKLER.reduce((s, e) => s + e.projekte, 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Projekte gesamt</p>
+              </div>
+              <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+                <p className="text-3xl font-display font-bold text-primary">
+                  {Math.round(SAMPLE_ENTWICKLER.reduce((s, e, i) => s + getMatchScore(e, i), 0) / SAMPLE_ENTWICKLER.length)}%
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Ø Matching Score</p>
               </div>
             </div>
 
