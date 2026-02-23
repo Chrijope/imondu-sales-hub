@@ -3,12 +3,13 @@ import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { TIME_RANGE_OPTIONS, TimeRangeKey, getDateRange, isInRange, DateRange } from "@/utils/date-filters";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend } from "recharts";
-import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon } from "lucide-react";
+import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon, ChevronDown, ChevronRight, Users, GraduationCap, XCircle, Clock, Star } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import type { DateRange as DayPickerRange } from "react-day-picker";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 /* ── KPI Tile ──────────────────────────────────── */
 function KpiTile({ label, value, sub, trend }: { label: string; value: string | number; sub?: string; trend?: "up" | "down" }) {
@@ -25,18 +26,20 @@ function KpiTile({ label, value, sub, trend }: { label: string; value: string | 
   );
 }
 
-/* ── Section Card ──────────────────────────────── */
-function SectionCard({ title, actions, children }: { title: string; actions?: React.ReactNode; children: React.ReactNode }) {
+/* ── Section Card (Collapsible) ─────────────────── */
+function SectionCard({ title, actions, children, defaultOpen = true }: { title: string; actions?: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="glass-card rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-0 cursor-pointer" onClick={() => setOpen(!open)}>
         <div className="flex items-center gap-2">
           <div className="w-8 h-1 bg-accent rounded-full" />
           <h2 className="font-semibold text-foreground">{title}</h2>
+          {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </div>
-        {actions && <div className="flex gap-1">{actions}</div>}
+        {actions && <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>{actions}</div>}
       </div>
-      {children}
+      {open && <div className="mt-4">{children}</div>}
     </div>
   );
 }
@@ -103,8 +106,47 @@ const leadSourceData = [
 ];
 const totalLeadSources = leadSourceData.reduce((s, d) => s + d.value, 0);
 
+/* ── Bewerber Data ─────────────────────────────── */
+const BEWERBER_STATS = {
+  gesamt: 7, imProzess: 4, onboarding: 1, abgelehnt: 1,
+  quellen: [
+    { name: "LinkedIn", value: 1, color: "hsl(210 80% 52%)" },
+    { name: "Empfehlung", value: 2, color: "hsl(152 60% 42%)" },
+    { name: "Jobportal", value: 1, color: "hsl(38 92% 50%)" },
+    { name: "Website", value: 1, color: "hsl(280 60% 55%)" },
+    { name: "Social Media", value: 1, color: "hsl(340 75% 55%)" },
+    { name: "Messe", value: 1, color: "hsl(180 50% 45%)" },
+  ],
+  pipeline: [
+    { name: "Eingang", value: 1, color: "hsl(220 14% 60%)" },
+    { name: "Screening", value: 1, color: "hsl(210 80% 52%)" },
+    { name: "16P-Test", value: 1, color: "hsl(280 60% 55%)" },
+    { name: "Interview", value: 1, color: "hsl(38 92% 50%)" },
+    { name: "Entscheidung", value: 1, color: "hsl(210 60% 45%)" },
+    { name: "Onboarding", value: 1, color: "hsl(152 60% 42%)" },
+  ],
+  avgBewertung: 3.4,
+  hoheFit: 3, mittlereFit: 2, geringeFit: 2,
+};
+
+/* ── Collapsible Section Header ────────────────── */
+function CollapsibleSectionHeader({ icon: Icon, title, defaultOpen = true, children }: { icon: React.ComponentType<{ className?: string }>; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <>
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 pt-2 w-full text-left">
+        <Icon className="h-5 w-5 text-primary" />
+        <h2 className="text-xl font-bold text-foreground flex-1">{title}</h2>
+        {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+      </button>
+      {open && children}
+    </>
+  );
+}
+
 /* ── Main Component ────────────────────────────── */
 export default function Statistik() {
+  const { currentRoleId } = useUserRole();
   const [scope, setScope] = useState<"gesamt" | "individuell">("gesamt");
   const [timeRange, setTimeRange] = useState<TimeRangeKey>("Seit Anfang");
   const [customRange, setCustomRange] = useState<DayPickerRange | undefined>(undefined);
@@ -294,12 +336,9 @@ export default function Statistik() {
         </div>
 
         {/* ── ANRUF-STATISTIKEN ────────────────────── */}
-        <div className="flex items-center gap-2 pt-2">
-          <Phone className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Anruf-Statistiken</h2>
-        </div>
+        <CollapsibleSectionHeader icon={Phone} title="Anruf-Statistiken">
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-4">
           <KpiTile label="Calls gesamt" value="360" trend="up" sub="+12% vs. Vorwoche" />
           <KpiTile label="Heute" value="47" />
           <KpiTile label="Gesamtdauer" value="14:32h" sub="⌀ 2:25 / Call" />
@@ -369,14 +408,12 @@ export default function Statistik() {
             </ResponsiveContainer>
           </div>
         </SectionCard>
+        </CollapsibleSectionHeader>
 
         {/* ── VERTRIEBSSTATISTIKEN ──────────── */}
-        <div className="flex items-center gap-2 pt-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Vertriebsstatistiken</h2>
-        </div>
+        <CollapsibleSectionHeader icon={TrendingUp} title="Vertriebsstatistiken">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
           <SectionCard title="Conversion-Funnel">
             <div className="space-y-2">
               {conversionFunnel.map((step, i) => (
@@ -485,6 +522,66 @@ export default function Statistik() {
             <KpiTile label="⌀ Provision" value="4.820 €" trend="up" />
           </div>
         </SectionCard>
+        </CollapsibleSectionHeader>
+
+        {/* ── BEWERBER-STATISTIKEN ──────────── */}
+        {(currentRoleId === "admin" || currentRoleId === "hr") && (
+          <CollapsibleSectionHeader icon={Users} title="Bewerber-Statistiken">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+              <KpiTile label="Bewerber gesamt" value={BEWERBER_STATS.gesamt} />
+              <KpiTile label="Im Prozess" value={BEWERBER_STATS.imProzess} />
+              <KpiTile label="Onboarding" value={BEWERBER_STATS.onboarding} />
+              <KpiTile label="Abgelehnt" value={BEWERBER_STATS.abgelehnt} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+              <SectionCard title="Pipeline-Verteilung">
+                <div className="space-y-2">
+                  {BEWERBER_STATS.pipeline.map((s) => (
+                    <div key={s.name} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-24 text-right">{s.name}</span>
+                      <div className="flex-1 h-7 bg-muted rounded-md overflow-hidden relative">
+                        <div className="h-full rounded-md" style={{ width: `${(s.value / BEWERBER_STATS.gesamt) * 100}%`, backgroundColor: s.color }} />
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-foreground">{s.value}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+
+              <SectionCard title="Bewerber-Quellen">
+                <div className="flex items-center gap-6">
+                  <div className="w-[180px] h-[180px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={BEWERBER_STATS.quellen} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40}>
+                          {BEWERBER_STATS.quellen.map((entry, i) => <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-col gap-1.5 text-sm flex-1">
+                    {BEWERBER_STATS.quellen.map((d) => (
+                      <div key={d.name} className="flex items-center gap-2">
+                        <div className="w-2 h-5 rounded-sm" style={{ backgroundColor: d.color }} />
+                        <span className="text-foreground text-xs font-medium flex-1">{d.name}</span>
+                        <span className="text-muted-foreground text-xs">{d.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+              <KpiTile label="⌀ Bewertung" value={BEWERBER_STATS.avgBewertung.toFixed(1)} sub="von 5 Sternen" />
+              <KpiTile label="Hohe Eignung" value={BEWERBER_STATS.hoheFit} sub="16P-Test" trend="up" />
+              <KpiTile label="Mittlere Eignung" value={BEWERBER_STATS.mittlereFit} />
+              <KpiTile label="Geringe Eignung" value={BEWERBER_STATS.geringeFit} />
+            </div>
+          </CollapsibleSectionHeader>
+        )}
       </div>
     </CRMLayout>
   );

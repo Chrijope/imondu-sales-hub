@@ -158,6 +158,13 @@ export const DEFAULT_ROLES: RoleDef[] = [
     fixed: true,
     menuItems: ["dashboard", "bewerber-portal", "chat", "einstellungen"],
   },
+  {
+    id: "hr",
+    name: "HR",
+    color: "hsl(320, 65%, 48%)",
+    fixed: true,
+    menuItems: ["dashboard", "inbox", "email", "kalender", "bewerbungsmanagement", "ansprechpartner", "statistik", "chat", "einstellungen"],
+  },
 ];
 
 interface UserRoleContextType {
