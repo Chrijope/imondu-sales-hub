@@ -255,20 +255,29 @@ export default function Zielplanung() {
                 </Select>
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Karrierestufe:</span>
-              <Select value={karriereStufeId} onValueChange={(v) => { setKarriereStufeId(v); setHasUnsavedChanges(true); }} disabled={!canEdit}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {KARRIERESTUFEN.map((k) => (
-                    <SelectItem key={k.id} value={k.id}>
-                      {k.icon} {k.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {canEdit ? "Vorschau Karrierestufe:" : "Karrierestufe:"}
+                </span>
+                <Select value={karriereStufeId} onValueChange={(v) => { setKarriereStufeId(v); if (canEdit) setHasUnsavedChanges(true); }} disabled={!canEdit}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KARRIERESTUFEN.map((k) => (
+                      <SelectItem key={k.id} value={k.id}>
+                        {k.icon} {k.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {canEdit && (
+                <p className="text-[10px] text-muted-foreground">
+                  ℹ️ Simulation – Feste Karrierestufe wird in der Nutzerverwaltung geändert
+                </p>
+              )}
             </div>
           </div>
         </div>

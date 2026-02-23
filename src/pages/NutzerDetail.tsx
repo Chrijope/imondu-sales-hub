@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, Shield, Clock, CheckCircle2, XCircle, Eye, EyeOff,
   CalendarDays, AlertCircle, Mail, Phone, MapPin, Building2, CreditCard,
-  FileText, Bell, Lock, Settings,
+  FileText, Bell, Lock, Settings, GraduationCap,
 } from "lucide-react";
 import { useUserRole, ALL_MENU_ITEMS } from "@/contexts/UserRoleContext";
 import {
@@ -21,6 +21,7 @@ import {
   INVITE_STATUS_MAP, timeAgo, formatDate,
   type CRMUser,
 } from "@/data/nutzerverwaltung-data";
+import { KARRIERESTUFEN } from "@/data/karriereplan";
 import { useState } from "react";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -140,7 +141,7 @@ export default function NutzerDetail() {
 
             {/* Admin Controls */}
             <Separator className="my-4" />
-            <div className="grid grid-cols-2 gap-4 max-w-md">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 max-w-2xl">
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1.5">Rolle ändern</p>
                 <Select
@@ -176,6 +177,28 @@ export default function NutzerDetail() {
                   )}
                 </Button>
               </div>
+              {user.roleId === "vertriebspartner" && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1">
+                    <GraduationCap className="h-3.5 w-3.5" /> Karrierestufe
+                  </p>
+                  <Select
+                    value={user.karriereStufeId || "projektassistent"}
+                    onValueChange={(v) => {
+                      setUser({ ...user, karriereStufeId: v });
+                      const stufe = KARRIERESTUFEN.find(k => k.id === v);
+                      toast({ title: "Karrierestufe geändert", description: `Neue Stufe: ${stufe?.icon} ${stufe?.title}` });
+                    }}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {KARRIERESTUFEN.map((k) => (
+                        <SelectItem key={k.id} value={k.id}>{k.icon} {k.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </div>
 
