@@ -489,9 +489,11 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
               Sie haben mit <span className="font-medium text-foreground">{entwickler.firmenname}</span> zusammengearbeitet? Teilen Sie Ihre Erfahrung!
             </p>
 
-            {/* Star Rating */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Ihre Bewertung</p>
+            {/* IMONDU Rating - always shown */}
+            <div className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/15">
+              <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Star className="h-3.5 w-3.5 text-primary" /> Auf IMONDU bewerten
+              </p>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -510,7 +512,7 @@ function EntwicklerDetail({ entwickler, idx, onBack }: { entwickler: Entwickler;
               </div>
             </div>
 
-            {/* External review links (if the developer has configured them) */}
+            {/* External review links */}
             <div className="space-y-2 pt-1">
               <p className="text-xs font-medium text-muted-foreground">Auch extern bewerten</p>
               <div className="flex flex-col gap-1.5">

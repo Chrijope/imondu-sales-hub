@@ -222,7 +222,17 @@ export default function EinstellungenEntwickler() {
           <Separator />
           <SectionBlock title="Bewertungslinks verwalten" description="Hinterlege Links zu Bewertungsportalen, auf denen Eigentümer dich bewerten können. Diese werden auf deinem öffentlichen Profil angezeigt.">
             <div className="space-y-4 max-w-lg">
-              {/* Existing links */}
+              {/* IMONDU - always active, not removable */}
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                <Star className="h-4 w-4 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">IMONDU</p>
+                  <p className="text-xs text-muted-foreground">Bewertungen direkt auf der Plattform – immer aktiv</p>
+                </div>
+                <Badge variant="default" className="text-[10px] shrink-0">Aktiv</Badge>
+              </div>
+
+              {/* Custom links */}
               {bewertungsLinks.map((link) => (
                 <div key={link.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
                   <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
