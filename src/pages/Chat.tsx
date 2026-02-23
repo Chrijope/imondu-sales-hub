@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { setChatUnreadCount } from "@/utils/support-notifications";
+import { getChatNotifications, type ChatNotification } from "@/utils/chat-notifications";
 import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -369,6 +370,62 @@ export default function Chat() {
     const totalUnread = chats.filter(c => !c.archived && c.unread > 0).reduce((sum, c) => sum + c.unread, 0);
     setChatUnreadCount(totalUnread);
   }, [chats]);
+
+  // Poll for chat notifications from other pages (onboarding invites, document approvals)
+  useEffect(() => {
+    const poll = () => {
+      const notifications = getChatNotifications();
+      if (notifications.length === 0) return;
+
+      // Consume all and inject into chats
+      import("@/utils/chat-notifications").then(({ consumeChatNotifications }) => {
+        const consumed = consumeChatNotifications(
+          isBewerber ? "bew-admin-1" : undefined,
+          currentRoleId
+        );
+        if (consumed.length === 0) return;
+
+        setChats((prev) => {
+          const updated = [...prev];
+          consumed.forEach((notif) => {
+            // Find matching chat or use first chat
+            let chatIdx = updated.findIndex((c) => c.id === notif.targetChatId);
+            if (chatIdx === -1) {
+              // For role-based notifications, inject into first available chat
+              chatIdx = 0;
+            }
+            if (chatIdx >= 0) {
+              const newMsg: ChatMessage = {
+                id: `notif-${notif.id}`,
+                sender: notif.sender,
+                initials: notif.senderInitials,
+                text: notif.text,
+                time: notif.timestamp,
+                isOwn: false,
+                isSystem: false,
+              };
+              updated[chatIdx] = {
+                ...updated[chatIdx],
+                messages: [...updated[chatIdx].messages, newMsg],
+                lastMessage: notif.text.split("\n")[0],
+                time: notif.timestamp,
+                unread: updated[chatIdx].unread + 1,
+              };
+            }
+          });
+          return updated;
+        });
+      });
+    };
+
+    poll();
+    const interval = setInterval(poll, 3000);
+    window.addEventListener("storage", poll);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", poll);
+    };
+  }, [isBewerber, currentRoleId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

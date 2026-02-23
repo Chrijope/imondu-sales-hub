@@ -331,6 +331,16 @@ export default function NutzerDetail() {
                                 className="h-7 text-[11px] px-2.5 border-[hsl(var(--success))]/40 text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/10"
                                 onClick={() => {
                                   setDocApprovals(prev => ({ ...prev, [doc.id]: "uploaded" }));
+                                  import("@/utils/chat-notifications").then(({ addChatNotification }) => {
+                                    addChatNotification({
+                                      targetChatId: `user-${user.id}`,
+                                      targetRole: user.roleId,
+                                      text: `✅ Dein Dokument „${doc.label}" wurde geprüft und freigegeben.`,
+                                      sender: "IMONDU Backoffice",
+                                      senderInitials: "IB",
+                                      type: "dokument-freigabe",
+                                    });
+                                  });
                                   toast({ title: "Freigegeben ✓", description: `„${doc.label}" wurde freigegeben.` });
                                 }}
                               >
@@ -342,6 +352,16 @@ export default function NutzerDetail() {
                                 className="h-7 text-[11px] px-2.5 border-destructive/40 text-destructive hover:bg-destructive/10"
                                 onClick={() => {
                                   setDocApprovals(prev => ({ ...prev, [doc.id]: "rejected" }));
+                                  import("@/utils/chat-notifications").then(({ addChatNotification }) => {
+                                    addChatNotification({
+                                      targetChatId: `user-${user.id}`,
+                                      targetRole: user.roleId,
+                                      text: `❌ Dein Dokument „${doc.label}" wurde abgelehnt. Bitte lade es erneut hoch.`,
+                                      sender: "IMONDU Backoffice",
+                                      senderInitials: "IB",
+                                      type: "dokument-abgelehnt",
+                                    });
+                                  });
                                   toast({ title: "Abgelehnt", description: `„${doc.label}" wurde abgelehnt. Der Partner wird benachrichtigt.` });
                                 }}
                               >
