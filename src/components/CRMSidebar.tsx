@@ -104,7 +104,6 @@ const sectionHR = [
   { path: "/ansprechpartner", icon: Phone, label: "Ansprechpartner" },
   { path: "/statistik", icon: TrendingUp, label: "Statistik" },
   { path: "/chat", icon: MessageSquare, label: "Chat" },
-  { path: "/einstellungen", icon: Settings, label: "Einstellungen" },
 ];
 
 // ── Sections ──

@@ -163,7 +163,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     name: "HR",
     color: "hsl(320, 65%, 48%)",
     fixed: true,
-    menuItems: ["dashboard", "inbox", "email", "kalender", "bewerbungsmanagement", "ansprechpartner", "statistik", "chat", "einstellungen"],
+    menuItems: ["dashboard", "inbox", "email", "kalender", "bewerbungsmanagement", "ansprechpartner", "statistik", "chat"],
   },
 ];
 
