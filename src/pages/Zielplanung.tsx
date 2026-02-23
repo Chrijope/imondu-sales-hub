@@ -277,15 +277,18 @@ export default function Zielplanung() {
                         )}
                       </td>
                       <td className="px-4 py-2 text-center">
-                        <Input
-                          type="number"
-                          min={0}
-                          value={c.b2cInserate || ""}
-                          onChange={(e) => updateGoal(c.monthIndex, "b2cInserate", e.target.value)}
-                          className="w-20 h-8 text-center mx-auto text-sm"
-                          placeholder="0"
-                          disabled={!canEdit}
-                        />
+                        {canEdit ? (
+                          <Input
+                            type="number"
+                            min={0}
+                            value={c.b2cInserate || ""}
+                            onChange={(e) => updateGoal(c.monthIndex, "b2cInserate", e.target.value)}
+                            className="w-20 h-8 text-center mx-auto text-sm"
+                            placeholder="0"
+                          />
+                        ) : (
+                          <span className="text-sm font-medium text-foreground">{c.b2cInserate}</span>
+                        )}
                       </td>
                       <td className="px-4 py-2 text-center text-muted-foreground">{c.b2cProvision} €</td>
                       <td className="px-4 py-2 text-center font-medium text-foreground">
@@ -295,15 +298,18 @@ export default function Zielplanung() {
                         )}
                       </td>
                       <td className="px-4 py-2 text-center">
-                        <Input
-                          type="number"
-                          min={0}
-                          value={c.b2bReg || ""}
-                          onChange={(e) => updateGoal(c.monthIndex, "b2bRegistrierungen", e.target.value)}
-                          className="w-20 h-8 text-center mx-auto text-sm"
-                          placeholder="0"
-                          disabled={!canEdit}
-                        />
+                        {canEdit ? (
+                          <Input
+                            type="number"
+                            min={0}
+                            value={c.b2bReg || ""}
+                            onChange={(e) => updateGoal(c.monthIndex, "b2bRegistrierungen", e.target.value)}
+                            className="w-20 h-8 text-center mx-auto text-sm"
+                            placeholder="0"
+                          />
+                        ) : (
+                          <span className="text-sm font-medium text-foreground">{c.b2bReg}</span>
+                        )}
                       </td>
                       <td className="px-4 py-2 text-center text-muted-foreground">{c.b2bUmsatz.toLocaleString("de-DE")} €</td>
                       <td className="px-4 py-2 text-center text-muted-foreground">{c.b2bProvision} %</td>
