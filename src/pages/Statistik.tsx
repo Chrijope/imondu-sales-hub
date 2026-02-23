@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import type { DateRange as DayPickerRange } from "react-day-picker";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { SAMPLE_USERS } from "@/data/nutzerverwaltung-data";
 
 /* ── KPI Tile ──────────────────────────────────── */
 function KpiTile({ label, value, sub, trend }: { label: string; value: string | number; sub?: string; trend?: "up" | "down" }) {
@@ -254,9 +255,19 @@ export default function Statistik() {
   const [newTerminOpen, setNewTerminOpen] = useState(false);
   const [newTermin, setNewTermin] = useState({ datum: "", uhrzeit: "", standort: "" });
   const [expandedTerminId, setExpandedTerminId] = useState<string | null>(null);
+  const [teamFilter, setTeamFilter] = useState<string>("alle");
 
   const isHR = currentRoleId === "hr";
   const canSeeBewerber = currentRoleId === "admin" || currentRoleId === "hr" || currentRoleId === "vertriebsleiter";
+  const canSeeTeam = currentRoleId === "admin" || currentRoleId === "vertriebsleiter";
+
+  const teamMembers = useMemo(() => {
+    const vpUsers = SAMPLE_USERS.filter(u => u.roleId === "vertriebspartner" && u.active);
+    return [
+      { key: "alle", label: "Alle Vertriebspartner" },
+      ...vpUsers.map(u => ({ key: u.id, label: u.name })),
+    ];
+  }, []);
 
   const handleAddTermin = () => {
     if (!newTermin.datum || !newTermin.uhrzeit || !newTermin.standort) return;
@@ -275,10 +286,19 @@ export default function Statistik() {
     return getDateRange(timeRange);
   }, [timeRange, customRange]);
 
-  // Filter leads by date range
+  // Filter leads by date range + team member
+  const selectedTeamMemberName = useMemo(() => {
+    if (teamFilter === "alle") return null;
+    return SAMPLE_USERS.find(u => u.id === teamFilter)?.name || null;
+  }, [teamFilter]);
+
   const filteredLeads = useMemo(
-    () => SAMPLE_LEADS.filter((l) => isInRange(l.createdAt, activeDateRange)),
-    [activeDateRange]
+    () => SAMPLE_LEADS.filter((l) => {
+      if (!isInRange(l.createdAt, activeDateRange)) return false;
+      if (selectedTeamMemberName && l.assignee !== selectedTeamMemberName) return false;
+      return true;
+    }),
+    [activeDateRange, selectedTeamMemberName]
   );
 
   const b2cLeads = useMemo(() => filteredLeads.filter((l) => l.type === "b2c"), [filteredLeads]);
@@ -330,6 +350,14 @@ export default function Statistik() {
         <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-3 flex-wrap">
           <span className="text-sm text-muted-foreground">Statistiken anzeigen für:</span>
           <FilterDropdown value={scope} options={[{ key: "gesamt", label: "Gesamt" }, { key: "individuell", label: "Individuell" }]} onChange={setScope} />
+
+          {canSeeTeam && (
+            <>
+              <div className="w-px h-5 bg-border" />
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <FilterDropdown value={teamFilter} options={teamMembers} onChange={setTeamFilter} />
+            </>
+          )}
 
           {scope === "individuell" && (
             <Popover>
