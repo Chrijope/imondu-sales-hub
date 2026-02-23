@@ -4,10 +4,14 @@ import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { TIME_RANGE_OPTIONS, TimeRangeKey, getDateRange, isInRange, DateRange } from "@/utils/date-filters";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend } from "recharts";
-import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon, ChevronDown, ChevronRight, Users, GraduationCap, XCircle, Clock, Star, ArrowLeft } from "lucide-react";
+import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon, ChevronDown, ChevronRight, Users, GraduationCap, XCircle, Clock, Star, ArrowLeft, Plus, MapPin, UserCheck } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import type { DateRange as DayPickerRange } from "react-day-picker";
@@ -151,6 +155,20 @@ const STAGE_COLORS: Record<string, string> = {
   interview: "bg-[hsl(var(--warning))]", entscheidung: "bg-primary", onboarding: "bg-[hsl(var(--success))]", abgelehnt: "bg-destructive",
 };
 
+/* ── Onboarding Termine ─────────────────────────── */
+interface OnboardingTermin {
+  id: string;
+  datum: string;
+  uhrzeit: string;
+  standort: string;
+  bewerberIds: string[];
+}
+
+const INITIAL_ONBOARDING_TERMINE: OnboardingTermin[] = [
+  { id: "ot1", datum: "2026-03-03", uhrzeit: "10:00", standort: "München – Leopoldstraße 42", bewerberIds: ["b5"] },
+  { id: "ot2", datum: "2026-03-10", uhrzeit: "14:00", standort: "Berlin – Friedrichstraße 108", bewerberIds: [] },
+];
+
 /* ── Collapsible Section Header ────────────────── */
 function CollapsibleSectionHeader({ icon: Icon, title, defaultOpen = true, children }: { icon: React.ComponentType<{ className?: string }>; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -170,14 +188,28 @@ function CollapsibleSectionHeader({ icon: Icon, title, defaultOpen = true, child
 export default function Statistik() {
   const { currentRoleId } = useUserRole();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [scope, setScope] = useState<"gesamt" | "individuell">("gesamt");
   const [timeRange, setTimeRange] = useState<TimeRangeKey>("Seit Anfang");
   const [customRange, setCustomRange] = useState<DayPickerRange | undefined>(undefined);
   const [potenzialView, setPotenzialView] = useState<"kaufpreis" | "einkommen" | "geschlecht" | "quelle">("kaufpreis");
   const [uebersichtTab, setUebersichtTab] = useState<"b2c" | "b2b">("b2c");
   const [bewerberFilter, setBewerberFilter] = useState<string | null>(null);
+  const [onboardingTermine, setOnboardingTermine] = useState<OnboardingTermin[]>(INITIAL_ONBOARDING_TERMINE);
+  const [newTerminOpen, setNewTerminOpen] = useState(false);
+  const [newTermin, setNewTermin] = useState({ datum: "", uhrzeit: "", standort: "" });
+  const [expandedTerminId, setExpandedTerminId] = useState<string | null>(null);
 
   const isHR = currentRoleId === "hr";
+
+  const handleAddTermin = () => {
+    if (!newTermin.datum || !newTermin.uhrzeit || !newTermin.standort) return;
+    const t: OnboardingTermin = { id: `ot${Date.now()}`, datum: newTermin.datum, uhrzeit: newTermin.uhrzeit, standort: newTermin.standort, bewerberIds: [] };
+    setOnboardingTermine((prev) => [...prev, t]);
+    setNewTerminOpen(false);
+    setNewTermin({ datum: "", uhrzeit: "", standort: "" });
+    toast({ title: "Onboarding-Termin erstellt ✓" });
+  };
 
   // Compute active date range
   const activeDateRange: DateRange | null = useMemo(() => {
@@ -575,21 +607,123 @@ export default function Statistik() {
               ))}
             </div>
 
-            {/* Bewerber Detail Table */}
-            {bewerberFilter && (() => {
+            {/* Onboarding Termine View */}
+            {bewerberFilter === "onboarding" && (
+              <div className="mt-4 space-y-4">
+                <div className="glass-card rounded-xl overflow-hidden">
+                  <div className="px-5 py-3 border-b border-border bg-secondary/20 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Nächste Onboarding-Termine
+                      <span className="text-muted-foreground font-normal ml-2">({onboardingTermine.length})</span>
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" className="text-xs gap-1.5 gradient-brand border-0 text-white" onClick={() => setNewTerminOpen(true)}>
+                        <Plus className="h-3.5 w-3.5" /> Neuer Termin
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => setBewerberFilter(null)}>
+                        <ArrowLeft className="h-3.5 w-3.5 mr-1" /> Schließen
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-border/50">
+                    {onboardingTermine.map((termin) => {
+                      const eingeladene = BEWERBER_LIST.filter((b) => termin.bewerberIds.includes(b.id));
+                      const isExpanded = expandedTerminId === termin.id;
+                      return (
+                        <div key={termin.id}>
+                          <button
+                            className={`w-full text-left px-5 py-4 hover:bg-secondary/20 transition-colors ${isExpanded ? "bg-secondary/20" : ""}`}
+                            onClick={() => setExpandedTerminId(isExpanded ? null : termin.id)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-lg bg-[hsl(var(--success))]/10 flex items-center justify-center">
+                                  <CalendarIcon className="h-5 w-5 text-[hsl(var(--success))]" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {new Date(termin.datum).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+                                    <span className="text-muted-foreground font-normal ml-2">{termin.uhrzeit} Uhr</span>
+                                  </p>
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                    <MapPin className="h-3 w-3" /> {termin.standort}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <UserCheck className="h-3.5 w-3.5" /> {eingeladene.length} eingeladen
+                                </span>
+                                {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                              </div>
+                            </div>
+                          </button>
+                          {isExpanded && (
+                            <div className="px-5 pb-4">
+                              {eingeladene.length > 0 ? (
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="border-b border-border">
+                                      <th className="text-left py-2 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                                      <th className="text-left py-2 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Ort</th>
+                                      <th className="text-left py-2 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quelle</th>
+                                      <th className="text-left py-2 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">16P-Typ</th>
+                                      <th className="text-left py-2 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Bewertung</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {eingeladene.map((b) => (
+                                      <tr
+                                        key={b.id}
+                                        className="border-b border-border/50 hover:bg-primary/5 cursor-pointer transition-colors"
+                                        onClick={() => navigate("/bewerbungsmanagement")}
+                                      >
+                                        <td className="py-2 px-3 font-medium text-foreground">{b.vorname} {b.nachname}</td>
+                                        <td className="py-2 px-3 text-muted-foreground">{b.ort}</td>
+                                        <td className="py-2 px-3 text-muted-foreground">{b.quelle}</td>
+                                        <td className="py-2 px-3 text-muted-foreground">{b.personalityType || "–"}</td>
+                                        <td className="py-2 px-3">
+                                          {b.bewertung ? (
+                                            <div className="flex items-center gap-0.5">
+                                              {Array.from({ length: 5 }).map((_, i) => (
+                                                <Star key={i} className={`h-3 w-3 ${i < b.bewertung! ? "text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" : "text-muted"}`} />
+                                              ))}
+                                            </div>
+                                          ) : <span className="text-muted-foreground">–</span>}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              ) : (
+                                <p className="text-xs text-muted-foreground py-3 text-center bg-muted/30 rounded-lg">Noch keine Bewerber zu diesem Termin eingeladen.</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {onboardingTermine.length === 0 && (
+                      <div className="py-8 text-center text-sm text-muted-foreground">Keine Onboarding-Termine vorhanden.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bewerber Detail Table (non-onboarding filters) */}
+            {bewerberFilter && bewerberFilter !== "onboarding" && (() => {
               const filtered = bewerberFilter === "gesamt"
                 ? BEWERBER_LIST
                 : bewerberFilter === "imProzess"
                 ? BEWERBER_LIST.filter((b) => !["abgelehnt", "onboarding"].includes(b.stage))
-                : bewerberFilter === "onboarding"
-                ? BEWERBER_LIST.filter((b) => b.stage === "onboarding")
                 : BEWERBER_LIST.filter((b) => b.stage === "abgelehnt");
 
               return (
                 <div className="mt-4 glass-card rounded-xl overflow-hidden">
                   <div className="px-5 py-3 border-b border-border bg-secondary/20 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-foreground">
-                      {bewerberFilter === "gesamt" ? "Alle Bewerber" : bewerberFilter === "imProzess" ? "Bewerber im Prozess" : bewerberFilter === "onboarding" ? "Bewerber im Onboarding" : "Abgelehnte Bewerber"}
+                      {bewerberFilter === "gesamt" ? "Alle Bewerber" : bewerberFilter === "imProzess" ? "Bewerber im Prozess" : "Abgelehnte Bewerber"}
                       <span className="text-muted-foreground font-normal ml-2">({filtered.length})</span>
                     </h3>
                     <Button variant="ghost" size="sm" className="text-xs" onClick={() => setBewerberFilter(null)}>
@@ -690,6 +824,36 @@ export default function Statistik() {
           </CollapsibleSectionHeader>
         )}
       </div>
+
+      {/* Neuer Onboarding-Termin Dialog */}
+      <Dialog open={newTerminOpen} onOpenChange={setNewTerminOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Neuen Onboarding-Termin anlegen</DialogTitle>
+            <DialogDescription>Erstelle einen Termin, zu dem Bewerber eingeladen werden können.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Datum *</Label>
+              <Input type="date" value={newTermin.datum} onChange={(e) => setNewTermin((p) => ({ ...p, datum: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Uhrzeit *</Label>
+              <Input type="time" value={newTermin.uhrzeit} onChange={(e) => setNewTermin((p) => ({ ...p, uhrzeit: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Standort *</Label>
+              <Input value={newTermin.standort} onChange={(e) => setNewTermin((p) => ({ ...p, standort: e.target.value }))} placeholder="z.B. München – Leopoldstraße 42" />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setNewTerminOpen(false)}>Abbrechen</Button>
+              <Button onClick={handleAddTermin} disabled={!newTermin.datum || !newTermin.uhrzeit || !newTermin.standort} className="gap-2 gradient-brand border-0 text-white">
+                <Plus className="h-4 w-4" /> Termin erstellen
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </CRMLayout>
   );
 }
