@@ -64,15 +64,42 @@ function ToggleBtn({ active, label, onClick }: { active: boolean; label: string;
   );
 }
 
-/* ── Pie Data ──────────────────────────────────── */
-const potenzialData = [
-  { name: "< 100.000 €", value: 662, color: "hsl(210 80% 52%)" },
-  { name: "100.000 – 199.999 €", value: 287, color: "hsl(340 75% 55%)" },
-  { name: "200.000 – 299.999 €", value: 312, color: "hsl(152 60% 42%)" },
-  { name: "300.000 – 499.999 €", value: 440, color: "hsl(38 92% 50%)" },
-  { name: "≥ 500.000 €", value: 484, color: "hsl(280 60% 55%)" },
+/* ── Pie Data: Immobilien-Portfolio ─────────────── */
+const immobilienwertData = [
+  { name: "< 200.000 €", value: 18, color: "hsl(210 80% 52%)" },
+  { name: "200.000 – 399.999 €", value: 32, color: "hsl(340 75% 55%)" },
+  { name: "400.000 – 699.999 €", value: 24, color: "hsl(152 60% 42%)" },
+  { name: "700.000 – 999.999 €", value: 14, color: "hsl(38 92% 50%)" },
+  { name: "≥ 1.000.000 €", value: 8, color: "hsl(280 60% 55%)" },
 ];
-const totalPotenzial = potenzialData.reduce((s, d) => s + d.value, 0);
+const totalImmobilienwert = immobilienwertData.reduce((s, d) => s + d.value, 0);
+
+const objekttypData = [
+  { name: "Einfamilienhaus", value: 34, color: "hsl(38 92% 50%)" },
+  { name: "Mehrfamilienhaus", value: 28, color: "hsl(210 80% 52%)" },
+  { name: "Wohnung", value: 19, color: "hsl(152 60% 42%)" },
+  { name: "Gewerbeobjekt", value: 11, color: "hsl(280 60% 55%)" },
+  { name: "Grundstück", value: 4, color: "hsl(340 75% 55%)" },
+];
+const totalObjekttyp = objekttypData.reduce((s, d) => s + d.value, 0);
+
+const sanierungsstatusData = [
+  { name: "Unsaniert", value: 38, color: "hsl(0 72% 51%)" },
+  { name: "Teilsaniert", value: 31, color: "hsl(38 92% 50%)" },
+  { name: "Vollsaniert", value: 18, color: "hsl(152 60% 42%)" },
+  { name: "Neubau", value: 9, color: "hsl(210 80% 52%)" },
+];
+const totalSanierung = sanierungsstatusData.reduce((s, d) => s + d.value, 0);
+
+const regionData = [
+  { name: "Bayern", value: 22, color: "hsl(210 80% 52%)" },
+  { name: "NRW", value: 18, color: "hsl(152 60% 42%)" },
+  { name: "Berlin", value: 15, color: "hsl(340 75% 55%)" },
+  { name: "Baden-Württemberg", value: 14, color: "hsl(38 92% 50%)" },
+  { name: "Hamburg", value: 10, color: "hsl(280 60% 55%)" },
+  { name: "Sonstige", value: 17, color: "hsl(220 14% 60%)" },
+];
+const totalRegion = regionData.reduce((s, d) => s + d.value, 0);
 
 /* ── Call Stats Data ───────────────────────────── */
 const callsPerDay = [
@@ -86,29 +113,29 @@ const callsPerDay = [
 ];
 
 const callResultsData = [
-  { name: "Erreicht", value: 142, color: "hsl(152 60% 42%)" },
+  { name: "Termin vereinbart", value: 51, color: "hsl(152 60% 42%)" },
+  { name: "Inserat erstellt", value: 28, color: "hsl(210 80% 52%)" },
   { name: "Nicht erreicht", value: 68, color: "hsl(0 72% 51%)" },
   { name: "Mailbox", value: 45, color: "hsl(38 92% 50%)" },
-  { name: "Termin vereinbart", value: 51, color: "hsl(210 80% 52%)" },
+  { name: "Follow-Up geplant", value: 22, color: "hsl(280 60% 55%)" },
   { name: "Kein Interesse", value: 32, color: "hsl(220 14% 60%)" },
-  { name: "Follow-Up", value: 22, color: "hsl(280 60% 55%)" },
 ];
 const totalCallResults = callResultsData.reduce((s, d) => s + d.value, 0);
 
 const weeklyTrend = [
-  { woche: "KW 4", calls: 180, termine: 28, erreicht: 85, quote: 47 },
-  { woche: "KW 5", calls: 210, termine: 35, erreicht: 102, quote: 49 },
-  { woche: "KW 6", calls: 195, termine: 31, erreicht: 91, quote: 47 },
-  { woche: "KW 7", calls: 240, termine: 42, erreicht: 118, quote: 49 },
-  { woche: "KW 8", calls: 260, termine: 51, erreicht: 142, quote: 55 },
+  { woche: "KW 4", calls: 180, termine: 28, inserate: 5, quote: 47 },
+  { woche: "KW 5", calls: 210, termine: 35, inserate: 8, quote: 49 },
+  { woche: "KW 6", calls: 195, termine: 31, inserate: 6, quote: 47 },
+  { woche: "KW 7", calls: 240, termine: 42, inserate: 11, quote: 49 },
+  { woche: "KW 8", calls: 260, termine: 51, inserate: 14, quote: 55 },
 ];
 
 const leadSourceData = [
-  { name: "Website", value: 340, color: "hsl(210 80% 52%)" },
-  { name: "Empfehlung", value: 280, color: "hsl(152 60% 42%)" },
-  { name: "Lead-Kauf", value: 195, color: "hsl(38 92% 50%)" },
-  { name: "Social Media", value: 160, color: "hsl(280 60% 55%)" },
-  { name: "Kaltakquise", value: 120, color: "hsl(340 75% 55%)" },
+  { name: "Landingpage / Website", value: 28, color: "hsl(210 80% 52%)" },
+  { name: "Rabattcode / Empfehlung", value: 24, color: "hsl(152 60% 42%)" },
+  { name: "Powerdialer / Kaltakquise", value: 19, color: "hsl(38 92% 50%)" },
+  { name: "Social Media Kampagne", value: 15, color: "hsl(280 60% 55%)" },
+  { name: "Lead-Kauf", value: 10, color: "hsl(340 75% 55%)" },
 ];
 const totalLeadSources = leadSourceData.reduce((s, d) => s + d.value, 0);
 
@@ -192,7 +219,7 @@ export default function Statistik() {
   const [scope, setScope] = useState<"gesamt" | "individuell">("gesamt");
   const [timeRange, setTimeRange] = useState<TimeRangeKey>("Seit Anfang");
   const [customRange, setCustomRange] = useState<DayPickerRange | undefined>(undefined);
-  const [potenzialView, setPotenzialView] = useState<"kaufpreis" | "einkommen" | "geschlecht" | "quelle">("kaufpreis");
+  const [potenzialView, setPotenzialView] = useState<"immobilienwert" | "objekttyp" | "sanierung" | "region">("immobilienwert");
   const [uebersichtTab, setUebersichtTab] = useState<"b2c" | "b2b">("b2c");
   const [bewerberFilter, setBewerberFilter] = useState<string | null>(null);
   const [onboardingTermine, setOnboardingTermine] = useState<OnboardingTermin[]>(INITIAL_ONBOARDING_TERMINE);
@@ -251,9 +278,11 @@ export default function Statistik() {
     if (total === 0) return [];
     const stages = [
       { phase: "Kontakte gesamt", value: total },
-      { phase: "B2C Leads", value: b2cLeads.length },
-      { phase: "B2B Leads", value: b2bLeads.length },
-      { phase: "B2C Inserat erstellt", value: b2cLeads.filter((l) => l.status === "b2c_inserat").length },
+      { phase: "Eigentümer (B2C)", value: b2cLeads.length },
+      { phase: "Registriert auf IMONDU", value: b2cLeads.filter((l) => l.status === "b2c_registered").length },
+      { phase: "Inserat erstellt", value: b2cLeads.filter((l) => l.status === "b2c_inserat").length },
+      { phase: "Entwickler-Match", value: Math.round(b2cLeads.filter((l) => l.status === "b2c_inserat").length * 0.7) },
+      { phase: "Entwickler (B2B)", value: b2bLeads.length },
       { phase: "B2B Gewonnen", value: b2bLeads.filter((l) => l.status === "b2b_won").length },
     ];
     return stages.map((s) => ({ ...s, pct: total > 0 ? Math.round((s.value / total) * 100) : 0 }));
@@ -321,8 +350,8 @@ export default function Statistik() {
             title="Übersicht"
             actions={
               <div className="flex gap-1">
-                <ToggleBtn label="B2C" active={uebersichtTab === "b2c"} onClick={() => setUebersichtTab("b2c")} />
-                <ToggleBtn label="B2B" active={uebersichtTab === "b2b"} onClick={() => setUebersichtTab("b2b")} />
+                <ToggleBtn label="Eigentümer (B2C)" active={uebersichtTab === "b2c"} onClick={() => setUebersichtTab("b2c")} />
+                <ToggleBtn label="Entwickler (B2B)" active={uebersichtTab === "b2b"} onClick={() => setUebersichtTab("b2b")} />
               </div>
             }
           >
@@ -350,51 +379,67 @@ export default function Statistik() {
           </SectionCard>
 
           <SectionCard
-            title="Kundenpotenzial"
+            title="Immobilien-Portfolio"
             actions={
               <div className="flex gap-1">
-                {(["kaufpreis", "einkommen", "geschlecht", "quelle"] as const).map((v) => (
-                  <ToggleBtn key={v} label={v.charAt(0).toUpperCase() + v.slice(1)} active={potenzialView === v} onClick={() => setPotenzialView(v)} />
+                {([
+                  { key: "immobilienwert" as const, label: "Immobilienwert" },
+                  { key: "objekttyp" as const, label: "Objekttyp" },
+                  { key: "sanierung" as const, label: "Sanierung" },
+                  { key: "region" as const, label: "Region" },
+                ]).map((v) => (
+                  <ToggleBtn key={v.key} label={v.label} active={potenzialView === v.key} onClick={() => setPotenzialView(v.key)} />
                 ))}
               </div>
             }
           >
-            <div className="flex items-center gap-6">
-              <div className="w-[220px] h-[220px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={potenzialData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} innerRadius={0}
-                      label={({ name, cx: pcx, cy: pcy, midAngle, outerRadius: or }) => {
-                        const RADIAN = Math.PI / 180;
-                        const r = (or as number) * 0.65;
-                        const x = (pcx as number) + r * Math.cos(-midAngle * RADIAN);
-                        const y = (pcy as number) + r * Math.sin(-midAngle * RADIAN);
-                        return <text x={x} y={y} textAnchor="middle" dominantBaseline="central" className="text-[8px] fill-white font-medium">{name}</text>;
-                      }}
-                    >
-                      {potenzialData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-col gap-2 text-sm">
-                {potenzialData.map((d) => (
-                  <div key={d.name} className="flex items-center gap-2">
-                    <div className="w-2 h-6 rounded-sm" style={{ backgroundColor: d.color }} />
-                    <div>
-                      <span className="text-foreground font-medium">{d.name}</span><br />
-                      <span className="text-muted-foreground text-xs">{((d.value / totalPotenzial) * 100).toFixed(2)} % / {d.value} von {totalPotenzial}</span>
-                    </div>
+            {(() => {
+              const dataMap = {
+                immobilienwert: { data: immobilienwertData, total: totalImmobilienwert },
+                objekttyp: { data: objekttypData, total: totalObjekttyp },
+                sanierung: { data: sanierungsstatusData, total: totalSanierung },
+                region: { data: regionData, total: totalRegion },
+              };
+              const { data: activeData, total: activeTotal } = dataMap[potenzialView];
+              return (
+                <div className="flex items-center gap-6">
+                  <div className="w-[220px] h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={activeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} innerRadius={0}
+                          label={({ name, cx: pcx, cy: pcy, midAngle, outerRadius: or }) => {
+                            const RADIAN = Math.PI / 180;
+                            const r = (or as number) * 0.65;
+                            const x = (pcx as number) + r * Math.cos(-midAngle * RADIAN);
+                            const y = (pcy as number) + r * Math.sin(-midAngle * RADIAN);
+                            return <text x={x} y={y} textAnchor="middle" dominantBaseline="central" className="text-[8px] fill-white font-medium">{name}</text>;
+                          }}
+                        >
+                          {activeData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="flex flex-col gap-2 text-sm">
+                    {activeData.map((d) => (
+                      <div key={d.name} className="flex items-center gap-2">
+                        <div className="w-2 h-6 rounded-sm" style={{ backgroundColor: d.color }} />
+                        <div>
+                          <span className="text-foreground font-medium">{d.name}</span><br />
+                          <span className="text-muted-foreground text-xs">{((d.value / activeTotal) * 100).toFixed(1)} % / {d.value} von {activeTotal}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </SectionCard>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SectionCard title="Conversion-Funnel">
+          <SectionCard title="IMONDU Conversion-Funnel">
             <div className="space-y-2">
               {conversionFunnel.map((step, i) => (
                 <div key={step.phase} className="flex items-center gap-3">
@@ -454,11 +499,11 @@ export default function Statistik() {
           >
             <div className="grid grid-cols-3 gap-3">
               <KpiTile label="Kontakte angelegt" value={filteredLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="B2B Leads" value={b2bLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="B2C Inserat erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} />
-              <KpiTile label="B2B Gewonnen" value={b2bLeads.filter((l) => l.status === "b2b_won").length} />
-              <KpiTile label="B2C Registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} />
+              <KpiTile label="Eigentümer (B2C)" value={b2cLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="Entwickler (B2B)" value={b2bLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="Inserate erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} />
+              <KpiTile label="B2B Partner gewonnen" value={b2bLeads.filter((l) => l.status === "b2b_won").length} />
+              <KpiTile label="Eigentümer registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} />
             </div>
           </SectionCard>
 
@@ -478,26 +523,26 @@ export default function Statistik() {
               const b2cReg = b2cLeads.filter((l) => l.status === "b2c_registered").length;
               return (
                 <div className="grid grid-cols-3 gap-3">
-                  <KpiTile label="Kontakt zu B2C Lead" value={`${totalL > 0 ? Math.round((b2cLeads.length / totalL) * 100) : 0} %`} />
-                  <KpiTile label="Kontakt zu B2B Lead" value={`${totalL > 0 ? Math.round((b2bLeads.length / totalL) * 100) : 0} %`} />
-                  <KpiTile label="B2C Lead zu Registriert" value={`${b2cLeads.length > 0 ? Math.round((b2cReg / b2cLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="B2C Lead zu Inserat" value={`${b2cLeads.length > 0 ? Math.round((b2cIns / b2cLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="B2B Lead zu Gewonnen" value={`${b2bLeads.length > 0 ? Math.round((b2bWon / b2bLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="Gesamt-Abschlussquote" value={`${totalL > 0 ? Math.round(((b2cIns + b2bWon) / totalL) * 100) : 0} %`} />
+                  <KpiTile label="Kontakt → Eigentümer" value={`${totalL > 0 ? Math.round((b2cLeads.length / totalL) * 100) : 0} %`} />
+                  <KpiTile label="Kontakt → Entwickler" value={`${totalL > 0 ? Math.round((b2bLeads.length / totalL) * 100) : 0} %`} />
+                  <KpiTile label="Eigentümer → Registriert" value={`${b2cLeads.length > 0 ? Math.round((b2cReg / b2cLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="Eigentümer → Inserat" value={`${b2cLeads.length > 0 ? Math.round((b2cIns / b2cLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="Entwickler → Gewonnen" value={`${b2bLeads.length > 0 ? Math.round((b2bWon / b2bLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="Gesamt-Vermittlungsquote" value={`${totalL > 0 ? Math.round(((b2cIns + b2bWon) / totalL) * 100) : 0} %`} />
                 </div>
               );
             })()}
           </SectionCard>
         </div>
 
-        <SectionCard title="Weitere Kennzahlen">
+        <SectionCard title="IMONDU Kennzahlen">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            <KpiTile label="⌀ Reaktionszeit" value="2,4h" trend="down" sub="schneller als Vormonat" />
-            <KpiTile label="⌀ Abschlusszeit" value="34 Tage" sub="Kontakt → Notar" />
-            <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} trend="up" />
-            <KpiTile label="B2B Partner" value={b2bLeads.length.toLocaleString("de-DE")} trend="up" />
-            <KpiTile label="Stornoquote" value="3,2%" trend="down" sub="gut" />
-            <KpiTile label="⌀ Provision" value="4.820 €" trend="up" />
+            <KpiTile label="Eigentümer registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} trend="up" sub="aktive Nutzer" />
+            <KpiTile label="Inserate erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} trend="up" sub="auf Plattform" />
+            <KpiTile label="Entwickler aktiv" value="8" sub="registrierte Partner" />
+            <KpiTile label="⌀ Matching Score" value="82%" trend="up" sub="Eigentümer ↔ Entwickler" />
+            <KpiTile label="⌀ Antwortzeit Entwickler" value="14h" trend="down" sub="schneller als Vormonat" />
+            <KpiTile label="⌀ Provision" value="4.820 €" trend="up" sub="pro Vermittlung" />
           </div>
         </SectionCard>
         </CollapsibleSectionHeader>
@@ -569,7 +614,7 @@ export default function Statistik() {
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Line type="monotone" dataKey="calls" name="Anrufe" stroke="hsl(210 80% 52%)" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="erreicht" name="Erreicht" stroke="hsl(152 60% 42%)" strokeWidth={2} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="inserate" name="Inserate erstellt" stroke="hsl(152 60% 42%)" strokeWidth={2} dot={{ r: 4 }} />
                 <Line type="monotone" dataKey="termine" name="Termine" stroke="hsl(38 92% 50%)" strokeWidth={2} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
