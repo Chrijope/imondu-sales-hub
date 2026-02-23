@@ -120,15 +120,15 @@ const initialChats: ChatThread[] = [
     muted: false,
     category: "intern",
     members: [
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
-      { name: "Sarah Klein", initials: "SK", role: "Admin" },
-      { name: "Lukas Bauer", initials: "LB", role: "Teampartner" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
+      { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
+      { name: "Lisa Weber", initials: "LW", role: "Vertriebspartner" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "15.01.2026", isOwn: false, isSystem: true },
-      { id: "m1", sender: "Sarah Klein", initials: "SK", text: "Guten Morgen Team! Wir haben 12 neue Leads aus der Kampagne.", time: "09:30", isOwn: false },
-      { id: "m2", sender: "Lukas Bauer", initials: "LB", text: "Super, ich schaue mir die B2B Leads an.", time: "09:38", isOwn: false },
-      { id: "m3", sender: "Sarah Klein", initials: "SK", text: "Neue Leads sind da, bitte prüfen", time: "09:45", isOwn: false },
+      { id: "m1", sender: "Manuel Schilling", initials: "MS", text: "Guten Morgen Team! Wir haben 12 neue Leads aus der Kampagne.", time: "09:30", isOwn: false },
+      { id: "m2", sender: "Lisa Weber", initials: "LW", text: "Super, ich schaue mir die B2B Leads an.", time: "09:38", isOwn: false },
+      { id: "m3", sender: "Manuel Schilling", initials: "MS", text: "Neue Leads sind da, bitte prüfen", time: "09:45", isOwn: false },
     ],
   },
   {
@@ -143,13 +143,13 @@ const initialChats: ChatThread[] = [
     muted: false,
     category: "intern",
     members: [
-      { name: "Oliver Gjorgijev", initials: "OG", role: "Teampartner" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Oliver Gjorgijev", initials: "OG", role: "Marketing" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "28.01.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Oliver Gjorgijev", initials: "OG", text: "Gibt es Neuigkeiten zu dem Projekt in München?", time: "14:10", isOwn: false },
-      { id: "m2", sender: "Max Müller", initials: "MM", text: "Ja, der Kunde hat sich zurückgemeldet. Termin steht für nächste Woche.", time: "14:15", isOwn: true },
+      { id: "m2", sender: "Christian Peetz", initials: "CP", text: "Ja, der Kunde hat sich zurückgemeldet. Termin steht für nächste Woche.", time: "14:15", isOwn: true },
       { id: "m3", sender: "Oliver Gjorgijev", initials: "OG", text: "Perfekt, danke euch allen", time: "14:22", isOwn: false },
     ],
   },
@@ -167,13 +167,13 @@ const initialChats: ChatThread[] = [
     category: "entwickler",
     members: [
       { name: "Thomas Weber", initials: "TW", role: "Entwickler", firma: "Weber Bau GmbH" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "10.02.2026", isOwn: false, isSystem: true },
-      { id: "m1", sender: "Max Müller", initials: "MM", text: "Hallo Herr Weber, ich habe ein passendes Projekt in Ihrer Region gefunden.", time: "14:30", isOwn: true },
+      { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo Herr Weber, ich habe ein passendes Projekt in Ihrer Region gefunden.", time: "14:30", isOwn: true },
       { id: "m2", sender: "Thomas Weber", initials: "TW", text: "Das klingt interessant! Können Sie mir mehr Details schicken?", time: "14:45", isOwn: false },
-      { id: "m3", sender: "Max Müller", initials: "MM", text: "Natürlich, ich schicke Ihnen die Unterlagen per E-Mail.", time: "14:50", isOwn: true },
+      { id: "m3", sender: "Christian Peetz", initials: "CP", text: "Natürlich, ich schicke Ihnen die Unterlagen per E-Mail.", time: "14:50", isOwn: true },
       { id: "m4", sender: "Thomas Weber", initials: "TW", text: "Wann können wir mit dem Auftrag rechnen?", time: "15:10", isOwn: false },
     ],
   },
@@ -190,7 +190,7 @@ const initialChats: ChatThread[] = [
     category: "entwickler",
     members: [
       { name: "Peter Schmitt", initials: "PS", role: "Entwickler", firma: "Elektro Schmitt" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "05.02.2026", isOwn: false, isSystem: true },
@@ -211,13 +211,13 @@ const initialChats: ChatThread[] = [
     category: "entwickler",
     members: [
       { name: "Hans Krüger", initials: "HK", role: "Entwickler", firma: "Dach & Fassade Krüger" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
-      { name: "Sarah Klein", initials: "SK", role: "Admin" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
+      { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "01.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Hans Krüger", initials: "HK", text: "Wir sind an einer Partnerschaft interessiert, aber der Jahresbeitrag ist für uns aktuell etwas hoch.", time: "16:00", isOwn: false },
-      { id: "m2", sender: "Max Müller", initials: "MM", text: "Verstehe ich. Lassen Sie uns gerne die verschiedenen Optionen besprechen.", time: "16:15", isOwn: true },
+      { id: "m2", sender: "Christian Peetz", initials: "CP", text: "Verstehe ich. Lassen Sie uns gerne die verschiedenen Optionen besprechen.", time: "16:15", isOwn: true },
       { id: "m3", sender: "Hans Krüger", initials: "HK", text: "Können wir die Konditionen nochmal besprechen?", time: "16:30", isOwn: false },
     ],
   },
@@ -235,13 +235,13 @@ const initialChats: ChatThread[] = [
     category: "eigentuemer",
     members: [
       { name: "Anna Schmidt", initials: "AS", role: "Eigentümer" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "17.02.2026", isOwn: false, isSystem: true },
-      { id: "m1", sender: "Max Müller", initials: "MM", text: "Hallo Frau Schmidt, vielen Dank für Ihr Interesse an einer Immobilienbewertung. Ich würde Ihnen gerne einen Vor-Ort-Termin anbieten.", time: "16:20", isOwn: true },
+      { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo Frau Schmidt, vielen Dank für Ihr Interesse an einer Immobilienbewertung. Ich würde Ihnen gerne einen Vor-Ort-Termin anbieten.", time: "16:20", isOwn: true },
       { id: "m2", sender: "Anna Schmidt", initials: "AS", text: "Das wäre super! Wann hätten Sie Zeit?", time: "16:30", isOwn: false },
-      { id: "m3", sender: "Max Müller", initials: "MM", text: "Wie wäre es am Donnerstag um 14 Uhr?", time: "16:35", isOwn: true },
+      { id: "m3", sender: "Christian Peetz", initials: "CP", text: "Wie wäre es am Donnerstag um 14 Uhr?", time: "16:35", isOwn: true },
       { id: "m4", sender: "Anna Schmidt", initials: "AS", text: "Vielen Dank, der Termin passt mir gut!", time: "16:45", isOwn: false },
     ],
   },
@@ -258,7 +258,7 @@ const initialChats: ChatThread[] = [
     category: "eigentuemer",
     members: [
       { name: "Klaus Meier", initials: "KM", role: "Eigentümer" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "12.02.2026", isOwn: false, isSystem: true },
@@ -279,11 +279,11 @@ const initialChats: ChatThread[] = [
     category: "eigentuemer",
     members: [
       { name: "Petra Schulz", initials: "PS", role: "Eigentümer" },
-      { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+      { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
       { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "18.02.2026", isOwn: false, isSystem: true },
-      { id: "m1", sender: "Max Müller", initials: "MM", text: "Hallo Frau Schulz, Sie wurden mir als neuer Lead zugewiesen. Ich helfe Ihnen gerne bei der Bewertung Ihrer Immobilie.", time: "09:45", isOwn: true },
+      { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo Frau Schulz, Sie wurden mir als neuer Lead zugewiesen. Ich helfe Ihnen gerne bei der Bewertung Ihrer Immobilie.", time: "09:45", isOwn: true },
       { id: "m2", sender: "Petra Schulz", initials: "PS", text: "Super, das freut mich! Ich möchte mein Einfamilienhaus verkaufen.", time: "09:55", isOwn: false },
       { id: "m3", sender: "Petra Schulz", initials: "PS", text: "Welche Unterlagen brauchen Sie von mir?", time: "10:00", isOwn: false },
     ],
@@ -291,11 +291,12 @@ const initialChats: ChatThread[] = [
 ];
 
 const teamMembers = [
-  { name: "Nico Greifendorf", initials: "NG", role: "Teampartner" },
-  { name: "Laura Meier", initials: "LM", role: "Teampartner" },
-  { name: "Sarah Klein", initials: "SK", role: "Admin" },
-  { name: "Jan Weber", initials: "JW", role: "Admin" },
-  { name: "Lukas Bauer", initials: "LB", role: "Teampartner" },
+  { name: "Christian Peetz", initials: "CP", role: "Admin" },
+  { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
+  { name: "Lisa Weber", initials: "LW", role: "Vertriebspartner" },
+  { name: "Oliver Gjorgijev", initials: "OG", role: "Marketing" },
+  { name: "Julia Fischer", initials: "JF", role: "Backoffice" },
+  { name: "Karin Martini", initials: "KM", role: "Buchhaltung" },
   { name: "Weber Bau GmbH", initials: "WB", role: "Entwickler" },
   { name: "Elektro Schmitt", initials: "ES", role: "Entwickler" },
   { name: "Dach & Fassade Krüger", initials: "DK", role: "Entwickler" },
@@ -371,7 +372,7 @@ export default function Chat() {
         category: category || "intern",
         members: [
           { name: newChatName, initials, role },
-          { name: "Max Müller", initials: "MM", role: "Vertriebler" },
+          { name: isEigentuemer ? "Anna Schmidt" : isEntwickler ? "Thomas Huber" : "Christian Peetz", initials: isEigentuemer ? "AS" : isEntwickler ? "TH" : "CP", role: isEigentuemer ? "Eigentümer" : isEntwickler ? "Entwickler" : "Admin" },
         ],
         messages: [
           { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: new Date().toLocaleDateString("de-DE"), isOwn: false, isSystem: true },
@@ -398,10 +399,16 @@ export default function Chat() {
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !activeChat) return;
+    const senderName = currentRoleId === "eigentuemer" ? "Anna Schmidt"
+      : currentRoleId === "entwickler" ? "Thomas Huber"
+      : "Christian Peetz";
+    const senderInitials = currentRoleId === "eigentuemer" ? "AS"
+      : currentRoleId === "entwickler" ? "TH"
+      : "CP";
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
-      sender: "Max Müller",
-      initials: "MM",
+      sender: senderName,
+      initials: senderInitials,
       text: messageInput,
       time: new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
       isOwn: true,
@@ -806,8 +813,8 @@ export default function Chat() {
                             </div>
                           </TooltipTrigger>
                           <TooltipContent side="right" className="text-xs">
-                            <p className="font-semibold">Max Müller</p>
-                            <p className="text-muted-foreground">Vertriebler</p>
+                            <p className="font-semibold">{currentRoleId === "eigentuemer" ? "Anna Schmidt" : currentRoleId === "entwickler" ? "Thomas Huber" : "Christian Peetz"}</p>
+                            <p className="text-muted-foreground">{isEigentuemer ? "Eigentümer" : isEntwickler ? "Entwickler" : "Admin"}</p>
                           </TooltipContent>
                         </Tooltip>
                       )}

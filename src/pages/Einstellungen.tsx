@@ -41,14 +41,14 @@ interface ProfileData {
 }
 
 const initialProfile: ProfileData = {
-  vorname: "Max",
-  nachname: "Müller",
-  email: "max.mueller@example.com",
+  vorname: "Christian",
+  nachname: "Peetz",
+  email: "c.peetz@imondu.de",
   telefon: "+49 89 1234567",
   mobilnummer: "+49 170 1234567",
   geburtsdatum: "1985-06-15",
-  firmenname: "Müller Immobilien UG",
-  rechtsform: "UG (haftungsbeschränkt)",
+  firmenname: "IMONDU GmbH",
+  rechtsform: "GmbH",
   gewerbeanmeldung: "Ja – liegt vor",
   steuernummer: "123/456/78901",
   ustId: "DE123456789",
@@ -61,7 +61,7 @@ const initialProfile: ProfileData = {
   plz: "80802",
   ort: "München",
   land: "Deutschland",
-  bio: "Erfahrener Vertriebspartner mit Schwerpunkt auf Immobilien im Großraum München.",
+  bio: "Vertrieb & Partnermanagement bei IMONDU.",
 };
 
 // --- Required documents ---
