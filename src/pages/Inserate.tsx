@@ -3,12 +3,14 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CRMLayout from "@/components/CRMLayout";
 import InseratFunnel from "@/components/InseratFunnel";
+import InseratDetailEntwickler from "@/components/InseratDetailEntwickler";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES } from "@/data/crm-data";
 import type { Lead, Objekttyp, Sanierungsstatus } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
@@ -308,15 +310,20 @@ type ViewMode = "grid" | "list" | "map";
 
 export default function Inserate() {
   const navigate = useNavigate();
+  const { currentRoleId } = useUserRole();
+  const isEntwickler = currentRoleId === "entwickler";
   const [inserate] = useState<Inserat[]>(generateInserate);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showFunnel, setShowFunnel] = useState(false);
   const [objektFilter, setObjektFilter] = useState<ObjektFilterType>("Alle");
+  const [selectedInserat, setSelectedInserat] = useState<Inserat | null>(null);
 
   const filtered = useMemo(() => {
     let list = inserate;
+    // Entwickler only sees active listings
+    if (isEntwickler) list = list.filter((i) => i.status === "aktiv");
     if (statusFilter !== "alle") list = list.filter((i) => i.status === statusFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -329,7 +336,7 @@ export default function Inserate() {
       );
     }
     return list;
-  }, [inserate, search, statusFilter]);
+  }, [inserate, search, statusFilter, isEntwickler]);
 
   const counts = {
     alle: inserate.length,
@@ -357,37 +364,67 @@ export default function Inserate() {
             <div className="flex items-center gap-2 mb-1">
               <div className="w-10 h-1 rounded-full gradient-brand" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Inserate</h1>
-            <p className="text-sm text-muted-foreground mt-1">Alle Immobilien-Inserate deiner Eigentümer</p>
+            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
+              {isEntwickler ? "Verfügbare Inserate" : "Inserate"}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isEntwickler
+                ? "Durchsuche aktive Immobilien-Inserate und finde passende Projekte"
+                : "Alle Immobilien-Inserate deiner Eigentümer"}
+            </p>
           </div>
-          <Button onClick={() => setShowFunnel(true)} className="gap-2 gradient-brand border-0 text-primary-foreground shadow-crm-sm hover:opacity-90">
-            <Plus className="h-4 w-4" /> Neues Inserat
-          </Button>
+          {!isEntwickler && (
+            <Button onClick={() => setShowFunnel(true)} className="gap-2 gradient-brand border-0 text-primary-foreground shadow-crm-sm hover:opacity-90">
+              <Plus className="h-4 w-4" /> Neues Inserat
+            </Button>
+          )}
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
-            <p className="text-3xl font-display font-bold text-foreground">{counts.alle}</p>
-            <p className="text-xs text-muted-foreground mt-1">Gesamt</p>
+        {!isEntwickler && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-foreground">{counts.alle}</p>
+              <p className="text-xs text-muted-foreground mt-1">Gesamt</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-success">{counts.aktiv}</p>
+              <p className="text-xs text-muted-foreground mt-1">Aktiv</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-foreground">
+                {inserate.reduce((s, i) => s + i.aufrufe, 0).toLocaleString("de-DE")}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Aufrufe gesamt</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-primary">
+                {inserate.reduce((s, i) => s + i.anfragen, 0)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Anfragen gesamt</p>
+            </div>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
-            <p className="text-3xl font-display font-bold text-success">{counts.aktiv}</p>
-            <p className="text-xs text-muted-foreground mt-1">Aktiv</p>
+        )}
+        {isEntwickler && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-foreground">{filtered.length}</p>
+              <p className="text-xs text-muted-foreground mt-1">Verfügbare Inserate</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-success">
+                {filtered.filter((i) => (i.matchingScore || 0) >= 80).length}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Hoher Match (80%+)</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
+              <p className="text-3xl font-display font-bold text-primary">
+                {Math.round(filtered.reduce((s, i) => s + (i.matchingScore || 0), 0) / (filtered.length || 1))}%
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Ø Matching Score</p>
+            </div>
           </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
-            <p className="text-3xl font-display font-bold text-foreground">
-              {inserate.reduce((s, i) => s + i.aufrufe, 0).toLocaleString("de-DE")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Aufrufe gesamt</p>
-          </div>
-          <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border text-center">
-            <p className="text-3xl font-display font-bold text-primary">
-              {inserate.reduce((s, i) => s + i.anfragen, 0)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Anfragen gesamt</p>
-          </div>
-        </div>
+        )}
 
         {/* Search + Filter */}
         <div className="flex items-center gap-3 flex-wrap">
@@ -559,22 +596,34 @@ export default function Inserate() {
                         </div>
 
                         <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/60">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={(e) => { e.stopPropagation(); navigate(`/lead/${ins.leadId}`); }}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant={ins.status === "entwurf" ? "default" : "outline"}
-                            size="sm"
-                            className={ins.status === "entwurf" ? "gradient-brand border-0 text-primary-foreground" : ""}
-                            onClick={(e) => { e.stopPropagation(); navigate(`/lead/${ins.leadId}`); }}
-                          >
-                            {ins.status === "entwurf" ? "Veröffentlichen" : "Details"}
-                          </Button>
+                          {!isEntwickler && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => { e.stopPropagation(); navigate(`/lead/${ins.leadId}`); }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {isEntwickler ? (
+                            <Button
+                              size="sm"
+                              className="ml-auto gradient-brand border-0 text-primary-foreground gap-1.5"
+                              onClick={(e) => { e.stopPropagation(); setSelectedInserat(ins); }}
+                            >
+                              <Eye className="h-3.5 w-3.5" /> Details ansehen
+                            </Button>
+                          ) : (
+                            <Button
+                              variant={ins.status === "entwurf" ? "default" : "outline"}
+                              size="sm"
+                              className={ins.status === "entwurf" ? "gradient-brand border-0 text-primary-foreground" : ""}
+                              onClick={(e) => { e.stopPropagation(); navigate(`/lead/${ins.leadId}`); }}
+                            >
+                              {ins.status === "entwurf" ? "Veröffentlichen" : "Details"}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -608,7 +657,7 @@ export default function Inserate() {
                   return (
                     <tr
                       key={ins.id}
-                      onClick={() => navigate(`/lead/${ins.leadId}`)}
+                      onClick={() => isEntwickler ? setSelectedInserat(ins) : navigate(`/lead/${ins.leadId}`)}
                       className="border-b border-border/40 hover:bg-secondary/20 transition-colors cursor-pointer"
                     >
                       <td className="py-2 px-4">
@@ -638,6 +687,15 @@ export default function Inserate() {
             <Home className="h-10 w-10 mx-auto mb-3 opacity-40" />
             <p className="text-sm">Keine Inserate gefunden.</p>
           </div>
+        )}
+
+        {/* Entwickler Detail Dialog */}
+        {isEntwickler && (
+          <InseratDetailEntwickler
+            inserat={selectedInserat}
+            open={!!selectedInserat}
+            onClose={() => setSelectedInserat(null)}
+          />
         )}
       </div>
     </CRMLayout>
