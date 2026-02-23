@@ -3,7 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
@@ -45,8 +47,20 @@ export default function Abrechnungen() {
   const isAdmin = ["admin", "vertriebsleiter", "buchhaltung"].includes(currentRoleId);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState<{ title: string; leads: Lead[]; type: "b2c" | "b2b" } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"alle" | "aktiv" | "inaktiv">("alle");
 
   const vertriebspartner = SAMPLE_USERS.filter((u) => u.roleId === "vertriebspartner");
+
+  const filteredPartner = vertriebspartner.filter((vp) => {
+    if (statusFilter === "aktiv" && !vp.active) return false;
+    if (statusFilter === "inaktiv" && vp.active) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return vp.name.toLowerCase().includes(q) || vp.email.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   // If admin view and a partner is selected, show their individual view
   // Otherwise show overview for admins, or personal view for VP
@@ -90,9 +104,33 @@ export default function Abrechnungen() {
 
           {/* Partner Table */}
           <div className="bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-border flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">Vertriebspartner Übersicht</h2>
+            <div className="px-5 py-3 border-b border-border flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold text-foreground">Vertriebspartner Übersicht</h2>
+                <Badge variant="secondary" className="text-[10px]">{filteredPartner.length} von {vertriebspartner.length}</Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Partner suchen…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 h-8 w-[200px] text-sm"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as "alle" | "aktiv" | "inaktiv")}>
+                  <SelectTrigger className="h-8 w-[120px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="alle">Alle Status</SelectItem>
+                    <SelectItem value="aktiv">Nur Aktive</SelectItem>
+                    <SelectItem value="inaktiv">Nur Inaktive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -109,7 +147,7 @@ export default function Abrechnungen() {
                   </tr>
                 </thead>
                 <tbody>
-                  {vertriebspartner.map((vp, i) => {
+                  {filteredPartner.map((vp, i) => {
                     // Demo: assign different career levels
                     const karriereIdx = i % KARRIERESTUFEN.length;
                     const karriere = KARRIERESTUFEN[karriereIdx];
@@ -154,21 +192,26 @@ export default function Abrechnungen() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-muted/40 border-t-2 border-border">
-                    <td className="px-4 py-3 font-bold text-foreground" colSpan={3}>Gesamt</td>
+                    <td className="px-4 py-3 font-bold text-foreground" colSpan={3}>Gesamt ({filteredPartner.length} Partner)</td>
                     <td className="px-4 py-3 text-right font-bold text-foreground">
-                      {[80, 120, 50, 60].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0).toLocaleString("de-DE")} €
+                      {filteredPartner.reduce((s, _, i) => s + [80, 120, 50, 60][i % 4], 0).toLocaleString("de-DE")} €
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-foreground">
-                      {[937.5, 625, 312.5, 1250].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0).toLocaleString("de-DE")} €
+                      {filteredPartner.reduce((s, _, i) => s + [937.5, 625, 312.5, 1250][i % 4], 0).toLocaleString("de-DE")} €
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-lg text-foreground">
-                      {([80, 120, 50, 60].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0) + [937.5, 625, 312.5, 1250].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0)).toLocaleString("de-DE")} €
+                      {filteredPartner.reduce((s, _, i) => s + [80, 120, 50, 60][i % 4] + [937.5, 625, 312.5, 1250][i % 4], 0).toLocaleString("de-DE")} €
                     </td>
                     <td className="px-4 py-3" colSpan={2}></td>
                   </tr>
                 </tfoot>
               </table>
             </div>
+            {filteredPartner.length === 0 && (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                Keine Vertriebspartner gefunden. Passe deine Suche oder Filter an.
+              </div>
+            )}
           </div>
         </div>
       </CRMLayout>
