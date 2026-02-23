@@ -270,17 +270,23 @@ function LessonPlayer({
                 <Award className="h-3 w-3" /> Zertifikat herunterladen
               </Button>
             </div>
-          ) : (
+          ) : lesson.exercise ? (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Schaue dir das Video vollständig an und mache dich mit dem Thema vertraut. Im nächsten Schritt wirst du das Gelernte praktisch anwenden.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {lesson.exercise}
               </p>
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                <p className="text-xs font-medium text-foreground mb-1">💡 Praxistipp</p>
+                <p className="text-xs font-medium text-foreground mb-1">💡 Tipp</p>
                 <p className="text-xs text-muted-foreground">
-                  Öffne nach dem Video das entsprechende Tool im Backoffice und probiere die gezeigten Funktionen selbst aus.
+                  Öffne das entsprechende Tool im Backoffice in einem zweiten Tab, um die Aufgabe parallel zum Video durchzuführen.
                 </p>
               </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground italic">
+                Für diese Lektion gibt es keine gesonderte Übung. Schaue dir das Video aufmerksam an und mache dich mit den gezeigten Funktionen vertraut.
+              </p>
             </div>
           )}
         </div>
