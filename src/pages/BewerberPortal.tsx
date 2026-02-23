@@ -8,6 +8,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle2, ChevronRight, Brain, Upload, FileText, ExternalLink,
@@ -31,6 +34,7 @@ const PERSONALITY_TYPES = [
 export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
   const { toast } = useToast();
   const [step, setStep] = useState(0);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
 
   // Form data
   const [vorname, setVorname] = useState("");
@@ -48,6 +52,8 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
   const [personalityType, setPersonalityType] = useState("");
   const [pdfName, setPdfName] = useState("");
 
+  const [lebenslaufName, setLebenslaufName] = useState("");
+
   const [submitted, setSubmitted] = useState(false);
 
   const currentStep = STEPS[step];
@@ -63,11 +69,15 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
   };
 
   const handleSubmit = () => {
-    setSubmitted(true);
-    toast({
-      title: "Bewerbung eingereicht ✓",
-      description: "Vielen Dank! Wir melden uns zeitnah bei Dir.",
-    });
+    setShowSubmitDialog(true);
+    setTimeout(() => {
+      setSubmitted(true);
+      setShowSubmitDialog(false);
+      toast({
+        title: "Bewerbung eingereicht ✓",
+        description: "Vielen Dank! Wir melden uns zeitnah bei Dir.",
+      });
+    }, 3000);
   };
 
   if (submitted) {
@@ -180,6 +190,27 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
                 <Label className="text-sm font-semibold">Berufserfahrung</Label>
                 <Input value={erfahrung} onChange={(e) => setErfahrung(e.target.value)} placeholder="z.B. 3 Jahre Vertrieb, Quereinsteiger, etc." />
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-semibold">Lebenslauf hochladen (optional)</Label>
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-dashed border-border hover:border-primary/40 cursor-pointer transition-colors">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {lebenslaufName ? lebenslaufName : "PDF, DOCX – Hier klicken oder ablegen…"}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,.docx,.doc"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setLebenslaufName(file.name);
+                        toast({ title: "Lebenslauf hochgeladen", description: file.name });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </>
           )}
 
@@ -187,8 +218,8 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
           {step === 1 && (
             <>
               <div>
-                <h2 className="text-lg font-bold text-foreground">Motivation & Vertriebsziele</h2>
-                <p className="text-sm text-muted-foreground mt-1">Was treibt Dich an? Was willst Du im Vertrieb erreichen?</p>
+                <h2 className="text-lg font-bold text-foreground">Motivation & Ziele</h2>
+                <p className="text-sm text-muted-foreground mt-1">Was treibt Dich an? Was möchtest Du bei IMONDU erreichen?</p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold">Warum möchtest Du bei IMONDU arbeiten? *</Label>
@@ -197,17 +228,17 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
                   onChange={(e) => setMotivation(e.target.value)}
                   rows={4}
                   className="resize-none"
-                  placeholder="Was motiviert Dich, im Immobilienvertrieb zu arbeiten?"
+                  placeholder="Was motiviert Dich, Teil des Teams zu werden?"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Was willst Du vertrieblich erreichen? *</Label>
+                <Label className="text-sm font-semibold">Was möchtest Du bei uns erreichen? *</Label>
                 <Textarea
                   value={vertriebsziel}
                   onChange={(e) => setVertriebsziel(e.target.value)}
                   rows={3}
                   className="resize-none"
-                  placeholder="z.B. Eigenständige Kundenakquise, Teamleitung, Einkommensziel, …"
+                  placeholder="z.B. Karriereziele, Einkommensziel, persönliche Entwicklung, …"
                 />
               </div>
             </>
@@ -223,7 +254,7 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
               <RadioGroup value={beschaeftigung} onValueChange={setBeschaeftigung} className="space-y-3">
                 {[
                   { value: "nebenberuflich", label: "Nebenberuflich", desc: "Ich starte neben meinem aktuellen Job und baue mir sukzessive eine zweite Einkommensquelle auf." },
-                  { value: "hauptberuflich", label: "Hauptberuflich", desc: "Ich möchte mich voll auf den Vertrieb mit IMONDU konzentrieren." },
+                  { value: "hauptberuflich", label: "Hauptberuflich", desc: "Ich möchte mich voll auf die Arbeit mit IMONDU konzentrieren." },
                   { value: "freier_handelsvertreter", label: "Freier Handelsvertreter (§ 84 HGB)", desc: "Ich arbeite selbstständig auf Provisionsbasis – maximale Freiheit und Verdienstmöglichkeiten." },
                   { value: "angestellt_fixum", label: "Angestellt mit Fixum + Provision", desc: "Ich bevorzuge ein festes Grundgehalt mit leistungsabhängiger Provision on top." },
                 ].map((opt) => (
@@ -319,8 +350,9 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
                 {telefon && <SummaryRow label="Telefon" value={telefon} />}
                 {ort && <SummaryRow label="Ort" value={ort} />}
                 {erfahrung && <SummaryRow label="Erfahrung" value={erfahrung} />}
+                {lebenslaufName && <SummaryRow label="Lebenslauf" value={lebenslaufName} />}
                 <SummaryRow label="Motivation" value={motivation} />
-                <SummaryRow label="Vertriebsziel" value={vertriebsziel} />
+                <SummaryRow label="Ziele" value={vertriebsziel} />
                 <SummaryRow label="Beschäftigungsart" value={
                   beschaeftigung === "nebenberuflich" ? "Nebenberuflich" :
                   beschaeftigung === "hauptberuflich" ? "Hauptberuflich" :
@@ -328,7 +360,7 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
                   "Angestellt mit Fixum + Provision"
                 } />
                 <SummaryRow label="Persönlichkeitstyp" value={personalityType} />
-                {pdfName && <SummaryRow label="PDF-Upload" value={pdfName} />}
+                {pdfName && <SummaryRow label="16P PDF" value={pdfName} />}
               </div>
 
               <Button
@@ -361,6 +393,23 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
           </div>
         )}
       </div>
+
+      {/* Submit Overlay Dialog */}
+      <Dialog open={showSubmitDialog} onOpenChange={() => {}}>
+        <DialogContent className="max-w-sm text-center [&>button]:hidden">
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="h-16 w-16 rounded-full gradient-brand flex items-center justify-center animate-pulse">
+              <CheckCircle2 className="h-8 w-8 text-white" />
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-center">Bewerbung wird übermittelt…</DialogTitle>
+              <DialogDescription className="text-center">
+                Deine Bewerbung wird gerade verarbeitet. Wir sehen uns Deine Angaben an und melden uns zeitnah bei Dir zurück. Bitte warte einen Moment.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
