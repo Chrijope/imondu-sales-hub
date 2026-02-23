@@ -7,6 +7,13 @@ export interface Lesson {
   description?: string;
   exercise?: string;
   status?: "draft" | "published";
+  sectionId?: string;
+}
+
+export interface Section {
+  id: string;
+  title: string;
+  description?: string;
 }
 
 export interface Module {
@@ -14,6 +21,7 @@ export interface Module {
   title: string;
   description: string;
   lessons: Lesson[];
+  sections?: Section[];
 }
 
 export interface Course {

@@ -50,18 +50,25 @@ import {
   Eye,
   Settings2,
 } from "lucide-react";
-import type { Course, Module, Lesson } from "@/data/academy-courses";
+import type { Course, Module, Lesson, Section } from "@/data/academy-courses";
 import { toast } from "sonner";
 
 /* ─── helpers ─── */
 const genId = () => Math.random().toString(36).slice(2, 10);
 
-const newLesson = (order: number): Lesson => ({
+const newLesson = (order: number, sectionId?: string): Lesson => ({
   id: `lesson-${genId()}`,
   title: `Neue Lektion ${order}`,
   duration: "10:00",
   completed: false,
   locked: false,
+  description: "",
+  sectionId,
+});
+
+const newSection = (order: number): Section => ({
+  id: `sec-${genId()}`,
+  title: `Neue Sektion ${order}`,
   description: "",
 });
 
@@ -70,6 +77,7 @@ const newModule = (order: number): Module => ({
   title: `Neues Modul ${order}`,
   description: "",
   lessons: [newLesson(1)],
+  sections: [],
 });
 
 /* ─── Lesson Editor Row ─── */
@@ -230,6 +238,92 @@ function LessonRow({
   );
 }
 
+/* ─── Section Header Row ─── */
+function SectionRow({
+  section,
+  lessonsCount,
+  isOpen,
+  onToggle,
+  onUpdate,
+  onDelete,
+}: {
+  section: Section;
+  lessonsCount: number;
+  isOpen: boolean;
+  onToggle: () => void;
+  onUpdate: (s: Section) => void;
+  onDelete: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(section.title);
+  const [desc, setDesc] = useState(section.description || "");
+
+  const save = () => {
+    onUpdate({ ...section, title, description: desc || undefined });
+    setEditing(false);
+    toast.success("Sektion gespeichert");
+  };
+
+  if (editing) {
+    return (
+      <div className="px-4 py-3 bg-accent/30 border-b border-border/40 space-y-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Sektions-Titel</Label>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-sm h-8" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Beschreibung (optional)</Label>
+          <Input value={desc} onChange={(e) => setDesc(e.target.value)} className="text-sm h-8" placeholder="Kurze Beschreibung der Sektion…" />
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" className="text-xs gap-1" onClick={save}><Save className="h-3 w-3" /> Speichern</Button>
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => setEditing(false)}>Abbrechen</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2.5 bg-accent/20 border-b border-border/40 group/sec">
+      <GripVertical className="h-3 w-3 text-muted-foreground/40 cursor-grab shrink-0" />
+      <button onClick={onToggle} className="p-0.5">
+        {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+      </button>
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={onToggle}>
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">{section.title}</p>
+        {section.description && <p className="text-[10px] text-muted-foreground">{section.description}</p>}
+      </div>
+      <span className="text-[10px] text-muted-foreground">{lessonsCount} Lektionen</span>
+      <div className="flex items-center gap-0.5 opacity-0 group-hover/sec:opacity-100 transition-opacity">
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => { setTitle(section.title); setDesc(section.description || ""); setEditing(true); }}>
+          <Pencil className="h-2.5 w-2.5" />
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive hover:text-destructive">
+              <Trash2 className="h-2.5 w-2.5" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sektion löschen?</AlertDialogTitle>
+              <AlertDialogDescription>
+                „{section.title}" und alle {lessonsCount} zugehörigen Lektionen werden gelöscht.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Löschen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Module Editor Card ─── */
 function ModuleCard({
   mod,
@@ -242,10 +336,17 @@ function ModuleCard({
   onUpdate: (m: Module) => void;
   onDelete: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [editingHeader, setEditingHeader] = useState(false);
   const [title, setTitle] = useState(mod.title);
   const [desc, setDesc] = useState(mod.description);
+  const [openSections, setOpenSections] = useState<string[]>(mod.sections?.map(s => s.id) || []);
+
+  const sections = mod.sections || [];
+  const unsectionedLessons = mod.lessons.filter(l => !l.sectionId);
+
+  const toggleSection = (id: string) =>
+    setOpenSections(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
 
   const saveHeader = () => {
     onUpdate({ ...mod, title, description: desc });
@@ -253,11 +354,34 @@ function ModuleCard({
     toast.success("Modul gespeichert");
   };
 
-  const addLesson = () => {
-    const updated = { ...mod, lessons: [...mod.lessons, newLesson(mod.lessons.length + 1)] };
-    onUpdate(updated);
+  const addLesson = (sectionId?: string) => {
+    const order = mod.lessons.length + 1;
+    const lesson = newLesson(order, sectionId);
+    onUpdate({ ...mod, lessons: [...mod.lessons, lesson] });
     setOpen(true);
+    if (sectionId) setOpenSections(prev => prev.includes(sectionId) ? prev : [...prev, sectionId]);
     toast.success("Lektion hinzugefügt");
+  };
+
+  const addSectionToModule = () => {
+    const sec = newSection((sections.length || 0) + 1);
+    onUpdate({ ...mod, sections: [...sections, sec] });
+    setOpen(true);
+    setOpenSections(prev => [...prev, sec.id]);
+    toast.success("Sektion hinzugefügt");
+  };
+
+  const updateSection = (secId: string, updated: Section) => {
+    onUpdate({ ...mod, sections: sections.map(s => s.id === secId ? updated : s) });
+  };
+
+  const deleteSection = (secId: string) => {
+    onUpdate({
+      ...mod,
+      sections: sections.filter(s => s.id !== secId),
+      lessons: mod.lessons.filter(l => l.sectionId !== secId),
+    });
+    toast.success("Sektion gelöscht");
   };
 
   const updateLesson = (lessonId: string, lesson: Lesson) => {
@@ -269,14 +393,15 @@ function ModuleCard({
     toast.success("Lektion gelöscht");
   };
 
+  const totalCount = mod.lessons.length;
+  const sectionCount = sections.length;
+
   return (
     <div className="bg-card rounded-xl shadow-crm-sm border border-border overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border/60">
         <GripVertical className="h-4 w-4 text-muted-foreground/40 cursor-grab shrink-0" />
-        <div
-          className="h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0"
-        >
+        <div className="h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
           {index + 1}
         </div>
 
@@ -303,7 +428,9 @@ function ModuleCard({
         ) : (
           <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setOpen(!open)}>
             <p className="text-sm font-semibold text-foreground">{mod.title}</p>
-            <p className="text-xs text-muted-foreground truncate">{mod.description} · {mod.lessons.length} Lektionen</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {mod.description} · {sectionCount > 0 ? `${sectionCount} Sektionen · ` : ""}{totalCount} Lektionen
+            </p>
           </div>
         )}
 
@@ -322,7 +449,7 @@ function ModuleCard({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Modul löschen?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    „{mod.title}" und alle {mod.lessons.length} Lektionen werden gelöscht.
+                    „{mod.title}" und alle {totalCount} Lektionen werden gelöscht.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -340,20 +467,65 @@ function ModuleCard({
         )}
       </div>
 
-      {/* Lessons */}
+      {/* Content: Sections + Lessons */}
       {open && (
-        <div className="divide-y divide-border/40">
-          {mod.lessons.map((lesson) => (
-            <LessonRow
-              key={lesson.id}
-              lesson={lesson}
-              onUpdate={(l) => updateLesson(lesson.id, l)}
-              onDelete={() => deleteLesson(lesson.id)}
-            />
-          ))}
-          <div className="p-3">
-            <Button variant="outline" size="sm" className="w-full text-xs gap-1" onClick={addLesson}>
+        <div>
+          {/* Unsectioned lessons first */}
+          {unsectionedLessons.length > 0 && (
+            <div className="divide-y divide-border/40">
+              {unsectionedLessons.map((lesson) => (
+                <LessonRow
+                  key={lesson.id}
+                  lesson={lesson}
+                  onUpdate={(l) => updateLesson(lesson.id, l)}
+                  onDelete={() => deleteLesson(lesson.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Sections with their lessons */}
+          {sections.map((section) => {
+            const sectionLessons = mod.lessons.filter(l => l.sectionId === section.id);
+            const isSectionOpen = openSections.includes(section.id);
+            return (
+              <div key={section.id}>
+                <SectionRow
+                  section={section}
+                  lessonsCount={sectionLessons.length}
+                  isOpen={isSectionOpen}
+                  onToggle={() => toggleSection(section.id)}
+                  onUpdate={(s) => updateSection(section.id, s)}
+                  onDelete={() => deleteSection(section.id)}
+                />
+                {isSectionOpen && (
+                  <div className="divide-y divide-border/40 ml-4 border-l-2 border-primary/10">
+                    {sectionLessons.map((lesson) => (
+                      <LessonRow
+                        key={lesson.id}
+                        lesson={lesson}
+                        onUpdate={(l) => updateLesson(lesson.id, l)}
+                        onDelete={() => deleteLesson(lesson.id)}
+                      />
+                    ))}
+                    <div className="p-2 pl-4">
+                      <Button variant="ghost" size="sm" className="w-full text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => addLesson(section.id)}>
+                        <Plus className="h-3 w-3" /> Lektion in „{section.title}" hinzufügen
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Action buttons */}
+          <div className="p-3 flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1 text-xs gap-1" onClick={() => addLesson()}>
               <Plus className="h-3 w-3" /> Lektion hinzufügen
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1 text-xs gap-1" onClick={addSectionToModule}>
+              <Plus className="h-3 w-3" /> Sektion hinzufügen
             </Button>
           </div>
         </div>
@@ -484,7 +656,7 @@ export default function CourseEditor({
   onBack: () => void;
   onSaveCourse: (c: Course) => void;
 }) {
-  const [editedCourse, setEditedCourse] = useState<Course>({ ...course, modules: course.modules.map((m) => ({ ...m, lessons: [...m.lessons] })) });
+  const [editedCourse, setEditedCourse] = useState<Course>({ ...course, modules: course.modules.map((m) => ({ ...m, lessons: [...m.lessons], sections: [...(m.sections || [])] })) });
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const updateModule = (modId: string, mod: Module) => {
