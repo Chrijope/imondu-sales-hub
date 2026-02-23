@@ -623,7 +623,6 @@ export default function Statistik() {
             <KpiTile label="Entwickler aktiv" value="8" sub="registrierte Partner" />
             <KpiTile label="⌀ Matching Score" value="82%" trend="up" sub="Eigentümer ↔ Entwickler" />
             <KpiTile label="⌀ Antwortzeit Entwickler" value="14h" trend="down" sub="schneller als Vormonat" />
-            <KpiTile label="⌀ Provision" value="4.820 €" trend="up" sub="pro Vermittlung" />
           </div>
         </SectionCard>
         </CollapsibleSectionHeader>
