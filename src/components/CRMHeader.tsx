@@ -48,7 +48,9 @@ export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHead
           <button className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-foreground leading-none">{profile.name}</p>
-              <p className="text-[11px] text-muted-foreground">{currentRole?.name || "Admin"}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {currentRoleId === "entwickler" ? "Elektro Huber & Partner" : (currentRole?.name || "Admin")}
+              </p>
             </div>
             <div
               className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-primary-foreground"
