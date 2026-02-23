@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { TIME_RANGE_OPTIONS, TimeRangeKey, getDateRange, isInRange, DateRange } from "@/utils/date-filters";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend } from "recharts";
-import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon, ChevronDown, ChevronRight, Users, GraduationCap, XCircle, Clock, Star } from "lucide-react";
+import { BarChart3, Percent, Phone, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarIcon, ChevronDown, ChevronRight, Users, GraduationCap, XCircle, Clock, Star, ArrowLeft } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import type { DateRange as DayPickerRange } from "react-day-picker";
@@ -129,6 +131,26 @@ const BEWERBER_STATS = {
   hoheFit: 3, mittlereFit: 2, geringeFit: 2,
 };
 
+/* ── Bewerber-Daten (gleich wie Bewerbungsmanagement) ── */
+const BEWERBER_LIST = [
+  { id: "b1", vorname: "Max", nachname: "Bauer", ort: "München", stage: "interview", quelle: "LinkedIn", bewertung: 4, personalityType: "ENTJ" },
+  { id: "b2", vorname: "Sarah", nachname: "Klein", ort: "Berlin", stage: "persoenlichkeitstest", quelle: "Jobportal", bewertung: 3 },
+  { id: "b3", vorname: "Tim", nachname: "Hoffmann", ort: "Hamburg", stage: "screening", quelle: "Empfehlung", bewertung: 5 },
+  { id: "b4", vorname: "Julia", nachname: "Richter", ort: "Köln", stage: "eingang", quelle: "Website" },
+  { id: "b5", vorname: "Markus", nachname: "Braun", ort: "Frankfurt", stage: "onboarding", quelle: "Empfehlung", bewertung: 5, personalityType: "ENFJ" },
+  { id: "b6", vorname: "Anna", nachname: "Meier", ort: "Stuttgart", stage: "abgelehnt", quelle: "Social Media", bewertung: 1, personalityType: "ISFP" },
+  { id: "b7", vorname: "Lukas", nachname: "Weber", ort: "Düsseldorf", stage: "entscheidung", quelle: "Messe", bewertung: 4, personalityType: "ESTP" },
+];
+
+const STAGE_LABELS: Record<string, string> = {
+  eingang: "Eingang", screening: "Screening", persoenlichkeitstest: "16P-Test",
+  interview: "Interview", entscheidung: "Entscheidung", onboarding: "Onboarding", abgelehnt: "Abgelehnt",
+};
+const STAGE_COLORS: Record<string, string> = {
+  eingang: "bg-muted-foreground", screening: "bg-[hsl(var(--info))]", persoenlichkeitstest: "bg-primary",
+  interview: "bg-[hsl(var(--warning))]", entscheidung: "bg-primary", onboarding: "bg-[hsl(var(--success))]", abgelehnt: "bg-destructive",
+};
+
 /* ── Collapsible Section Header ────────────────── */
 function CollapsibleSectionHeader({ icon: Icon, title, defaultOpen = true, children }: { icon: React.ComponentType<{ className?: string }>; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -147,11 +169,15 @@ function CollapsibleSectionHeader({ icon: Icon, title, defaultOpen = true, child
 /* ── Main Component ────────────────────────────── */
 export default function Statistik() {
   const { currentRoleId } = useUserRole();
+  const navigate = useNavigate();
   const [scope, setScope] = useState<"gesamt" | "individuell">("gesamt");
   const [timeRange, setTimeRange] = useState<TimeRangeKey>("Seit Anfang");
   const [customRange, setCustomRange] = useState<DayPickerRange | undefined>(undefined);
   const [potenzialView, setPotenzialView] = useState<"kaufpreis" | "einkommen" | "geschlecht" | "quelle">("kaufpreis");
   const [uebersichtTab, setUebersichtTab] = useState<"b2c" | "b2b">("b2c");
+  const [bewerberFilter, setBewerberFilter] = useState<string | null>(null);
+
+  const isHR = currentRoleId === "hr";
 
   // Compute active date range
   const activeDateRange: DateRange | null = useMemo(() => {
@@ -209,7 +235,8 @@ export default function Statistik() {
           <h1 className="text-3xl font-bold text-foreground">Statistiken</h1>
         </div>
 
-        {/* Scope Toggle */}
+        {/* Non-HR content */}
+        {!isHR && (<>
         <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-3 flex-wrap">
           <span className="text-sm text-muted-foreground">Statistiken anzeigen für:</span>
           <ToggleBtn label="Gesamt" active={scope === "gesamt"} onClick={() => setScope("gesamt")} />
@@ -523,16 +550,96 @@ export default function Statistik() {
           </div>
         </SectionCard>
         </CollapsibleSectionHeader>
+        </>)}
 
         {/* ── BEWERBER-STATISTIKEN ──────────── */}
         {(currentRoleId === "admin" || currentRoleId === "hr") && (
           <CollapsibleSectionHeader icon={Users} title="Bewerber-Statistiken">
+            {/* Clickable KPI Tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-              <KpiTile label="Bewerber gesamt" value={BEWERBER_STATS.gesamt} />
-              <KpiTile label="Im Prozess" value={BEWERBER_STATS.imProzess} />
-              <KpiTile label="Onboarding" value={BEWERBER_STATS.onboarding} />
-              <KpiTile label="Abgelehnt" value={BEWERBER_STATS.abgelehnt} />
+              {([
+                { key: "gesamt", label: "Bewerber gesamt", value: BEWERBER_STATS.gesamt },
+                { key: "imProzess", label: "Im Prozess", value: BEWERBER_STATS.imProzess },
+                { key: "onboarding", label: "Onboarding", value: BEWERBER_STATS.onboarding },
+                { key: "abgelehnt", label: "Abgelehnt", value: BEWERBER_STATS.abgelehnt },
+              ] as const).map((kpi) => (
+                <button
+                  key={kpi.key}
+                  onClick={() => setBewerberFilter(bewerberFilter === kpi.key ? null : kpi.key)}
+                  className={`glass-card rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] cursor-pointer transition-all ${bewerberFilter === kpi.key ? "ring-2 ring-primary shadow-crm-md" : "hover:shadow-crm-sm"}`}
+                >
+                  <span className="text-xs text-muted-foreground text-center mb-1">{kpi.label}</span>
+                  <span className="text-2xl font-bold text-foreground">{kpi.value}</span>
+                  <span className="text-[10px] text-primary mt-1">{bewerberFilter === kpi.key ? "▲ Schließen" : "▼ Details"}</span>
+                </button>
+              ))}
             </div>
+
+            {/* Bewerber Detail Table */}
+            {bewerberFilter && (() => {
+              const filtered = bewerberFilter === "gesamt"
+                ? BEWERBER_LIST
+                : bewerberFilter === "imProzess"
+                ? BEWERBER_LIST.filter((b) => !["abgelehnt", "onboarding"].includes(b.stage))
+                : bewerberFilter === "onboarding"
+                ? BEWERBER_LIST.filter((b) => b.stage === "onboarding")
+                : BEWERBER_LIST.filter((b) => b.stage === "abgelehnt");
+
+              return (
+                <div className="mt-4 glass-card rounded-xl overflow-hidden">
+                  <div className="px-5 py-3 border-b border-border bg-secondary/20 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {bewerberFilter === "gesamt" ? "Alle Bewerber" : bewerberFilter === "imProzess" ? "Bewerber im Prozess" : bewerberFilter === "onboarding" ? "Bewerber im Onboarding" : "Abgelehnte Bewerber"}
+                      <span className="text-muted-foreground font-normal ml-2">({filtered.length})</span>
+                    </h3>
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => setBewerberFilter(null)}>
+                      <ArrowLeft className="h-3.5 w-3.5 mr-1" /> Schließen
+                    </Button>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                        <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Ort</th>
+                        <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quelle</th>
+                        <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">16P-Typ</th>
+                        <th className="text-left py-2.5 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Bewertung</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((b) => (
+                        <tr
+                          key={b.id}
+                          className="border-b border-border/50 hover:bg-primary/5 cursor-pointer transition-colors"
+                          onClick={() => navigate("/bewerbungsmanagement")}
+                        >
+                          <td className="py-2.5 px-4 font-medium text-foreground">{b.vorname} {b.nachname}</td>
+                          <td className="py-2.5 px-4 text-muted-foreground">{b.ort}</td>
+                          <td className="py-2.5 px-4">
+                            <span className="inline-flex items-center gap-1.5 text-xs">
+                              <span className={`h-2 w-2 rounded-full ${STAGE_COLORS[b.stage] || "bg-muted-foreground"}`} />
+                              {STAGE_LABELS[b.stage] || b.stage}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-4 text-muted-foreground">{b.quelle}</td>
+                          <td className="py-2.5 px-4 text-muted-foreground">{b.personalityType || "–"}</td>
+                          <td className="py-2.5 px-4">
+                            {b.bewertung ? (
+                              <div className="flex items-center gap-0.5">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star key={i} className={`h-3 w-3 ${i < b.bewertung! ? "text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" : "text-muted"}`} />
+                                ))}
+                              </div>
+                            ) : <span className="text-muted-foreground">–</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
               <SectionCard title="Pipeline-Verteilung">
