@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
   KARRIERESTUFEN, getB2CStufe, getB2BStufe,
 } from "@/data/karriereplan";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import { SAMPLE_USERS } from "@/data/nutzerverwaltung-data";
 
 const abrechnungsHistorie = [
   { monat: "Februar 2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 80, b2bProv: 937.5, status: "ausstehend", gutschriftNr: "GS-2026-02-0041", auszahlungsDatum: null },
@@ -39,8 +41,144 @@ const MY_B2B_MONATSUMSATZ = 3750;
 
 export default function Abrechnungen() {
   const navigate = useNavigate();
-  const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
+  const { currentRoleId } = useUserRole();
+  const isAdmin = ["admin", "vertriebsleiter", "buchhaltung"].includes(currentRoleId);
+  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState<{ title: string; leads: Lead[]; type: "b2c" | "b2b" } | null>(null);
+
+  const vertriebspartner = SAMPLE_USERS.filter((u) => u.roleId === "vertriebspartner");
+
+  // If admin view and a partner is selected, show their individual view
+  // Otherwise show overview for admins, or personal view for VP
+  if (isAdmin && !selectedPartner) {
+    return (
+      <CRMLayout>
+        <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-10 h-1 rounded-full gradient-brand" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-foreground">Abrechnungen – Gesamtübersicht</h1>
+            <p className="text-sm text-muted-foreground mt-1">Alle Vertriebspartner und ihre Provisionen</p>
+          </div>
+
+          {/* KPI Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Vertriebspartner</span>
+              <p className="text-2xl font-display font-bold text-foreground mt-2">{vertriebspartner.length}</p>
+              <p className="text-xs text-muted-foreground mt-1">{vertriebspartner.filter(u => u.active).length} aktiv</p>
+            </div>
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Gesamtprovision (Monat)</span>
+              <p className="text-2xl font-display font-bold text-foreground mt-2">
+                {(vertriebspartner.length * 1_017.5).toLocaleString("de-DE")} €
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">B2C + B2B kombiniert</p>
+            </div>
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ø Provision / Partner</span>
+              <p className="text-2xl font-display font-bold text-foreground mt-2">1.017,50 €</p>
+              <p className="text-xs text-muted-foreground mt-1">Durchschnitt aktueller Monat</p>
+            </div>
+            <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ausstehende Gutschriften</span>
+              <p className="text-2xl font-display font-bold text-foreground mt-2">{vertriebspartner.length}</p>
+              <p className="text-xs text-muted-foreground mt-1">Februar 2026</p>
+            </div>
+          </div>
+
+          {/* Partner Table */}
+          <div className="bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-border flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">Vertriebspartner Übersicht</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Partner</th>
+                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Karrierestufe</th>
+                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Status</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">B2C Prov.</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">B2B Prov.</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">Gesamt</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">Potenzial</th>
+                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vertriebspartner.map((vp, i) => {
+                    // Demo: assign different career levels
+                    const karriereIdx = i % KARRIERESTUFEN.length;
+                    const karriere = KARRIERESTUFEN[karriereIdx];
+                    const demoB2C = [80, 120, 50, 60][i % 4];
+                    const demoB2B = [937.5, 625, 312.5, 1250][i % 4];
+                    const total = demoB2C + demoB2B;
+                    const potenzial = total * 1.8;
+                    return (
+                      <tr key={vp.id} className="border-b border-border/40 hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{vp.avatar}</div>
+                            <div>
+                              <p className="font-medium text-foreground text-sm">{vp.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{vp.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge variant="outline" className="text-[10px]">{karriere.icon} {karriere.title}</Badge>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge variant={vp.active ? "default" : "secondary"} className={vp.active ? "bg-success text-success-foreground text-[10px]" : "text-[10px]"}>
+                            {vp.active ? "Aktiv" : "Inaktiv"}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right font-medium text-foreground">{demoB2C.toLocaleString("de-DE")} €</td>
+                        <td className="px-4 py-3 text-right font-medium text-foreground">{demoB2B.toLocaleString("de-DE")} €</td>
+                        <td className="px-4 py-3 text-right font-bold text-foreground">{total.toLocaleString("de-DE")} €</td>
+                        <td className="px-4 py-3 text-right text-muted-foreground">{potenzial.toLocaleString("de-DE")} €</td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => setSelectedPartner(vp.id)}
+                            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                          >
+                            <Eye className="h-3.5 w-3.5" />Details
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-muted/40 border-t-2 border-border">
+                    <td className="px-4 py-3 font-bold text-foreground" colSpan={3}>Gesamt</td>
+                    <td className="px-4 py-3 text-right font-bold text-foreground">
+                      {[80, 120, 50, 60].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0).toLocaleString("de-DE")} €
+                    </td>
+                    <td className="px-4 py-3 text-right font-bold text-foreground">
+                      {[937.5, 625, 312.5, 1250].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0).toLocaleString("de-DE")} €
+                    </td>
+                    <td className="px-4 py-3 text-right font-bold text-lg text-foreground">
+                      {([80, 120, 50, 60].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0) + [937.5, 625, 312.5, 1250].slice(0, vertriebspartner.length).reduce((s, v) => s + v, 0)).toLocaleString("de-DE")} €
+                    </td>
+                    <td className="px-4 py-3" colSpan={2}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </CRMLayout>
+    );
+  }
+
+  // If admin selected a partner, show back button
+  const selectedVP = selectedPartner ? vertriebspartner.find(u => u.id === selectedPartner) : null;
+
+  const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
   const b2bLeads = SAMPLE_LEADS.filter((l) => l.type === "b2b");
   const b2cBestand = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
   const b2bBestand = b2bLeads.filter((l) => l.status === "b2b_won").length;
@@ -60,7 +198,6 @@ export default function Abrechnungen() {
 
   const gesamtJahr = monthlyChartData.reduce((s, m) => s + m.b2c + m.b2b, 0);
 
-  // Mehrverdienst: what you'd earn at next tier
   const nextB2CStufe = B2C_STAFFEL.find(s => s.provision > currentB2CStufe.provision);
   const nextB2BStufe = B2B_STAFFEL.find(s => s.provision > currentB2BStufe.provision);
   const b2cMehrverdienst = nextB2CStufe ? (nextB2CStufe.provision - currentB2CStufe.provision) * b2cBestand : 0;
@@ -73,8 +210,20 @@ export default function Abrechnungen() {
           <div className="flex items-center gap-2 mb-1">
             <div className="w-10 h-1 rounded-full gradient-brand" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Abrechnungen</h1>
-          <p className="text-sm text-muted-foreground mt-1">Provisionsübersicht, Karriereplan und Abrechnungspotenzial</p>
+          {isAdmin && selectedVP ? (
+            <>
+              <button onClick={() => setSelectedPartner(null)} className="text-xs text-primary hover:underline mb-2 flex items-center gap-1">
+                ← Zurück zur Gesamtübersicht
+              </button>
+              <h1 className="text-2xl font-display font-bold text-foreground">Abrechnung – {selectedVP.name}</h1>
+              <p className="text-sm text-muted-foreground mt-1">Provisionsübersicht und Abrechnungsdetails</p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-display font-bold text-foreground">Abrechnungen</h1>
+              <p className="text-sm text-muted-foreground mt-1">Provisionsübersicht, Karriereplan und Abrechnungspotenzial</p>
+            </>
+          )}
         </div>
 
         {/* Gutschrift-Hinweis */}
