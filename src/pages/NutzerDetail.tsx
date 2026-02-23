@@ -55,6 +55,7 @@ export default function NutzerDetail() {
   const [user, setUser] = useState<CRMUser | undefined>(
     SAMPLE_USERS.find((u) => u.id === id)
   );
+  const [docApprovals, setDocApprovals] = useState<Record<string, "uploaded" | "pending" | "rejected">>({});
 
   if (!user) {
     return (
@@ -264,7 +265,7 @@ export default function NutzerDetail() {
 
             {/* UNTERLAGEN */}
             <TabsContent value="unterlagen" className="space-y-5 mt-0">
-              <SectionCard title="Pflichtdokumente" icon={FileText}>
+              <SectionCard title="Pflichtdokumente – Prüfung & Freigabe" icon={FileText}>
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-muted-foreground">Hochgeladene Dokumente</p>
                   <Badge variant={uploadedCount === REQUIRED_DOCUMENTS.length ? "default" : "outline"} className={uploadedCount === REQUIRED_DOCUMENTS.length ? "bg-[hsl(var(--success))] text-white border-0" : ""}>
@@ -272,35 +273,96 @@ export default function NutzerDetail() {
                   </Badge>
                 </div>
                 <Progress value={(uploadedCount / REQUIRED_DOCUMENTS.length) * 100} className="h-2 mb-5" />
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {REQUIRED_DOCUMENTS.map((doc) => {
                     const uploaded = profile.dokumente[doc.id];
+                    const docStatus = docApprovals[doc.id] || uploaded?.status;
+                    const isApproved = docStatus === "uploaded";
+                    const isPending = docStatus === "pending";
+                    const isRejected = docStatus === "rejected";
+                    const notUploaded = !uploaded;
+
+                    const borderColor = notUploaded
+                      ? "border-destructive/30 bg-destructive/5"
+                      : isApproved
+                      ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
+                      : isRejected
+                      ? "border-destructive/30 bg-destructive/5"
+                      : "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5";
+
                     return (
-                      <div key={doc.id} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
+                      <div key={doc.id} className={`flex items-center justify-between p-3 rounded-lg border ${borderColor}`}>
                         <div className="flex items-center gap-2.5">
-                          {uploaded ? (
-                            uploaded.status === "uploaded" ? <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
-                            : uploaded.status === "pending" ? <Clock className="h-4 w-4 text-amber-500" />
-                            : <AlertCircle className="h-4 w-4 text-destructive" />
+                          {notUploaded ? (
+                            <AlertCircle className="h-4 w-4 text-destructive" />
+                          ) : isApproved ? (
+                            <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
+                          ) : isPending ? (
+                            <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
                           ) : (
-                            <XCircle className="h-4 w-4 text-muted-foreground" />
+                            <AlertCircle className="h-4 w-4 text-destructive" />
                           )}
-                          <span className="text-sm text-foreground">{doc.label}</span>
+                          <div>
+                            <span className="text-sm text-foreground">{doc.label}</span>
+                            {uploaded && (
+                              <p className="text-[10px] text-muted-foreground">{uploaded.name} · {uploaded.date}</p>
+                            )}
+                          </div>
                         </div>
-                        {uploaded ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{uploaded.name} · {uploaded.date}</span>
+                        <div className="flex items-center gap-2">
+                          {notUploaded ? (
+                            <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-destructive/30 text-destructive">
+                              Nicht hochgeladen
+                            </Badge>
+                          ) : (
                             <Badge variant="outline" className={`text-[10px] px-2 py-0.5 ${
-                              uploaded.status === "uploaded" ? "border-[hsl(var(--success))]/30 text-[hsl(var(--success))]"
-                              : uploaded.status === "pending" ? "border-amber-500/30 text-amber-500"
+                              isApproved ? "border-[hsl(var(--success))]/30 text-[hsl(var(--success))]"
+                              : isPending ? "border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]"
                               : "border-destructive/30 text-destructive"
                             }`}>
-                              {uploaded.status === "uploaded" ? "Bestätigt" : uploaded.status === "pending" ? "In Prüfung" : "Abgelehnt"}
+                              {isApproved ? "✓ Freigegeben" : isPending ? "Prüfung ausstehend" : "Abgelehnt"}
                             </Badge>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Nicht hochgeladen</span>
-                        )}
+                          )}
+                          {uploaded && isPending && (
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[11px] px-2.5 border-[hsl(var(--success))]/40 text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/10"
+                                onClick={() => {
+                                  setDocApprovals(prev => ({ ...prev, [doc.id]: "uploaded" }));
+                                  toast({ title: "Freigegeben ✓", description: `„${doc.label}" wurde freigegeben.` });
+                                }}
+                              >
+                                <CheckCircle2 className="h-3 w-3 mr-1" /> Freigeben
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[11px] px-2.5 border-destructive/40 text-destructive hover:bg-destructive/10"
+                                onClick={() => {
+                                  setDocApprovals(prev => ({ ...prev, [doc.id]: "rejected" }));
+                                  toast({ title: "Abgelehnt", description: `„${doc.label}" wurde abgelehnt. Der Partner wird benachrichtigt.` });
+                                }}
+                              >
+                                <XCircle className="h-3 w-3 mr-1" /> Ablehnen
+                              </Button>
+                            </div>
+                          )}
+                          {uploaded && isRejected && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-[11px] px-2.5"
+                              onClick={() => {
+                                setDocApprovals(prev => ({ ...prev, [doc.id]: "pending" }));
+                                toast({ title: "Zurückgesetzt", description: `„${doc.label}" wurde auf Prüfung zurückgesetzt.` });
+                              }}
+                            >
+                              Zurücksetzen
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

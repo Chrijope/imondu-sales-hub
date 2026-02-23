@@ -959,43 +959,39 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
               <div className="space-y-3 max-w-lg">
                 {REQUIRED_DOCUMENTS.map((doc) => {
                   const uploaded = uploadedDocs[doc.id];
+                  // Color logic: not uploaded = red, pending = orange, approved = green, rejected = red
+                  const borderColor = uploaded
+                    ? uploaded.status === "uploaded"
+                      ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
+                      : uploaded.status === "rejected"
+                      ? "border-destructive/30 bg-destructive/5"
+                      : "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5"
+                    : "border-destructive/30 bg-destructive/5";
+                  const iconBg = uploaded
+                    ? uploaded.status === "uploaded"
+                      ? "bg-[hsl(var(--success))]/10"
+                      : uploaded.status === "rejected"
+                      ? "bg-destructive/10"
+                      : "bg-[hsl(var(--warning))]/10"
+                    : "bg-destructive/10";
                   return (
-                    <div
-                      key={doc.id}
-                      className={`p-4 rounded-lg border transition-colors ${
-                        uploaded
-                          ? uploaded.status === "uploaded"
-                            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
-                            : uploaded.status === "rejected"
-                            ? "border-destructive/30 bg-destructive/5"
-                            : "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5"
-                          : "border-border bg-card hover:border-primary/20"
-                      }`}
-                    >
+                    <div key={doc.id} className={`p-4 rounded-lg border transition-colors ${borderColor}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3 min-w-0">
-                          <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                            uploaded
-                              ? uploaded.status === "uploaded"
-                                ? "bg-[hsl(var(--success))]/10"
-                                : uploaded.status === "rejected"
-                                ? "bg-destructive/10"
-                                : "bg-[hsl(var(--warning))]/10"
-                              : "bg-secondary"
-                          }`}>
+                          <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
                             {uploaded ? (
                               uploaded.status === "uploaded" ? <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
                               : uploaded.status === "rejected" ? <AlertCircle className="h-4 w-4 text-destructive" />
                               : <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
                             ) : (
-                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <AlertCircle className="h-4 w-4 text-destructive" />
                             )}
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-semibold text-foreground">{doc.label}</p>
-                              {doc.required && !uploaded && (
-                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-destructive/30 text-destructive">Pflicht</Badge>
+                              {!uploaded && doc.required && (
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-destructive/30 text-destructive">Pflicht – Bitte hochladen</Badge>
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{doc.description}</p>
@@ -1011,25 +1007,27 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                                     ? "border-destructive/30 text-destructive"
                                     : "border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]"
                                 }`}>
-                                  {uploaded.status === "uploaded" ? "Bestätigt" : uploaded.status === "rejected" ? "Abgelehnt" : "In Prüfung"}
+                                  {uploaded.status === "uploaded" ? "✓ Freigegeben" : uploaded.status === "rejected" ? "Abgelehnt – Bitte erneut hochladen" : "Wird durch HR geprüft und freigegeben"}
                                 </Badge>
                               </div>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {uploaded && (
+                          {uploaded && uploaded.status !== "uploaded" && (
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveDoc(doc.id)}>
                               <X className="h-3.5 w-3.5" />
                             </Button>
                           )}
-                          <label>
-                            <Button variant="outline" size="sm" className="pointer-events-none h-8 text-xs gap-1.5">
-                              <Upload className="h-3 w-3" />
-                              {uploaded ? "Ersetzen" : "Hochladen"}
-                            </Button>
-                            <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => handleDocUpload(doc.id, e)} />
-                          </label>
+                          {(!uploaded || uploaded.status === "rejected") && (
+                            <label>
+                              <Button variant="outline" size="sm" className="pointer-events-none h-8 text-xs gap-1.5">
+                                <Upload className="h-3 w-3" />
+                                {uploaded ? "Erneut hochladen" : "Hochladen"}
+                              </Button>
+                              <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => handleDocUpload(doc.id, e)} />
+                            </label>
+                          )}
                         </div>
                       </div>
                     </div>
