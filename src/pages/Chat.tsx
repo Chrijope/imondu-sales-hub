@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import { setChatUnreadCount } from "@/utils/support-notifications";
 import CRMLayout from "@/components/CRMLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -311,8 +313,20 @@ const CHAT_CATEGORIES = [
 
 export default function Chat() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [chats, setChats] = useState<ChatThread[]>(initialChats);
-  const [activeChatId, setActiveChatId] = useState<string>("1");
+  const { currentRoleId } = useUserRole();
+  const isEigentuemer = currentRoleId === "eigentuemer";
+  const isEntwickler = currentRoleId === "entwickler";
+  const isRoleRestricted = isEigentuemer || isEntwickler;
+
+  // For Eigentümer: only show Entwickler chats; for Entwickler: only Eigentümer chats
+  const roleFilteredInitialChats = isEigentuemer
+    ? initialChats.filter(c => c.category === "entwickler")
+    : isEntwickler
+    ? initialChats.filter(c => c.category === "eigentuemer")
+    : initialChats;
+
+  const [chats, setChats] = useState<ChatThread[]>(roleFilteredInitialChats);
+  const [activeChatId, setActiveChatId] = useState<string>(roleFilteredInitialChats[0]?.id || "");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageInput, setMessageInput] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -320,6 +334,12 @@ export default function Chat() {
   const [activeCategory, setActiveCategory] = useState<"alle" | "intern" | "entwickler" | "eigentuemer">("alle");
   const [showArchived, setShowArchived] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Sync unread count to sidebar badge
+  useEffect(() => {
+    const totalUnread = chats.filter(c => !c.archived && c.unread > 0).reduce((sum, c) => sum + c.unread, 0);
+    setChatUnreadCount(totalUnread);
+  }, [chats]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -485,7 +505,8 @@ export default function Chat() {
                 className="pl-9 h-9 text-sm bg-background"
               />
             </div>
-            {/* Category Filter as Dropdown + Archive toggle */}
+            {/* Category Filter - hidden for role-restricted users */}
+            {!isRoleRestricted && (
             <div className="flex items-center gap-2">
               <Select value={activeCategory} onValueChange={(v) => setActiveCategory(v as typeof activeCategory)}>
                 <SelectTrigger className="h-8 text-xs flex-1">
@@ -518,6 +539,7 @@ export default function Chat() {
                 <Archive className="h-3.5 w-3.5" />
               </Button>
             </div>
+            )}
           </div>
 
           <ScrollArea className="flex-1">
@@ -653,8 +675,8 @@ export default function Chat() {
                 )}
               </div>
 
-              {/* Header actions */}
               <div className="flex items-center gap-1">
+                {!isRoleRestricted && (
                 <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setInviteType("teampartner")}>
@@ -693,6 +715,7 @@ export default function Chat() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                )}
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
