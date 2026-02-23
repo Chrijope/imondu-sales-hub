@@ -14,143 +14,10 @@ import {
   Trophy,
   Star,
   BookOpen,
+  FileQuestion,
+  Award,
 } from "lucide-react";
-
-interface Lesson {
-  id: string;
-  title: string;
-  duration: string;
-  completed: boolean;
-  locked: boolean;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  description: string;
-  lessons: Lesson[];
-}
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  category: string;
-  modules: Module[];
-  totalDuration: string;
-}
-
-const COURSES: Course[] = [
-  {
-    id: "onboarding",
-    title: "Onboarding – Dein Start bei imondu",
-    description: "Lerne die Basics: Plattform, Tools und erste Schritte als Vertriebspartner.",
-    thumbnail: "🚀",
-    category: "Pflicht",
-    totalDuration: "2h 15min",
-    modules: [
-      {
-        id: "m1",
-        title: "Willkommen bei imondu",
-        description: "Überblick über die Plattform",
-        lessons: [
-          { id: "l1", title: "Was ist imondu?", duration: "8:30", completed: true, locked: false },
-          { id: "l2", title: "Dein Dashboard erklärt", duration: "12:00", completed: true, locked: false },
-          { id: "l3", title: "Dein erster Lead", duration: "15:00", completed: false, locked: false },
-        ],
-      },
-      {
-        id: "m2",
-        title: "Das CRM nutzen",
-        description: "Kontakte, Pipeline & Leads verwalten",
-        lessons: [
-          { id: "l4", title: "Kontakte anlegen & verwalten", duration: "10:00", completed: false, locked: false },
-          { id: "l5", title: "Pipeline-Management", duration: "14:00", completed: false, locked: false },
-          { id: "l6", title: "Follow-Up Strategie", duration: "11:00", completed: false, locked: true },
-        ],
-      },
-      {
-        id: "m3",
-        title: "Abschluss & Zertifikat",
-        description: "Quiz und Zertifikat erhalten",
-        lessons: [
-          { id: "l7", title: "Quiz: CRM Grundlagen", duration: "5:00", completed: false, locked: true },
-          { id: "l8", title: "Dein Zertifikat 🎓", duration: "2:00", completed: false, locked: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: "b2c-mastery",
-    title: "B2C Mastery – Eigentümer gewinnen",
-    description: "Fortgeschrittene Techniken zur Eigentümer-Akquise und Inserat-Optimierung.",
-    thumbnail: "🏠",
-    category: "Vertrieb",
-    totalDuration: "3h 40min",
-    modules: [
-      {
-        id: "m4",
-        title: "Eigentümer ansprechen",
-        description: "Gesprächsleitfäden und Best Practices",
-        lessons: [
-          { id: "l9", title: "Der perfekte Erstkontakt", duration: "18:00", completed: true, locked: false },
-          { id: "l10", title: "Einwandbehandlung", duration: "22:00", completed: false, locked: false },
-          { id: "l11", title: "Vom Lead zum Inserat", duration: "20:00", completed: false, locked: false },
-        ],
-      },
-      {
-        id: "m5",
-        title: "Inserate optimieren",
-        description: "Mehr Sichtbarkeit und bessere Ergebnisse",
-        lessons: [
-          { id: "l12", title: "Professionelle Objektfotos", duration: "15:00", completed: false, locked: true },
-          { id: "l13", title: "Inserat-Texte die verkaufen", duration: "12:00", completed: false, locked: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: "b2b-pro",
-    title: "B2B Pro – Partner akquirieren",
-    description: "Handwerksbetriebe und Dienstleister als Partner gewinnen.",
-    thumbnail: "🤝",
-    category: "Vertrieb",
-    totalDuration: "2h 50min",
-    modules: [
-      {
-        id: "m6",
-        title: "B2B Akquise Grundlagen",
-        description: "Zielgruppe und Ansprache",
-        lessons: [
-          { id: "l14", title: "Zielgruppen-Analyse", duration: "14:00", completed: false, locked: false },
-          { id: "l15", title: "Kaltakquise Masterclass", duration: "25:00", completed: false, locked: false },
-          { id: "l16", title: "Pitch-Deck & Präsentation", duration: "18:00", completed: false, locked: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: "leadership",
-    title: "Leadership – Team aufbauen",
-    description: "Lerne wie du ein erfolgreiches Vertriebsteam aufbaust und führst.",
-    thumbnail: "👑",
-    category: "Führung",
-    totalDuration: "4h 10min",
-    modules: [
-      {
-        id: "m7",
-        title: "Recruiting & Onboarding",
-        description: "Die richtigen Partner finden",
-        lessons: [
-          { id: "l17", title: "Wo finde ich Partner?", duration: "16:00", completed: false, locked: false },
-          { id: "l18", title: "Das Erstgespräch führen", duration: "20:00", completed: false, locked: false },
-          { id: "l19", title: "Onboarding-Prozess", duration: "22:00", completed: false, locked: true },
-        ],
-      },
-    ],
-  },
-];
+import { COURSES, type Course } from "@/data/academy-courses";
 
 function CourseCard({ course, onSelect }: { course: Course; onSelect: () => void }) {
   const allLessons = course.modules.flatMap((m) => m.lessons);
@@ -165,8 +32,10 @@ function CourseCard({ course, onSelect }: { course: Course; onSelect: () => void
       <div className="flex items-start gap-4">
         <div className="text-4xl shrink-0">{course.thumbnail}</div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Badge variant="secondary" className="text-[10px]">{course.category}</Badge>
+            {course.mandatory && <Badge variant="destructive" className="text-[10px]">Pflicht</Badge>}
+            {course.hasCertificate && <Badge variant="outline" className="text-[10px] gap-1"><Award className="h-2.5 w-2.5" />Zertifikat</Badge>}
             <span className="text-[11px] text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" /> {course.totalDuration}
             </span>
@@ -194,8 +63,13 @@ function CourseDetail({ course, onBack }: { course: Course; onBack: () => void }
   const progress = Math.round((completedCount / allLessons.length) * 100);
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
 
+  const activeLessonData = allLessons.find((l) => l.id === activeLesson);
+
   const toggleModule = (id: string) =>
     setOpenModules((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
+
+  const isQuizLesson = (lessonId: string) => lessonId.includes("l32") || lessonId.includes("l33");
+  const isCertLesson = (lessonId: string) => lessonId.includes("l34") || lessonId.includes("l8");
 
   return (
     <div className="space-y-5">
@@ -206,14 +80,24 @@ function CourseDetail({ course, onBack }: { course: Course; onBack: () => void }
       {/* Video player placeholder */}
       <div className="bg-foreground/5 rounded-xl aspect-video flex items-center justify-center border border-border relative overflow-hidden">
         {activeLesson ? (
-          <div className="text-center">
-            <div className="h-16 w-16 rounded-full gradient-brand flex items-center justify-center mx-auto mb-3">
-              <Play className="h-7 w-7 text-primary-foreground ml-1" />
+          <div className="text-center px-6">
+            <div className={`h-16 w-16 rounded-full ${isCertLesson(activeLesson) ? "bg-warning/20" : isQuizLesson(activeLesson) ? "bg-accent" : "gradient-brand"} flex items-center justify-center mx-auto mb-3`}>
+              {isCertLesson(activeLesson) ? (
+                <Award className="h-7 w-7 text-warning" />
+              ) : isQuizLesson(activeLesson) ? (
+                <FileQuestion className="h-7 w-7 text-primary" />
+              ) : (
+                <Play className="h-7 w-7 text-primary-foreground ml-1" />
+              )}
             </div>
-            <p className="text-sm font-medium text-foreground">
-              {allLessons.find((l) => l.id === activeLesson)?.title}
+            <p className="text-sm font-medium text-foreground">{activeLessonData?.title}</p>
+            {activeLessonData?.description && (
+              <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto">{activeLessonData.description}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-3 italic">
+              {isCertLesson(activeLesson) ? "Zertifikat wird nach bestandener Prüfung freigeschaltet…" :
+               isQuizLesson(activeLesson) ? "Quiz wird geladen…" : "Video wird geladen…"}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Video wird geladen…</p>
           </div>
         ) : (
           <div className="text-center">
@@ -223,6 +107,23 @@ function CourseDetail({ course, onBack }: { course: Course; onBack: () => void }
           </div>
         )}
       </div>
+
+      {/* Certificate banner for mandatory courses */}
+      {course.hasCertificate && (
+        <div className={`rounded-xl p-4 border flex items-center gap-3 ${progress === 100 ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5" : "border-warning/30 bg-warning/5"}`}>
+          <Award className={`h-5 w-5 shrink-0 ${progress === 100 ? "text-[hsl(var(--success))]" : "text-warning"}`} />
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              {progress === 100 ? "Zertifikat erhalten! 🎉" : "Zertifikat: Geprüfter imondu Vertriebspartner"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {progress === 100
+                ? "Du hast den Kurs abgeschlossen und dein Zertifikat erhalten. Das Backoffice ist vollständig freigeschaltet."
+                : "Schließe alle Lektionen ab und bestehe die Abschlussprüfung, um dein Zertifikat zu erhalten und das Backoffice freizuschalten."}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="bg-card rounded-xl p-4 shadow-crm-sm border border-border">
@@ -279,10 +180,15 @@ function CourseDetail({ course, onBack }: { course: Course; onBack: () => void }
                       ) : (
                         <Play className="h-4 w-4 text-primary shrink-0" />
                       )}
-                      <span className={`text-sm flex-1 ${lesson.completed ? "text-muted-foreground" : "text-foreground"}`}>
-                        {lesson.title}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{lesson.duration}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm block ${lesson.completed ? "text-muted-foreground" : "text-foreground"}`}>
+                          {lesson.title}
+                        </span>
+                        {lesson.description && activeLesson === lesson.id && (
+                          <span className="text-[11px] text-muted-foreground block mt-0.5">{lesson.description}</span>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground shrink-0">{lesson.duration}</span>
                     </button>
                   ))}
                 </div>

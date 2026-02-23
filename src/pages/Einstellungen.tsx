@@ -98,6 +98,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: "gewerbe", label: "Gewerbedaten hinterlegen", description: "Trage deine Unternehmensdaten ein", tab: "gewerbe" },
   { id: "finanzen", label: "Steuer & Bankdaten", description: "Hinterlege deine Steuer- und Bankdaten", tab: "finanzen" },
   { id: "unterlagen", label: "Unterlagen hochladen", description: "Lade alle Pflichtdokumente hoch", tab: "unterlagen" },
+  { id: "academy", label: "Academy – Onboarding-Kurs", description: "Schließe den Backoffice-Kurs ab & erhalte dein Zertifikat", tab: "academy" },
 ];
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -558,7 +559,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                   return (
                     <button
                       key={step.id}
-                      onClick={() => { setActiveTab(step.tab); }}
+                      onClick={() => { step.tab === "academy" ? window.location.href = "/academy" : setActiveTab(step.tab); }}
                       className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
                         done
                           ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
@@ -589,8 +590,8 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Einrichtung abgeschlossen!</p>
-                <p className="text-xs text-muted-foreground">Bitte schließe jetzt den Onboarding-Kurs in der Academy ab, um das Backoffice vollständig nutzen zu können.</p>
+                <p className="text-sm font-semibold text-foreground">Onboarding abgeschlossen! 🎉</p>
+                <p className="text-xs text-muted-foreground">Du hast alle Schritte erledigt und den Onboarding-Kurs bestanden. Das Backoffice ist vollständig freigeschaltet.</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
