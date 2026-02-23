@@ -388,7 +388,8 @@ function CourseDetail({
               </button>
               {isOpen && (
                 <div className="border-t border-border/60">
-                  {mod.lessons.map((lesson) => {
+                  {/* Unsectioned lessons */}
+                  {mod.lessons.filter(l => !l.sectionId).map((lesson) => {
                     const isDraft = lesson.status === "draft";
                     const isDisabled = lesson.locked || isDraft;
                     return (
@@ -425,6 +426,57 @@ function CourseDetail({
                         <span className="text-xs text-muted-foreground shrink-0">{lesson.duration}</span>
                       )}
                     </button>
+                    );
+                  })}
+                  {/* Sections with their lessons */}
+                  {(mod.sections || []).map((section) => {
+                    const sectionLessons = mod.lessons.filter(l => l.sectionId === section.id);
+                    return (
+                      <div key={section.id}>
+                        <div className="px-5 py-2 bg-accent/20 border-t border-border/40">
+                          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{section.title}</p>
+                          {section.description && <p className="text-[10px] text-muted-foreground">{section.description}</p>}
+                        </div>
+                        {sectionLessons.map((lesson) => {
+                          const isDraft = lesson.status === "draft";
+                          const isDisabled = lesson.locked || isDraft;
+                          return (
+                          <button
+                            key={lesson.id}
+                            disabled={isDisabled}
+                            onClick={() => !isDisabled && onOpenLesson(lesson.id)}
+                            className={`w-full flex items-center gap-3 px-5 pl-8 py-3 text-left transition-colors ${
+                              isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-secondary/20"
+                            }`}
+                          >
+                            {isDraft ? (
+                              <Clock className="h-4 w-4 text-warning shrink-0" />
+                            ) : lesson.completed ? (
+                              <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                            ) : lesson.locked ? (
+                              <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+                            ) : (
+                              <Play className="h-4 w-4 text-primary shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <span className={`text-sm block ${isDraft ? "text-muted-foreground italic" : lesson.completed ? "text-muted-foreground" : "text-foreground"}`}>
+                                {lesson.title}
+                              </span>
+                              {isDraft ? (
+                                <span className="text-[11px] text-warning font-medium block mt-0.5">Bald verfügbar</span>
+                              ) : lesson.description ? (
+                                <span className="text-[11px] text-muted-foreground block mt-0.5 line-clamp-1">{lesson.description}</span>
+                              ) : null}
+                            </div>
+                            {isDraft ? (
+                              <Badge variant="outline" className="text-[10px] text-warning border-warning/30 shrink-0">Bald verfügbar</Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground shrink-0">{lesson.duration}</span>
+                            )}
+                          </button>
+                          );
+                        })}
+                      </div>
                     );
                   })}
                 </div>
