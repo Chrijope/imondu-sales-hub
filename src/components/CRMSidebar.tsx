@@ -14,7 +14,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { getSupportUnreadCount, getHelpdeskUnreadCount } from "@/utils/support-notifications";
+import { getSupportUnreadCount, getHelpdeskUnreadCount, getChatUnreadCount } from "@/utils/support-notifications";
 
 // ── Menu-ID mapping ──
 const PATH_TO_MENU_ID: Record<string, string> = {
@@ -278,12 +278,14 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
   const { currentRoleId, setCurrentRoleId, allowedMenuItems, roles } = useUserRole();
   const [supportUnread, setSupportUnread] = useState(0);
   const [helpdeskUnread, setHelpdeskUnread] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
 
   // Poll unread counts
   useEffect(() => {
     const update = () => {
       setSupportUnread(getSupportUnreadCount());
       setHelpdeskUnread(getHelpdeskUnreadCount());
+      setChatUnread(getChatUnreadCount());
     };
     update();
     const interval = setInterval(update, 2000);
@@ -408,7 +410,7 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
               {showMarketing && <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" collapsed={collapsed} />}
               {toolItems.map((item) => (
                 <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
-                  badgeCount={item.path === "/support-ki" ? supportUnread : undefined} />
+                  badgeCount={item.path === "/support-ki" ? supportUnread : item.path === "/chat" ? chatUnread : undefined} />
               ))}
             </SectionGroup>
           );

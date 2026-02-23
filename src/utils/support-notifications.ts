@@ -70,6 +70,23 @@ export function clearHelpdeskUnread() {
   setHelpdeskUnreadCount(0);
 }
 
+// ── Chat Unread Count ──
+
+const CHAT_UNREAD_KEY = "chat-unread-count";
+
+export function getChatUnreadCount(): number {
+  try {
+    return parseInt(localStorage.getItem(CHAT_UNREAD_KEY) || "4", 10);
+  } catch {
+    return 4;
+  }
+}
+
+export function setChatUnreadCount(count: number) {
+  localStorage.setItem(CHAT_UNREAD_KEY, String(count));
+  window.dispatchEvent(new Event("storage"));
+}
+
 // ── Hook helper to listen for changes ──
 export function useUnreadListener(callback: () => void) {
   // Call this in useEffect with storage + focus listeners
