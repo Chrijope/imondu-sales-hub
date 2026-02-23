@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import CRMLayout from "@/components/CRMLayout";
@@ -24,8 +24,12 @@ import {
   UserPlus, Search, ChevronRight, Mail, Phone, MapPin,
   CheckCircle2, Clock, XCircle, Eye, UserCheck, GraduationCap,
   Brain, ArrowRight, Calendar, FileText, Star, Users, CalendarIcon,
-  ExternalLink, Upload,
+  ExternalLink, Upload, Briefcase, Plus, Edit3, Building2,
 } from "lucide-react";
+import {
+  getStoredStellen, saveStellen, STELLEN_STATUS_LABELS, STELLEN_STATUS_COLORS,
+  type Stellenprofil, type StellenStatus,
+} from "@/data/stellenprofile-data";
 
 // ── Pipeline-Stufen ──
 const PIPELINE_STAGES = [
@@ -558,6 +562,15 @@ export default function Bewerbungsmanagement() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [newForm, setNewForm] = useState({ vorname: "", nachname: "", email: "", telefon: "", ort: "", erfahrung: "", motivation: "", quelle: "" });
+  const [mainTab, setMainTab] = useState<"bewerber" | "stellen">("bewerber");
+
+  // Stellen state
+  const [stellen, setStellen] = useState<Stellenprofil[]>(getStoredStellen);
+  const [stellenDialogOpen, setStellenDialogOpen] = useState(false);
+  const [editingStelleId, setEditingStelleId] = useState<string | null>(null);
+  const [stelleForm, setStelleForm] = useState({ titel: "", abteilung: "", standort: "", beschaeftigungsart: "", beschreibung: "", anforderungen: "", benefits: "", status: "entwurf" as StellenStatus });
+
+  useEffect(() => { saveStellen(stellen); }, [stellen]);
 
   const selected = bewerber.find((b) => b.id === selectedId);
 
@@ -601,6 +614,36 @@ export default function Bewerbungsmanagement() {
     toast({ title: "Bewerber hinzugefügt", description: `${nb.vorname} ${nb.nachname} wurde erfasst.` });
   };
 
+  // Stellen handlers
+  const openNewStelle = () => {
+    setEditingStelleId(null);
+    setStelleForm({ titel: "", abteilung: "", standort: "", beschaeftigungsart: "", beschreibung: "", anforderungen: "", benefits: "", status: "entwurf" });
+    setStellenDialogOpen(true);
+  };
+  const openEditStelle = (s: Stellenprofil) => {
+    setEditingStelleId(s.id);
+    setStelleForm({ titel: s.titel, abteilung: s.abteilung, standort: s.standort, beschaeftigungsart: s.beschaeftigungsart, beschreibung: s.beschreibung, anforderungen: s.anforderungen, benefits: s.benefits, status: s.status });
+    setStellenDialogOpen(true);
+  };
+  const handleSaveStelle = () => {
+    if (!stelleForm.titel) return;
+    if (editingStelleId) {
+      setStellen((prev) => prev.map((s) => s.id === editingStelleId ? {
+        ...s, ...stelleForm,
+        veroeffentlichtAm: stelleForm.status === "veroeffentlicht" && s.status !== "veroeffentlicht" ? new Date().toISOString().slice(0, 10) : s.veroeffentlichtAm,
+      } : s));
+      toast({ title: "Stelle aktualisiert ✓" });
+    } else {
+      const ns: Stellenprofil = {
+        id: `s${Date.now()}`, ...stelleForm, erstelltAm: new Date().toISOString().slice(0, 10),
+        veroeffentlichtAm: stelleForm.status === "veroeffentlicht" ? new Date().toISOString().slice(0, 10) : undefined,
+      };
+      setStellen((prev) => [ns, ...prev]);
+      toast({ title: "Stelle erstellt ✓" });
+    }
+    setStellenDialogOpen(false);
+  };
+
   // KPIs
   const countByStage = (s: string) => bewerber.filter((b) => b.stage === s).length;
   const kpis = [
@@ -636,12 +679,30 @@ export default function Bewerbungsmanagement() {
                 <div>
                   <div className="flex items-center gap-2 mb-1"><div className="w-10 h-1 rounded-full gradient-brand" /></div>
                   <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Bewerbungsmanagement</h1>
-                  <p className="text-sm text-muted-foreground mt-1">Bewerber verwalten, Persönlichkeitstest durchführen & als Nutzer freischalten</p>
+                  <p className="text-sm text-muted-foreground mt-1">Bewerber verwalten, Stellenprofile erstellen & als Nutzer freischalten</p>
                 </div>
-                <Button onClick={() => setNewDialogOpen(true)} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm">
-                  <UserPlus className="h-4 w-4" /> Bewerber erfassen
-                </Button>
+                <div className="flex items-center gap-2">
+                  {mainTab === "stellen" && (
+                    <Button onClick={openNewStelle} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm">
+                      <Plus className="h-4 w-4" /> Neue Stelle
+                    </Button>
+                  )}
+                  {mainTab === "bewerber" && (
+                    <Button onClick={() => setNewDialogOpen(true)} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm">
+                      <UserPlus className="h-4 w-4" /> Bewerber erfassen
+                    </Button>
+                  )}
+                </div>
               </div>
+
+              {/* Main Tabs */}
+              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "bewerber" | "stellen")}>
+                <TabsList>
+                  <TabsTrigger value="bewerber" className="text-sm gap-1.5"><Users className="h-3.5 w-3.5" /> Bewerber ({bewerber.length})</TabsTrigger>
+                  <TabsTrigger value="stellen" className="text-sm gap-1.5"><Briefcase className="h-3.5 w-3.5" /> Stellenprofile ({stellen.length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="bewerber" className="mt-4 space-y-5">
 
               {/* KPIs */}
               <div className="grid grid-cols-4 gap-4">
@@ -783,6 +844,64 @@ export default function Bewerbungsmanagement() {
                   </tbody>
                 </table>
               </div>
+              </TabsContent>
+
+              {/* Stellenprofile Tab */}
+              <TabsContent value="stellen" className="mt-4 space-y-4">
+                {/* Stellen KPIs */}
+                <div className="grid grid-cols-4 gap-4">
+                  {([["veroeffentlicht", "Veröffentlicht"], ["entwurf", "Entwurf"], ["besetzt", "Besetzt"], ["geschlossen", "Geschlossen"]] as const).map(([status, label]) => (
+                    <div key={status} className="glass-card rounded-xl p-4 text-center">
+                      <p className="text-2xl font-display font-bold text-foreground">{stellen.filter((s) => s.status === status).length}</p>
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Stellen Liste */}
+                <div className="glass-card rounded-xl overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-secondary/30">
+                        <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Titel</th>
+                        <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Abteilung</th>
+                        <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Standort</th>
+                        <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Art</th>
+                        <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th className="text-left py-3 px-4 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Erstellt</th>
+                        <th className="py-3 px-4" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stellen.map((s) => (
+                        <tr key={s.id} className="border-b border-border/50 hover:bg-secondary/20 cursor-pointer transition-colors" onClick={() => openEditStelle(s)}>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="h-4 w-4 text-primary shrink-0" />
+                              <span className="font-medium text-foreground">{s.titel}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-xs text-muted-foreground">{s.abteilung}</td>
+                          <td className="py-3 px-4 text-xs text-muted-foreground">{s.standort}</td>
+                          <td className="py-3 px-4 text-xs text-muted-foreground">{s.beschaeftigungsart}</td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline" className="text-[10px] gap-1">
+                              <span className={`h-2 w-2 rounded-full ${STELLEN_STATUS_COLORS[s.status]}`} />
+                              {STELLEN_STATUS_LABELS[s.status]}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-xs text-muted-foreground">{new Date(s.erstelltAm).toLocaleDateString("de-DE")}</td>
+                          <td className="py-3 px-4"><Edit3 className="h-4 w-4 text-muted-foreground" /></td>
+                        </tr>
+                      ))}
+                      {stellen.length === 0 && (
+                        <tr><td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">Keine Stellenprofile vorhanden.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+              </Tabs>
             </>
           )}
         </div>
@@ -797,50 +916,60 @@ export default function Bewerbungsmanagement() {
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Vorname *</Label>
-                <Input value={newForm.vorname} onChange={(e) => setNewForm((p) => ({ ...p, vorname: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Nachname *</Label>
-                <Input value={newForm.nachname} onChange={(e) => setNewForm((p) => ({ ...p, nachname: e.target.value }))} />
-              </div>
+              <div className="space-y-1.5"><Label className="text-sm font-semibold">Vorname *</Label><Input value={newForm.vorname} onChange={(e) => setNewForm((p) => ({ ...p, vorname: e.target.value }))} /></div>
+              <div className="space-y-1.5"><Label className="text-sm font-semibold">Nachname *</Label><Input value={newForm.nachname} onChange={(e) => setNewForm((p) => ({ ...p, nachname: e.target.value }))} /></div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">E-Mail *</Label>
-              <Input type="email" value={newForm.email} onChange={(e) => setNewForm((p) => ({ ...p, email: e.target.value }))} />
-            </div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">E-Mail *</Label><Input type="email" value={newForm.email} onChange={(e) => setNewForm((p) => ({ ...p, email: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Telefon</Label>
-                <Input value={newForm.telefon} onChange={(e) => setNewForm((p) => ({ ...p, telefon: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold">Ort</Label>
-                <Input value={newForm.ort} onChange={(e) => setNewForm((p) => ({ ...p, ort: e.target.value }))} />
-              </div>
+              <div className="space-y-1.5"><Label className="text-sm font-semibold">Telefon</Label><Input value={newForm.telefon} onChange={(e) => setNewForm((p) => ({ ...p, telefon: e.target.value }))} /></div>
+              <div className="space-y-1.5"><Label className="text-sm font-semibold">Ort</Label><Input value={newForm.ort} onChange={(e) => setNewForm((p) => ({ ...p, ort: e.target.value }))} /></div>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold">Quelle</Label>
-              <Select value={newForm.quelle} onValueChange={(v) => setNewForm((p) => ({ ...p, quelle: v }))}>
-                <SelectTrigger><SelectValue placeholder="Quelle wählen" /></SelectTrigger>
+              <Select value={newForm.quelle} onValueChange={(v) => setNewForm((p) => ({ ...p, quelle: v }))}><SelectTrigger><SelectValue placeholder="Quelle wählen" /></SelectTrigger><SelectContent>{QUELLEN.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}</SelectContent></Select>
+            </div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Erfahrung</Label><Input value={newForm.erfahrung} onChange={(e) => setNewForm((p) => ({ ...p, erfahrung: e.target.value }))} placeholder="z.B. 3 Jahre Vertrieb" /></div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Motivation</Label><Textarea value={newForm.motivation} onChange={(e) => setNewForm((p) => ({ ...p, motivation: e.target.value }))} rows={3} className="resize-none" placeholder="Warum bewirbt sich die Person?" /></div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Abbrechen</Button>
+              <Button onClick={handleNewBewerber} disabled={!newForm.vorname || !newForm.nachname || !newForm.email} className="gap-2 gradient-brand border-0 text-white"><UserPlus className="h-4 w-4" /> Erfassen</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stelle erstellen/bearbeiten Dialog */}
+      <Dialog open={stellenDialogOpen} onOpenChange={setStellenDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingStelleId ? "Stelle bearbeiten" : "Neue Stelle erstellen"}</DialogTitle>
+            <DialogDescription>Erstelle ein Stellenprofil – nur veröffentlichte Stellen sind für Bewerber sichtbar.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Titel *</Label><Input value={stelleForm.titel} onChange={(e) => setStelleForm((p) => ({ ...p, titel: e.target.value }))} placeholder="z.B. Vertriebspartner (m/w/d)" /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5"><Label className="text-sm font-semibold">Abteilung</Label><Input value={stelleForm.abteilung} onChange={(e) => setStelleForm((p) => ({ ...p, abteilung: e.target.value }))} placeholder="z.B. Vertrieb" /></div>
+              <div className="space-y-1.5"><Label className="text-sm font-semibold">Standort</Label><Input value={stelleForm.standort} onChange={(e) => setStelleForm((p) => ({ ...p, standort: e.target.value }))} placeholder="z.B. München / Remote" /></div>
+            </div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Beschäftigungsart</Label><Input value={stelleForm.beschaeftigungsart} onChange={(e) => setStelleForm((p) => ({ ...p, beschaeftigungsart: e.target.value }))} placeholder="z.B. Vollzeit, Teilzeit, Freelancer" /></div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Beschreibung</Label><Textarea value={stelleForm.beschreibung} onChange={(e) => setStelleForm((p) => ({ ...p, beschreibung: e.target.value }))} rows={3} className="resize-none" placeholder="Aufgabenbeschreibung…" /></div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Anforderungen</Label><Textarea value={stelleForm.anforderungen} onChange={(e) => setStelleForm((p) => ({ ...p, anforderungen: e.target.value }))} rows={2} className="resize-none" placeholder="Was bringt der Kandidat mit?" /></div>
+            <div className="space-y-1.5"><Label className="text-sm font-semibold">Benefits</Label><Textarea value={stelleForm.benefits} onChange={(e) => setStelleForm((p) => ({ ...p, benefits: e.target.value }))} rows={2} className="resize-none" placeholder="Was bieten wir?" /></div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Status</Label>
+              <Select value={stelleForm.status} onValueChange={(v) => setStelleForm((p) => ({ ...p, status: v as StellenStatus }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {QUELLEN.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+                  {(Object.entries(STELLEN_STATUS_LABELS) as [StellenStatus, string][]).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Erfahrung</Label>
-              <Input value={newForm.erfahrung} onChange={(e) => setNewForm((p) => ({ ...p, erfahrung: e.target.value }))} placeholder="z.B. 3 Jahre Vertrieb" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">Motivation</Label>
-              <Textarea value={newForm.motivation} onChange={(e) => setNewForm((p) => ({ ...p, motivation: e.target.value }))} rows={3} className="resize-none" placeholder="Warum bewirbt sich die Person?" />
-            </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Abbrechen</Button>
-              <Button onClick={handleNewBewerber} disabled={!newForm.vorname || !newForm.nachname || !newForm.email} className="gap-2 gradient-brand border-0 text-white">
-                <UserPlus className="h-4 w-4" /> Erfassen
+              <Button variant="outline" onClick={() => setStellenDialogOpen(false)}>Abbrechen</Button>
+              <Button onClick={handleSaveStelle} disabled={!stelleForm.titel} className="gap-2 gradient-brand border-0 text-white">
+                <CheckCircle2 className="h-4 w-4" /> {editingStelleId ? "Speichern" : "Erstellen"}
               </Button>
             </div>
           </div>
