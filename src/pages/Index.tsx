@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import EigentuemerDashboard from "@/components/EigentuemerDashboard";
 import {
   BarChart,
   Bar,
@@ -86,7 +88,18 @@ function useInboxTasks() {
 }
 
 export default function Dashboard() {
+  const { currentRoleId } = useUserRole();
   const inboxTasks = useInboxTasks();
+
+  // Eigentümer gets a completely different dashboard
+  if (currentRoleId === "eigentuemer") {
+    return (
+      <CRMLayout>
+        <EigentuemerDashboard />
+      </CRMLayout>
+    );
+  }
+
   const pendingTasks = inboxTasks.filter((t) => !t.done).slice(0, 4);
 
   const b2cLeads = SAMPLE_LEADS.filter((l) => l.type === "b2c");
