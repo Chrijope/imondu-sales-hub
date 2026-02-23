@@ -148,7 +148,7 @@ export default function WebinarEntwickler() {
 
           <div className="relative max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
             <div className="flex justify-center mb-8">
-              <img src={imonduLogo} alt="IMONDU" className={`h-12 ${isDark ? '' : 'brightness-0'}`} />
+              <img src={imonduLogo} alt="IMONDU" className={`h-12 ${isDark ? 'drop-shadow-[0_0_12px_rgba(134,59,255,0.3)]' : 'invert brightness-0 opacity-85'}`} />
             </div>
 
             <Badge className="mb-6 bg-[#863BFF]/20 text-[#863BFF] border-[#863BFF]/30 hover:bg-[#863BFF]/30 text-sm px-4 py-1.5">
@@ -439,7 +439,7 @@ export default function WebinarEntwickler() {
 
         {/* Footer */}
         <footer className={`py-8 px-6 border-t ${t.footerBorder} text-center`}>
-          <img src={imonduLogo} alt="IMONDU" className={`h-8 mx-auto mb-3 ${t.logoOpacity} ${isDark ? '' : 'brightness-0'}`} />
+          <img src={imonduLogo} alt="IMONDU" className={`h-8 mx-auto mb-3 ${isDark ? 'opacity-60 drop-shadow-[0_0_8px_rgba(134,59,255,0.2)]' : 'invert brightness-0 opacity-70'}`} />
           <p className={`text-xs ${t.textGhost}`}>
             © {new Date().getFullYear()} IMONDU – Die Nr. 1 Plattform für Immobilienentwicklung
           </p>
