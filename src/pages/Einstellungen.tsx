@@ -235,6 +235,138 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
   const uploadedCount = REQUIRED_DOCUMENTS.filter((d) => uploadedDocs[d.id]).length;
   const allDocsUploaded = uploadedCount === REQUIRED_DOCUMENTS.length;
 
+  // HR: Schlanke Einstellungen (Profil, Passwort, Benachrichtigungen)
+  if (currentRoleId === "hr") {
+    return (
+      <CRMLayout>
+        <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+          <div className="max-w-3xl">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-1"><div className="w-10 h-1 rounded-full gradient-brand" /></div>
+              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Einstellungen</h1>
+              <p className="text-sm text-muted-foreground mt-1">Verwalte Dein Profil und Deine Benachrichtigungen.</p>
+            </div>
+
+            <Tabs defaultValue="profil" className="w-full">
+              <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto gap-0">
+                {[
+                  { value: "profil", label: "Profil" },
+                  { value: "passwort", label: "Passwort" },
+                  { value: "benachrichtigungen", label: "Benachrichtigungen" },
+                ].map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2.5 text-sm font-medium text-muted-foreground data-[state=active]:text-foreground"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              <p className="text-xs text-muted-foreground mt-3 mb-6">Diese Einstellungen gelten für Dein HR-Konto.</p>
+
+              {/* Profil */}
+              <TabsContent value="profil" className="space-y-6 mt-0">
+                <Separator />
+                <SectionBlock title="Persönliche Daten" description="Deine Kontaktdaten.">
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-lg">
+                      <Field label="Vorname">
+                        <Input value={profile.vorname} onChange={(e) => update("vorname", e.target.value)} />
+                      </Field>
+                      <Field label="Nachname">
+                        <Input value={profile.nachname} onChange={(e) => update("nachname", e.target.value)} />
+                      </Field>
+                    </div>
+                    <div className="max-w-lg">
+                      <Field label="E-Mail">
+                        <Input type="email" value={profile.email} onChange={(e) => update("email", e.target.value)} />
+                      </Field>
+                    </div>
+                    <div className="max-w-lg">
+                      <Field label="Telefon">
+                        <Input value={profile.telefon} onChange={(e) => update("telefon", e.target.value)} />
+                      </Field>
+                    </div>
+                  </div>
+                </SectionBlock>
+                <div className="flex justify-end pt-2 pb-8">
+                  <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+                    <Save className="h-4 w-4" /> Speichern
+                  </Button>
+                </div>
+              </TabsContent>
+
+              {/* Passwort */}
+              <TabsContent value="passwort" className="space-y-6 mt-0">
+                <Separator />
+                <SectionBlock title="Passwort ändern" description="Ändere Dein Zugangspasswort.">
+                  <div className="grid grid-cols-1 gap-4 max-w-sm">
+                    <Field label="Aktuelles Passwort">
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          value={emailPasswort}
+                          onChange={(e) => setEmailPasswort(e.target.value)}
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </Field>
+                    <Field label="Neues Passwort">
+                      <Input type="password" value={emailPasswortNeu} onChange={(e) => setEmailPasswortNeu(e.target.value)} placeholder="Neues Passwort eingeben" />
+                    </Field>
+                    <Field label="Neues Passwort bestätigen">
+                      <Input type="password" value={emailPasswortNeuConfirm} onChange={(e) => setEmailPasswortNeuConfirm(e.target.value)} placeholder="Neues Passwort wiederholen" />
+                    </Field>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-fit"
+                      disabled={!emailPasswort || !emailPasswortNeu || !emailPasswortNeuConfirm}
+                      onClick={handlePasswordChange}
+                    >
+                      <Key className="h-3.5 w-3.5 mr-1.5" /> Passwort ändern
+                    </Button>
+                  </div>
+                </SectionBlock>
+              </TabsContent>
+
+              {/* Benachrichtigungen */}
+              <TabsContent value="benachrichtigungen" className="space-y-6 mt-0">
+                <Separator />
+                <SectionBlock title="Benachrichtigungen" description="Steuere, wie Du über Neuigkeiten informiert wirst.">
+                  <div className="space-y-4 max-w-lg">
+                    {[
+                      { label: "E-Mail-Benachrichtigungen", desc: "Erhalte Updates zu neuen Bewerbungen per E-Mail." },
+                      { label: "Chat-Benachrichtigungen", desc: "Werde benachrichtigt, wenn Du eine neue Chat-Nachricht erhältst." },
+                      { label: "Bewerber-Status-Updates", desc: "Erhalte eine Benachrichtigung, wenn sich der Status eines Bewerbers ändert." },
+                    ].map((n) => (
+                      <div key={n.label} className="flex items-center justify-between gap-4 p-3 rounded-lg border border-border hover:bg-secondary/30 transition-colors">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{n.label}</p>
+                          <p className="text-xs text-muted-foreground">{n.desc}</p>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+                    ))}
+                  </div>
+                </SectionBlock>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </CRMLayout>
+    );
+  }
+
   // Bewerber: Schlanke Einstellungen
   if (currentRoleId === "bewerber") {
     return (
