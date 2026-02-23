@@ -78,6 +78,14 @@ const PERSONALITY_TYPES: Record<string, { label: string; desc: string; fit: "hoc
 };
 
 // ── Bewerber-Daten ──
+interface OnboardingTermin {
+  id: string;
+  datum: string;
+  uhrzeit: string;
+  standort: string;
+  maxTeilnehmer: number;
+}
+
 interface Bewerber {
   id: string;
   vorname: string;
@@ -99,10 +107,17 @@ interface Bewerber {
   lebenslaufName?: string;
   lebenslaufUrl?: string;
   stelleId?: string;
+  onboardingTerminId?: string;
   onboardingDatum?: string;
   onboardingUhrzeit?: string;
   onboardingStandort?: string;
 }
+
+const INITIAL_ONBOARDING_TERMINE: OnboardingTermin[] = [
+  { id: "ot1", datum: "2026-03-03", uhrzeit: "10:00", standort: "München – Leopoldstraße 42", maxTeilnehmer: 8 },
+  { id: "ot2", datum: "2026-03-10", uhrzeit: "14:00", standort: "Berlin – Friedrichstraße 108", maxTeilnehmer: 6 },
+  { id: "ot3", datum: "2026-03-17", uhrzeit: "09:00", standort: "Hamburg – Jungfernstieg 22", maxTeilnehmer: 10 },
+];
 
 const QUELLEN = ["Empfehlung", "LinkedIn", "Jobportal", "Website", "Social Media", "Messe", "Sonstiges"];
 
@@ -111,7 +126,7 @@ const INITIAL_BEWERBER: Bewerber[] = [
   { id: "b2", vorname: "Sarah", nachname: "Klein", email: "s.klein@web.de", telefon: "+49 176 9876543", ort: "Berlin", beworbenAm: "2026-02-19", stage: "persoenlichkeitstest", notizen: "", erfahrung: "Quereinsteigerin aus dem Marketing", motivation: "Suche eine neue Herausforderung.", quelle: "Jobportal", bewertung: 3, beschaeftigungsart: "nebenberuflich", vertriebsziel: "Zweites Standbein aufbauen", stelleId: "s1" },
   { id: "b3", vorname: "Tim", nachname: "Hoffmann", email: "tim.h@outlook.de", telefon: "+49 152 5551234", ort: "Hamburg", beworbenAm: "2026-02-18", stage: "screening", notizen: "Lebenslauf sieht gut aus.", erfahrung: "5 Jahre B2B-Sales", motivation: "Will im Immobiliensektor Fuß fassen.", quelle: "Empfehlung", bewertung: 5, beschaeftigungsart: "hauptberuflich", vertriebsziel: "Teamleitung innerhalb von 2 Jahren", lebenslaufName: "Tim_Hoffmann_CV.pdf", stelleId: "s2" },
   { id: "b4", vorname: "Julia", nachname: "Richter", email: "julia.r@gmx.de", telefon: "+49 160 7778899", ort: "Köln", beworbenAm: "2026-02-17", stage: "eingang", notizen: "", erfahrung: "Keine Vertriebserfahrung", motivation: "Interesse an Immobilien.", quelle: "Website", stelleId: "s1" },
-  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", quelle: "Empfehlung", bewertung: 5, onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42", beschaeftigungsart: "hauptberuflich", vertriebsziel: "Senior Partner innerhalb von 12 Monaten", stelleId: "s2" },
+  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", quelle: "Empfehlung", bewertung: 5, onboardingTerminId: "ot1", onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42", beschaeftigungsart: "hauptberuflich", vertriebsziel: "Senior Partner innerhalb von 12 Monaten", stelleId: "s2" },
   { id: "b6", vorname: "Anna", nachname: "Meier", email: "a.meier@t-online.de", telefon: "+49 157 6667788", ort: "Stuttgart", beworbenAm: "2026-02-14", stage: "abgelehnt", personalityType: "ISFP", notizen: "Persönlichkeitsprofil passt nicht.", erfahrung: "Grafikdesignerin", motivation: "Nebenjob.", quelle: "Social Media", bewertung: 1, beschaeftigungsart: "nebenberuflich", stelleId: "s3" },
   { id: "b7", vorname: "Lukas", nachname: "Weber", email: "l.weber@yahoo.de", telefon: "+49 179 1112233", ort: "Düsseldorf", beworbenAm: "2026-02-21", stage: "entscheidung", personalityType: "ESTP", notizen: "Zweites Gespräch war sehr gut.", erfahrung: "4 Jahre Vertrieb Telekommunikation", motivation: "Suche mehr Eigenverantwortung.", quelle: "Messe", bewertung: 4, beschaeftigungsart: "angestellt_fixum", vertriebsziel: "Vertriebsleitung mit Team aufbauen", stelleId: "s1" },
 ];
@@ -202,28 +217,28 @@ function PersonalityTest({ onComplete }: { onComplete: (type: string) => void })
 function BewerberDetail({
   bewerber,
   stellen,
+  onboardingTermine,
   onClose,
   onStageChange,
   onPersonalityComplete,
   onActivate,
-  onUpdateOnboarding,
+  onAssignTermin,
   onUpdateField,
 }: {
   bewerber: Bewerber;
   stellen: Stellenprofil[];
+  onboardingTermine: OnboardingTermin[];
   onClose: () => void;
   onStageChange: (id: string, stage: string) => void;
   onPersonalityComplete: (id: string, type: string) => void;
   onActivate: (id: string) => void;
-  onUpdateOnboarding: (id: string, data: { onboardingDatum?: string; onboardingUhrzeit?: string; onboardingStandort?: string }) => void;
+  onAssignTermin: (bewerberId: string, terminId: string | undefined) => void;
   onUpdateField: (id: string, field: keyof Bewerber, value: string | number) => void;
 }) {
   const { toast } = useToast();
   const [tab, setTab] = useState("uebersicht");
-  const [obDate, setObDate] = useState<Date | undefined>(bewerber.onboardingDatum ? new Date(bewerber.onboardingDatum) : undefined);
-  const [obZeit, setObZeit] = useState(bewerber.onboardingUhrzeit || "");
-  const [obStandort, setObStandort] = useState(bewerber.onboardingStandort || "");
   const pType = bewerber.personalityType ? PERSONALITY_TYPES[bewerber.personalityType] : null;
+  const assignedTermin = onboardingTermine.find((t) => t.id === bewerber.onboardingTerminId);
 
   return (
     <div className="space-y-5">
@@ -390,64 +405,52 @@ function BewerberDetail({
           {/* Onboarding-Einladung */}
           <div className="glass-card rounded-xl p-4 space-y-3">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Onboarding-Einladung</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Datum</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left text-xs font-normal h-9", !obDate && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                      {obDate ? format(obDate, "dd.MM.yyyy", { locale: de }) : "Datum wählen"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarWidget mode="single" selected={obDate} onSelect={setObDate} initialFocus className={cn("p-3 pointer-events-auto")} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Uhrzeit</Label>
-                <Input type="time" value={obZeit} onChange={(e) => setObZeit(e.target.value)} className="h-9 text-xs" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Standort</Label>
-                <Input placeholder="z.B. München – Leopoldstraße 42" value={obStandort} onChange={(e) => setObStandort(e.target.value)} className="h-9 text-xs" />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs gap-1.5"
-                onClick={() => {
-                  onUpdateOnboarding(bewerber.id, {
-                    onboardingDatum: obDate ? obDate.toISOString().slice(0, 10) : undefined,
-                    onboardingUhrzeit: obZeit || undefined,
-                    onboardingStandort: obStandort || undefined,
-                  });
-                }}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Onboarding-Termin auswählen</Label>
+              <Select
+                value={bewerber.onboardingTerminId || "none"}
+                onValueChange={(v) => onAssignTermin(bewerber.id, v === "none" ? undefined : v)}
               >
-                <Calendar className="h-3.5 w-3.5" /> Onboarding-Termin speichern
-              </Button>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Termin wählen…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none" className="text-xs">– Kein Termin –</SelectItem>
+                  {onboardingTermine.map((t) => {
+                    const teilnehmer = 0; // Will be computed in parent
+                    return (
+                      <SelectItem key={t.id} value={t.id} className="text-xs">
+                        {new Date(t.datum).toLocaleDateString("de-DE")} · {t.uhrzeit} Uhr · {t.standort} (max. {t.maxTeilnehmer})
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            {assignedTermin && (
+              <div className="p-3 rounded-lg bg-[hsl(var(--success))]/5 border border-[hsl(var(--success))]/20">
+                <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <CalendarIcon className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+                  {new Date(assignedTermin.datum).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+                  <span className="text-muted-foreground font-normal ml-1">{assignedTermin.uhrzeit} Uhr</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1"><MapPin className="h-3 w-3" /> {assignedTermin.standort}</p>
+              </div>
+            )}
+            {assignedTermin && (
               <Button
                 size="sm"
                 className="text-xs gap-1.5 gradient-brand border-0 text-white"
-                disabled={!obDate || !obZeit}
                 onClick={() => {
-                  onUpdateOnboarding(bewerber.id, {
-                    onboardingDatum: obDate ? obDate.toISOString().slice(0, 10) : undefined,
-                    onboardingUhrzeit: obZeit || undefined,
-                    onboardingStandort: obStandort || undefined,
-                  });
                   toast({
                     title: "Einladung versendet ✓",
-                    description: `${bewerber.vorname} ${bewerber.nachname} wurde per Chat und E-Mail zum Onboarding am ${obDate ? format(obDate, "dd.MM.yyyy", { locale: de }) : "–"} um ${obZeit} Uhr eingeladen.`,
+                    description: `${bewerber.vorname} ${bewerber.nachname} wurde per Chat und E-Mail zum Onboarding am ${new Date(assignedTermin.datum).toLocaleDateString("de-DE")} um ${assignedTermin.uhrzeit} Uhr eingeladen.`,
                   });
                 }}
               >
                 <Mail className="h-3.5 w-3.5" /> Einladung senden (Chat & E-Mail)
               </Button>
-            </div>
+            )}
           </div>
         </TabsContent>
 
@@ -574,6 +577,12 @@ export default function Bewerbungsmanagement() {
   const [newForm, setNewForm] = useState({ vorname: "", nachname: "", email: "", telefon: "", ort: "", erfahrung: "", motivation: "", quelle: "" });
   const [mainTab, setMainTab] = useState<"bewerber" | "stellen">("bewerber");
 
+  // Onboarding Termine state
+  const [onboardingTermine, setOnboardingTermine] = useState<OnboardingTermin[]>(INITIAL_ONBOARDING_TERMINE);
+  const [newTerminDialogOpen, setNewTerminDialogOpen] = useState(false);
+  const [newTerminForm, setNewTerminForm] = useState({ datum: "", uhrzeit: "", standort: "", maxTeilnehmer: "8" });
+  const [expandedTerminId, setExpandedTerminId] = useState<string | null>(null);
+
   // Stellen state
   const [stellen, setStellen] = useState<Stellenprofil[]>(getStoredStellen);
   const [stellenDialogOpen, setStellenDialogOpen] = useState(false);
@@ -581,6 +590,33 @@ export default function Bewerbungsmanagement() {
   const [stelleForm, setStelleForm] = useState({ titel: "", abteilung: "", standort: "", beschaeftigungsart: "", beschreibung: "", anforderungen: "", benefits: "", status: "entwurf" as StellenStatus });
 
   useEffect(() => { saveStellen(stellen); }, [stellen]);
+
+  const assignTermin = (bewerberId: string, terminId: string | undefined) => {
+    const termin = terminId ? onboardingTermine.find((t) => t.id === terminId) : undefined;
+    setBewerber((prev) => prev.map((b) => b.id === bewerberId ? {
+      ...b,
+      onboardingTerminId: terminId,
+      onboardingDatum: termin?.datum,
+      onboardingUhrzeit: termin?.uhrzeit,
+      onboardingStandort: termin?.standort,
+    } : b));
+    toast({ title: terminId ? "Onboarding-Termin zugewiesen ✓" : "Onboarding-Termin entfernt" });
+  };
+
+  const handleNewTermin = () => {
+    if (!newTerminForm.datum || !newTerminForm.uhrzeit || !newTerminForm.standort) return;
+    const t: OnboardingTermin = {
+      id: `ot${Date.now()}`,
+      datum: newTerminForm.datum,
+      uhrzeit: newTerminForm.uhrzeit,
+      standort: newTerminForm.standort,
+      maxTeilnehmer: parseInt(newTerminForm.maxTeilnehmer) || 8,
+    };
+    setOnboardingTermine((prev) => [...prev, t]);
+    setNewTerminDialogOpen(false);
+    setNewTerminForm({ datum: "", uhrzeit: "", standort: "", maxTeilnehmer: "8" });
+    toast({ title: "Onboarding-Termin erstellt ✓" });
+  };
 
   const selected = bewerber.find((b) => b.id === selectedId);
 
@@ -670,15 +706,13 @@ export default function Bewerbungsmanagement() {
           {selected ? (
             <BewerberDetail
               stellen={stellen}
+              onboardingTermine={onboardingTermine}
               bewerber={selected}
               onClose={() => setSelectedId(null)}
               onStageChange={stageChange}
               onPersonalityComplete={personalityComplete}
               onActivate={activate}
-              onUpdateOnboarding={(id, data) => {
-                setBewerber((prev) => prev.map((b) => b.id === id ? { ...b, ...data } : b));
-                toast({ title: "Onboarding-Termin gespeichert ✓", description: `Termin wurde für den Bewerber hinterlegt.` });
-              }}
+              onAssignTermin={assignTermin}
               onUpdateField={(id, field, value) => {
                 setBewerber((prev) => prev.map((b) => b.id === id ? { ...b, [field]: value } : b));
               }}
@@ -745,39 +779,86 @@ export default function Bewerbungsmanagement() {
               </div>
 
               {/* Nächste Onboarding-Termine */}
-              {(() => {
-                const onboardings = bewerber
-                  .filter((b) => b.onboardingDatum && b.stage === "onboarding")
-                  .sort((a, b) => (a.onboardingDatum || "").localeCompare(b.onboardingDatum || ""));
-                return onboardings.length > 0 ? (
-                  <div className="glass-card rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <GraduationCap className="h-4 w-4 text-primary" />
-                      <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Nächste Onboarding-Termine</p>
-                    </div>
-                    <div className="space-y-2">
-                      {onboardings.map((b) => (
-                        <div key={b.id} onClick={() => setSelectedId(b.id)} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 border border-border/50 hover:bg-secondary/40 cursor-pointer transition-colors">
-                          <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-white text-xs font-bold shrink-0">
-                            {b.vorname[0]}{b.nachname[0]}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground">{b.vorname} {b.nachname}</p>
-                            <p className="text-xs text-muted-foreground">{b.ort}</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-sm font-semibold text-foreground">
-                              {b.onboardingDatum ? new Date(b.onboardingDatum).toLocaleDateString("de-DE") : "–"}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{b.onboardingUhrzeit || "–"} Uhr · {b.onboardingStandort || "–"}</p>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                        </div>
-                      ))}
-                    </div>
+              <div className="glass-card rounded-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Nächste Onboarding-Termine</p>
                   </div>
-                ) : null;
-              })()}
+                  <Button size="sm" className="text-xs gap-1.5 gradient-brand border-0 text-white" onClick={() => setNewTerminDialogOpen(true)}>
+                    <Plus className="h-3.5 w-3.5" /> Neuer Termin
+                  </Button>
+                </div>
+                <div className="divide-y divide-border/50">
+                  {onboardingTermine
+                    .sort((a, b) => a.datum.localeCompare(b.datum))
+                    .map((termin) => {
+                      const teilnehmer = bewerber.filter((b) => b.onboardingTerminId === termin.id);
+                      const isExpanded = expandedTerminId === termin.id;
+                      return (
+                        <div key={termin.id}>
+                          <button
+                            className={`w-full text-left px-4 py-3 hover:bg-secondary/20 transition-colors ${isExpanded ? "bg-secondary/20" : ""}`}
+                            onClick={() => setExpandedTerminId(isExpanded ? null : termin.id)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-[hsl(var(--success))]/10 flex items-center justify-center">
+                                  <CalendarIcon className="h-5 w-5 text-[hsl(var(--success))]" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {new Date(termin.datum).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+                                    <span className="text-muted-foreground font-normal ml-2">{termin.uhrzeit} Uhr</span>
+                                  </p>
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                    <MapPin className="h-3 w-3" /> {termin.standort}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs text-muted-foreground">
+                                  {teilnehmer.length} / {termin.maxTeilnehmer} Teilnehmer
+                                </span>
+                                {isExpanded ? <ChevronRight className="h-4 w-4 text-muted-foreground rotate-90 transition-transform" /> : <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />}
+                              </div>
+                            </div>
+                          </button>
+                          {isExpanded && (
+                            <div className="px-4 pb-3">
+                              {teilnehmer.length > 0 ? (
+                                <div className="space-y-1.5">
+                                  {teilnehmer.map((b) => (
+                                    <div
+                                      key={b.id}
+                                      onClick={() => setSelectedId(b.id)}
+                                      className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 cursor-pointer transition-colors"
+                                    >
+                                      <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                        {b.vorname[0]}{b.nachname[0]}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-foreground">{b.vorname} {b.nachname}</p>
+                                        <p className="text-xs text-muted-foreground">{b.ort} · {b.quelle}</p>
+                                      </div>
+                                      <StageBadge stageId={b.stage} />
+                                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground text-center py-3 bg-muted/20 rounded-lg">Noch keine Bewerber für diesen Termin angemeldet.</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  {onboardingTermine.length === 0 && (
+                    <div className="py-6 text-center text-sm text-muted-foreground">Keine Onboarding-Termine vorhanden.</div>
+                  )}
+                </div>
+              </div>
 
               {/* Filter */}
               <div className="flex items-center gap-3">
@@ -983,6 +1064,44 @@ export default function Bewerbungsmanagement() {
               <Button variant="outline" onClick={() => setStellenDialogOpen(false)}>Abbrechen</Button>
               <Button onClick={handleSaveStelle} disabled={!stelleForm.titel} className="gap-2 gradient-brand border-0 text-white">
                 <CheckCircle2 className="h-4 w-4" /> {editingStelleId ? "Speichern" : "Erstellen"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Neuer Onboarding-Termin Dialog */}
+      <Dialog open={newTerminDialogOpen} onOpenChange={setNewTerminDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Neuen Onboarding-Termin anlegen</DialogTitle>
+            <DialogDescription>Erstelle einen Termin, zu dem Bewerber eingeladen werden können.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Datum *</Label>
+              <Input type="date" value={newTerminForm.datum} onChange={(e) => setNewTerminForm((p) => ({ ...p, datum: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Uhrzeit *</Label>
+              <Input type="time" value={newTerminForm.uhrzeit} onChange={(e) => setNewTerminForm((p) => ({ ...p, uhrzeit: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Standort / Adresse *</Label>
+              <Input value={newTerminForm.standort} onChange={(e) => setNewTerminForm((p) => ({ ...p, standort: e.target.value }))} placeholder="z.B. München – Leopoldstraße 42" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">Max. Teilnehmer *</Label>
+              <Input type="number" min="1" max="50" value={newTerminForm.maxTeilnehmer} onChange={(e) => setNewTerminForm((p) => ({ ...p, maxTeilnehmer: e.target.value }))} />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setNewTerminDialogOpen(false)}>Abbrechen</Button>
+              <Button
+                onClick={handleNewTermin}
+                disabled={!newTerminForm.datum || !newTerminForm.uhrzeit || !newTerminForm.standort}
+                className="gap-2 gradient-brand border-0 text-white"
+              >
+                <Plus className="h-4 w-4" /> Termin erstellen
               </Button>
             </div>
           </div>
