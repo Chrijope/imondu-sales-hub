@@ -976,8 +976,8 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                     : "bg-destructive/10";
                   return (
                     <div key={doc.id} className={`p-4 rounded-lg border transition-colors ${borderColor}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3 min-w-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
                           <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
                             {uploaded ? (
                               uploaded.status === "uploaded" ? <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
@@ -988,12 +988,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                             )}
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-semibold text-foreground">{doc.label}</p>
-                              {!uploaded && doc.required && (
-                                <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-destructive/30 text-destructive whitespace-nowrap">Pflicht – Bitte hochladen</Badge>
-                              )}
-                            </div>
+                            <p className="text-sm font-semibold text-foreground">{doc.label}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{doc.description}</p>
                             {uploaded && (
                               <div className="flex items-center gap-2 mt-1.5">
@@ -1013,7 +1008,10 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!uploaded && doc.required && (
+                            <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-destructive/30 text-destructive whitespace-nowrap">Pflicht – Bitte hochladen</Badge>
+                          )}
                           {uploaded && uploaded.status !== "uploaded" && (
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveDoc(doc.id)}>
                               <X className="h-3.5 w-3.5" />
