@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 import CRMLayout from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +10,9 @@ import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Calendar as CalendarWidget } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -18,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   UserPlus, Search, ChevronRight, Mail, Phone, MapPin,
   CheckCircle2, Clock, XCircle, Eye, UserCheck, GraduationCap,
-  Brain, ArrowRight, Calendar, FileText, Star, Users,
+  Brain, ArrowRight, Calendar, FileText, Star, Users, CalendarIcon,
 } from "lucide-react";
 
 // ── Pipeline-Stufen ──
@@ -82,6 +87,9 @@ interface Bewerber {
   erfahrung: string;
   motivation: string;
   lebenslaufUrl?: string;
+  onboardingDatum?: string;
+  onboardingUhrzeit?: string;
+  onboardingStandort?: string;
 }
 
 const INITIAL_BEWERBER: Bewerber[] = [
@@ -89,7 +97,7 @@ const INITIAL_BEWERBER: Bewerber[] = [
   { id: "b2", vorname: "Sarah", nachname: "Klein", email: "s.klein@web.de", telefon: "+49 176 9876543", ort: "Berlin", beworbenAm: "2026-02-19", stage: "persoenlichkeitstest", notizen: "", erfahrung: "Quereinsteigerin aus dem Marketing", motivation: "Suche eine neue Herausforderung im Vertrieb." },
   { id: "b3", vorname: "Tim", nachname: "Hoffmann", email: "tim.h@outlook.de", telefon: "+49 152 5551234", ort: "Hamburg", beworbenAm: "2026-02-18", stage: "screening", notizen: "Lebenslauf sieht gut aus.", erfahrung: "5 Jahre B2B-Sales", motivation: "Will im Immobiliensektor Fuß fassen." },
   { id: "b4", vorname: "Julia", nachname: "Richter", email: "julia.r@gmx.de", telefon: "+49 160 7778899", ort: "Köln", beworbenAm: "2026-02-17", stage: "eingang", notizen: "", erfahrung: "Keine Vertriebserfahrung", motivation: "Interesse an Immobilien." },
-  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen." },
+  { id: "b5", vorname: "Markus", nachname: "Braun", email: "m.braun@gmail.com", telefon: "+49 173 3334455", ort: "Frankfurt", beworbenAm: "2026-02-15", stage: "onboarding", personalityType: "ENFJ", notizen: "Top-Kandidat, sofort eingestellt.", erfahrung: "7 Jahre Finanzvertrieb", motivation: "Partnerschaft mit starkem Netzwerk aufbauen.", onboardingDatum: "2026-03-03", onboardingUhrzeit: "10:00", onboardingStandort: "München – Leopoldstraße 42" },
   { id: "b6", vorname: "Anna", nachname: "Meier", email: "a.meier@t-online.de", telefon: "+49 157 6667788", ort: "Stuttgart", beworbenAm: "2026-02-14", stage: "abgelehnt", personalityType: "ISFP", notizen: "Persönlichkeitsprofil passt nicht zum Vertrieb.", erfahrung: "Grafikdesignerin", motivation: "Nebenjob im Vertrieb." },
   { id: "b7", vorname: "Lukas", nachname: "Weber", email: "l.weber@yahoo.de", telefon: "+49 179 1112233", ort: "Düsseldorf", beworbenAm: "2026-02-21", stage: "entscheidung", personalityType: "ESTP", notizen: "Zweites Gespräch war sehr gut.", erfahrung: "4 Jahre Vertrieb Telekommunikation", motivation: "Suche mehr Eigenverantwortung." },
 ];
@@ -183,14 +191,19 @@ function BewerberDetail({
   onStageChange,
   onPersonalityComplete,
   onActivate,
+  onUpdateOnboarding,
 }: {
   bewerber: Bewerber;
   onClose: () => void;
   onStageChange: (id: string, stage: string) => void;
   onPersonalityComplete: (id: string, type: string) => void;
   onActivate: (id: string) => void;
+  onUpdateOnboarding: (id: string, data: { onboardingDatum?: string; onboardingUhrzeit?: string; onboardingStandort?: string }) => void;
 }) {
   const [tab, setTab] = useState("uebersicht");
+  const [obDate, setObDate] = useState<Date | undefined>(bewerber.onboardingDatum ? new Date(bewerber.onboardingDatum) : undefined);
+  const [obZeit, setObZeit] = useState(bewerber.onboardingUhrzeit || "");
+  const [obStandort, setObStandort] = useState(bewerber.onboardingStandort || "");
   const pType = bewerber.personalityType ? PERSONALITY_TYPES[bewerber.personalityType] : null;
 
   return (
@@ -286,6 +299,49 @@ function BewerberDetail({
               </div>
             </div>
           )}
+
+          {/* Onboarding-Einladung */}
+          <div className="glass-card rounded-xl p-4 space-y-3">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Onboarding-Einladung</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Datum</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left text-xs font-normal h-9", !obDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                      {obDate ? format(obDate, "dd.MM.yyyy", { locale: de }) : "Datum wählen"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarWidget mode="single" selected={obDate} onSelect={setObDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Uhrzeit</Label>
+                <Input type="time" value={obZeit} onChange={(e) => setObZeit(e.target.value)} className="h-9 text-xs" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Standort</Label>
+                <Input placeholder="z.B. München – Leopoldstraße 42" value={obStandort} onChange={(e) => setObStandort(e.target.value)} className="h-9 text-xs" />
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs gap-1.5"
+              onClick={() => {
+                onUpdateOnboarding(bewerber.id, {
+                  onboardingDatum: obDate ? obDate.toISOString().slice(0, 10) : undefined,
+                  onboardingUhrzeit: obZeit || undefined,
+                  onboardingStandort: obStandort || undefined,
+                });
+              }}
+            >
+              <Calendar className="h-3.5 w-3.5" /> Onboarding-Termin speichern
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="persoenlichkeit" className="mt-4">
@@ -414,6 +470,10 @@ export default function Bewerbungsmanagement() {
               onStageChange={stageChange}
               onPersonalityComplete={personalityComplete}
               onActivate={activate}
+              onUpdateOnboarding={(id, data) => {
+                setBewerber((prev) => prev.map((b) => b.id === id ? { ...b, ...data } : b));
+                toast({ title: "Onboarding-Termin gespeichert ✓", description: `Termin wurde für den Bewerber hinterlegt.` });
+              }}
             />
           ) : (
             <>
