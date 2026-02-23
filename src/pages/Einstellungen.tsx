@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Camera, Save, Key, Eye, EyeOff, Edit3, Upload, CheckCircle2, Clock, AlertCircle, FileText, X, ChevronRight } from "lucide-react";
+import { Camera, Save, Key, Eye, EyeOff, Edit3, Upload, CheckCircle2, Clock, AlertCircle, FileText, X, ChevronRight, GraduationCap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -96,6 +96,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: "email_setup", label: "E-Mail einrichten", description: "Richte deine geschäftliche E-Mail ein", tab: "email" },
   { id: "kalender", label: "Kalender verbinden", description: "Verbinde deinen Kalender", tab: "kalender" },
   { id: "gewerbe", label: "Gewerbedaten hinterlegen", description: "Trage deine Unternehmensdaten ein", tab: "gewerbe" },
+  { id: "finanzen", label: "Steuer & Bankdaten", description: "Hinterlege deine Steuer- und Bankdaten", tab: "finanzen" },
   { id: "unterlagen", label: "Unterlagen hochladen", description: "Lade alle Pflichtdokumente hoch", tab: "unterlagen" },
 ];
 
@@ -305,12 +306,17 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
               <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
               <div>
                 <p className="text-sm font-semibold text-foreground">Einrichtung abgeschlossen!</p>
-                <p className="text-xs text-muted-foreground">Du kannst jetzt alle Funktionen des Backoffice nutzen.</p>
+                <p className="text-xs text-muted-foreground">Bitte schließe jetzt den Onboarding-Kurs in der Academy ab, um das Backoffice vollständig nutzen zu können.</p>
               </div>
             </div>
-            <button onClick={() => setOnboardingDismissed(true)} className="text-muted-foreground hover:text-foreground p-1">
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setOnboardingDismissed(true)} className="text-xs">
+                Später
+              </Button>
+              <Button size="sm" className="gap-1.5 gradient-brand border-0 text-white text-xs" onClick={() => window.location.href = "/academy"}>
+                <GraduationCap className="h-3.5 w-3.5" /> Zur Academy
+              </Button>
+            </div>
           </div>
         )}
 
@@ -637,7 +643,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             </SectionBlock>
 
             <div className="flex justify-end pt-2 pb-8">
-              <Button onClick={handleSave} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
+              <Button onClick={() => { handleSave(); if (!completedSteps.includes("finanzen")) setCompletedSteps((p) => [...p, "finanzen"]); }} className="gap-2 gradient-brand border-0 text-white shadow-crm-sm hover:opacity-90 px-8">
                 <Save className="h-4 w-4" /> Speichern
               </Button>
             </div>

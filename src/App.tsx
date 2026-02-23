@@ -52,6 +52,7 @@ import Kundenmaske from "./pages/Kundenmaske";
 import Wettbewerb from "./pages/Wettbewerb";
 import LeadScouring from "./pages/LeadScouring";
 import Webinar from "./pages/Webinar";
+import Bewerbungsmanagement from "./pages/Bewerbungsmanagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -118,6 +119,7 @@ const App = () => (
           <Route path="/wettbewerb" element={<P path="/wettbewerb"><Wettbewerb /></P>} />
           <Route path="/lead-scouring" element={<P path="/lead-scouring"><LeadScouring /></P>} />
           <Route path="/webinar" element={<P path="/webinar"><Webinar /></P>} />
+          <Route path="/bewerbungsmanagement" element={<P path="/bewerbungsmanagement"><Bewerbungsmanagement /></P>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
