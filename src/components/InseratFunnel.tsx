@@ -74,6 +74,7 @@ interface FunnelForm {
   finanzierungGesichert: string;
   eigenkapitalVorhanden: string;
   entwicklungsNotizen: string;
+  immobilienwert: string;
   // Step 4 – images
   bilder: string[];
   // Step 5 – documents
@@ -180,6 +181,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     finanzierungGesichert: "",
     eigenkapitalVorhanden: "",
     entwicklungsNotizen: "",
+    immobilienwert: "",
     bilder: [],
     dokumente: [],
   });
@@ -304,6 +306,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
                     <div className="flex justify-between"><span className="text-muted-foreground">Objekttyp:</span><span className="font-medium">{form.objekttyp}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Adresse:</span><span className="font-medium">{form.adresse || "–"}, {form.plz} {form.ort}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Eigentümer:</span><span className="font-medium">{form.eigentuemerName || "–"}</span></div>
+                    {form.immobilienwert && <div className="flex justify-between"><span className="text-muted-foreground">Immobilienwert:</span><span className="font-medium">{form.immobilienwert} €</span></div>}
                     <div className="flex justify-between"><span className="text-muted-foreground">Bilder:</span><span className="font-medium">{form.bilder.length}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Dokumente:</span><span className="font-medium">{form.dokumente.length}</span></div>
                   </div>
@@ -441,6 +444,17 @@ function Step2({ form, update }: { form: FunnelForm; update: (p: Partial<FunnelF
               <span className="text-xs text-muted-foreground font-medium">m²</span>
             </div>
           </div>
+        </div>
+
+        <hr className="border-border" />
+
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium text-muted-foreground">Aktueller Immobilienwert (geschätzt)</Label>
+          <div className="flex items-center gap-1">
+            <Input type="text" placeholder="z.B. 350.000" value={form.immobilienwert} onChange={(e) => update({ immobilienwert: e.target.value })} />
+            <span className="text-xs text-muted-foreground font-medium">€</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground">Ihre Einschätzung des aktuellen Marktwerts der Immobilie.</p>
         </div>
 
         <hr className="border-border" />

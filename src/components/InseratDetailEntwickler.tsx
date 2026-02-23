@@ -55,6 +55,7 @@ export interface InseratData {
   anfragen: number;
   tags: string[];
   objektNr: string;
+  immobilienwert?: string;
 }
 
 function getMockOwnerData(inserat: InseratData) {
@@ -294,6 +295,7 @@ export default function InseratDetailEntwickler({
             </div>
             <dl className="space-y-2.5 text-sm">
               <div className="flex justify-between"><dt className="text-muted-foreground">Objekttyp</dt><dd className="font-medium text-foreground">{inserat.objekttyp}</dd></div>
+              {inserat.immobilienwert && <div className="flex justify-between"><dt className="text-muted-foreground">Immobilienwert</dt><dd className="font-medium text-primary">{parseInt(inserat.immobilienwert).toLocaleString("de-DE")} €</dd></div>}
               <div className="flex justify-between"><dt className="text-muted-foreground">Wohnfläche</dt><dd className="font-medium text-foreground">{inserat.wohnflaeche} m²</dd></div>
               {inserat.grundstuecksflaeche && <div className="flex justify-between"><dt className="text-muted-foreground">Grundstück</dt><dd className="font-medium text-foreground">{inserat.grundstuecksflaeche} m²</dd></div>}
               <div className="flex justify-between"><dt className="text-muted-foreground">Baujahr</dt><dd className="font-medium text-foreground">{inserat.baujahr}</dd></div>
@@ -331,6 +333,7 @@ export default function InseratDetailEntwickler({
           <AngebotFormular
             inseratTitel={inserat.titel}
             eigentuemerName={inserat.eigentuemerName}
+            initialImmobilienwert={inserat.immobilienwert}
             onSubmit={() => setAngebotOpen(false)}
             onCancel={() => setAngebotOpen(false)}
           />
