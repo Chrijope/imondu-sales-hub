@@ -313,8 +313,9 @@ export default function Statistik() {
           )}
         </div>
 
-        {/* Top Row: Übersicht (B2C/B2B) + Kundenpotenzial */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ── VERTRIEBSSTATISTIKEN ──────────── */}
+        <CollapsibleSectionHeader icon={TrendingUp} title="Vertriebsstatistiken">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
           <SectionCard
             title="Übersicht"
             actions={
@@ -324,15 +325,12 @@ export default function Statistik() {
               </div>
             }
           >
-            {/* KPI Tiles per pipeline stage */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               {activeStages.map((s) => (
                 <KpiTile key={s.id} label={s.name} value={s.count} />
               ))}
               <KpiTile label={`${uebersichtTab === "b2c" ? "B2C" : "B2B"} Gesamt`} value={activeLeadCount} />
             </div>
-
-            {/* Bar Chart */}
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={overviewBarData} layout="vertical" margin={{ left: 10, right: 20 }}>
@@ -393,6 +391,115 @@ export default function Statistik() {
             </div>
           </SectionCard>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SectionCard title="Conversion-Funnel">
+            <div className="space-y-2">
+              {conversionFunnel.map((step, i) => (
+                <div key={step.phase} className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground w-32 text-right">{step.phase}</span>
+                  <div className="flex-1 h-7 bg-muted rounded-md overflow-hidden relative">
+                    <div
+                      className="h-full rounded-md transition-all"
+                      style={{
+                        width: `${step.pct}%`,
+                        background: `hsl(${210 + i * 20} 70% ${52 + i * 3}%)`,
+                      }}
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-foreground">
+                      {step.value.toLocaleString("de-DE")} ({step.pct}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Lead-Quellen">
+            <div className="flex items-center gap-6">
+              <div className="w-[200px] h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={leadSourceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={45}>
+                      {leadSourceData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-col gap-1.5 text-sm flex-1">
+                {leadSourceData.map((d) => (
+                  <div key={d.name} className="flex items-center gap-2">
+                    <div className="w-2 h-5 rounded-sm" style={{ backgroundColor: d.color }} />
+                    <span className="text-foreground text-xs font-medium flex-1">{d.name}</span>
+                    <span className="text-muted-foreground text-xs">{d.value}</span>
+                    <span className="text-muted-foreground text-[10px] w-10 text-right">{((d.value / totalLeadSources) * 100).toFixed(0)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SectionCard
+            title="Aktivität"
+            actions={
+              <div className="flex gap-1">
+                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
+                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold"><BarChart3 className="h-3 w-3 inline" /></span>
+              </div>
+            }
+          >
+            <div className="grid grid-cols-3 gap-3">
+              <KpiTile label="Kontakte angelegt" value={filteredLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="B2B Leads" value={b2bLeads.length.toLocaleString("de-DE")} />
+              <KpiTile label="B2C Inserat erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} />
+              <KpiTile label="B2B Gewonnen" value={b2bLeads.filter((l) => l.status === "b2b_won").length} />
+              <KpiTile label="B2C Registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} />
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="Effektivität"
+            actions={
+              <div className="flex gap-1">
+                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold"><Percent className="h-3 w-3 inline" /></span>
+                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
+              </div>
+            }
+          >
+            {(() => {
+              const totalL = filteredLeads.length || 1;
+              const b2cIns = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
+              const b2bWon = b2bLeads.filter((l) => l.status === "b2b_won").length;
+              const b2cReg = b2cLeads.filter((l) => l.status === "b2c_registered").length;
+              return (
+                <div className="grid grid-cols-3 gap-3">
+                  <KpiTile label="Kontakt zu B2C Lead" value={`${totalL > 0 ? Math.round((b2cLeads.length / totalL) * 100) : 0} %`} />
+                  <KpiTile label="Kontakt zu B2B Lead" value={`${totalL > 0 ? Math.round((b2bLeads.length / totalL) * 100) : 0} %`} />
+                  <KpiTile label="B2C Lead zu Registriert" value={`${b2cLeads.length > 0 ? Math.round((b2cReg / b2cLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="B2C Lead zu Inserat" value={`${b2cLeads.length > 0 ? Math.round((b2cIns / b2cLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="B2B Lead zu Gewonnen" value={`${b2bLeads.length > 0 ? Math.round((b2bWon / b2bLeads.length) * 100) : 0} %`} />
+                  <KpiTile label="Gesamt-Abschlussquote" value={`${totalL > 0 ? Math.round(((b2cIns + b2bWon) / totalL) * 100) : 0} %`} />
+                </div>
+              );
+            })()}
+          </SectionCard>
+        </div>
+
+        <SectionCard title="Weitere Kennzahlen">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            <KpiTile label="⌀ Reaktionszeit" value="2,4h" trend="down" sub="schneller als Vormonat" />
+            <KpiTile label="⌀ Abschlusszeit" value="34 Tage" sub="Kontakt → Notar" />
+            <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} trend="up" />
+            <KpiTile label="B2B Partner" value={b2bLeads.length.toLocaleString("de-DE")} trend="up" />
+            <KpiTile label="Stornoquote" value="3,2%" trend="down" sub="gut" />
+            <KpiTile label="⌀ Provision" value="4.820 €" trend="up" />
+          </div>
+        </SectionCard>
+        </CollapsibleSectionHeader>
 
         {/* ── ANRUF-STATISTIKEN ────────────────────── */}
         <CollapsibleSectionHeader icon={Phone} title="Anruf-Statistiken">
@@ -465,120 +572,6 @@ export default function Statistik() {
                 <Line type="monotone" dataKey="termine" name="Termine" stroke="hsl(38 92% 50%)" strokeWidth={2} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        </SectionCard>
-        </CollapsibleSectionHeader>
-
-        {/* ── VERTRIEBSSTATISTIKEN ──────────── */}
-        <CollapsibleSectionHeader icon={TrendingUp} title="Vertriebsstatistiken">
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-          <SectionCard title="Conversion-Funnel">
-            <div className="space-y-2">
-              {conversionFunnel.map((step, i) => (
-                <div key={step.phase} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-32 text-right">{step.phase}</span>
-                  <div className="flex-1 h-7 bg-muted rounded-md overflow-hidden relative">
-                    <div
-                      className="h-full rounded-md transition-all"
-                      style={{
-                        width: `${step.pct}%`,
-                        background: `hsl(${210 + i * 20} 70% ${52 + i * 3}%)`,
-                      }}
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-foreground">
-                      {step.value.toLocaleString("de-DE")} ({step.pct}%)
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-
-          <SectionCard title="Lead-Quellen">
-            <div className="flex items-center gap-6">
-              <div className="w-[200px] h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={leadSourceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={45}>
-                      {leadSourceData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-col gap-1.5 text-sm flex-1">
-                {leadSourceData.map((d) => (
-                  <div key={d.name} className="flex items-center gap-2">
-                    <div className="w-2 h-5 rounded-sm" style={{ backgroundColor: d.color }} />
-                    <span className="text-foreground text-xs font-medium flex-1">{d.name}</span>
-                    <span className="text-muted-foreground text-xs">{d.value}</span>
-                    <span className="text-muted-foreground text-[10px] w-10 text-right">{((d.value / totalLeadSources) * 100).toFixed(0)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* Bottom Row: Aktivität + Effektivität */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SectionCard
-            title="Aktivität"
-            actions={
-              <div className="flex gap-1">
-                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
-                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold"><BarChart3 className="h-3 w-3 inline" /></span>
-              </div>
-            }
-          >
-            <div className="grid grid-cols-3 gap-3">
-              <KpiTile label="Kontakte angelegt" value={filteredLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="B2B Leads" value={b2bLeads.length.toLocaleString("de-DE")} />
-              <KpiTile label="B2C Inserat erstellt" value={b2cLeads.filter((l) => l.status === "b2c_inserat").length} />
-              <KpiTile label="B2B Gewonnen" value={b2bLeads.filter((l) => l.status === "b2b_won").length} />
-              <KpiTile label="B2C Registriert" value={b2cLeads.filter((l) => l.status === "b2c_registered").length} />
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            title="Effektivität"
-            actions={
-              <div className="flex gap-1">
-                <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded text-[10px] font-bold"><Percent className="h-3 w-3 inline" /></span>
-                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-bold">123</span>
-              </div>
-            }
-          >
-            {(() => {
-              const totalL = filteredLeads.length || 1;
-              const b2cIns = b2cLeads.filter((l) => l.status === "b2c_inserat").length;
-              const b2bWon = b2bLeads.filter((l) => l.status === "b2b_won").length;
-              const b2cReg = b2cLeads.filter((l) => l.status === "b2c_registered").length;
-              return (
-                <div className="grid grid-cols-3 gap-3">
-                  <KpiTile label="Kontakt zu B2C Lead" value={`${totalL > 0 ? Math.round((b2cLeads.length / totalL) * 100) : 0} %`} />
-                  <KpiTile label="Kontakt zu B2B Lead" value={`${totalL > 0 ? Math.round((b2bLeads.length / totalL) * 100) : 0} %`} />
-                  <KpiTile label="B2C Lead zu Registriert" value={`${b2cLeads.length > 0 ? Math.round((b2cReg / b2cLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="B2C Lead zu Inserat" value={`${b2cLeads.length > 0 ? Math.round((b2cIns / b2cLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="B2B Lead zu Gewonnen" value={`${b2bLeads.length > 0 ? Math.round((b2bWon / b2bLeads.length) * 100) : 0} %`} />
-                  <KpiTile label="Gesamt-Abschlussquote" value={`${totalL > 0 ? Math.round(((b2cIns + b2bWon) / totalL) * 100) : 0} %`} />
-                </div>
-              );
-            })()}
-          </SectionCard>
-        </div>
-
-        {/* Weitere KPIs */}
-        <SectionCard title="Weitere Kennzahlen">
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            <KpiTile label="⌀ Reaktionszeit" value="2,4h" trend="down" sub="schneller als Vormonat" />
-            <KpiTile label="⌀ Abschlusszeit" value="34 Tage" sub="Kontakt → Notar" />
-            <KpiTile label="B2C Leads" value={b2cLeads.length.toLocaleString("de-DE")} trend="up" />
-            <KpiTile label="B2B Partner" value={b2bLeads.length.toLocaleString("de-DE")} trend="up" />
-            <KpiTile label="Stornoquote" value="3,2%" trend="down" sub="gut" />
-            <KpiTile label="⌀ Provision" value="4.820 €" trend="up" />
           </div>
         </SectionCard>
         </CollapsibleSectionHeader>
