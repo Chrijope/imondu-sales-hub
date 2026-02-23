@@ -241,7 +241,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
     return (
       <CRMLayout>
         <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1"><div className="w-10 h-1 rounded-full gradient-brand" /></div>
               <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Einstellungen</h1>
@@ -373,7 +373,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
     return (
       <CRMLayout>
         <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1"><div className="w-10 h-1 rounded-full gradient-brand" /></div>
               <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Einstellungen</h1>
@@ -523,7 +523,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
-       <div className="max-w-4xl">
+       <div className="max-w-5xl">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Allgemein</h1>
@@ -939,7 +939,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             <Separator />
 
             {/* Upload progress summary */}
-            <div className="rounded-lg border border-border bg-secondary/20 p-4 max-w-lg">
+            <div className="rounded-lg border border-border bg-secondary/20 p-4 max-w-2xl">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-foreground">Pflichtdokumente</p>
                 <Badge variant={allDocsUploaded ? "default" : "outline"} className={allDocsUploaded ? "bg-[hsl(var(--success))] text-white border-0" : ""}>
@@ -956,7 +956,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             </div>
 
             <SectionBlock title="Dokumente hochladen" description="Lade die folgenden Unterlagen hoch. Akzeptierte Formate: PDF, JPG, PNG (max. 10 MB).">
-              <div className="space-y-3 max-w-lg">
+              <div className="space-y-3 max-w-2xl">
                 {REQUIRED_DOCUMENTS.map((doc) => {
                   const uploaded = uploadedDocs[doc.id];
                   // Color logic: not uploaded = red, pending = orange, approved = green, rejected = red
@@ -988,10 +988,10 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                             )}
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <p className="text-sm font-semibold text-foreground">{doc.label}</p>
                               {!uploaded && doc.required && (
-                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-destructive/30 text-destructive">Pflicht – Bitte hochladen</Badge>
+                                <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-destructive/30 text-destructive whitespace-nowrap">Pflicht – Bitte hochladen</Badge>
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{doc.description}</p>
