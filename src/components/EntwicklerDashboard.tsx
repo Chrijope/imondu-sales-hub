@@ -1,24 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  Home,
-  MessageCircle,
-  ArrowRight,
-  Search,
-  MapPin,
-  Star,
-  ClipboardList,
-  HardHat,
-  Phone,
-  HeadphonesIcon,
-  Award,
-  CheckCircle2,
-  TrendingUp,
-  Users,
-  BotMessageSquare,
+  Home, MessageCircle, ArrowRight, Search, MapPin, Star,
+  ClipboardList, HardHat, Phone, HeadphonesIcon, Award,
+  CheckCircle2, TrendingUp, Users, BotMessageSquare,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getSupportUnreadCount } from "@/utils/support-notifications";
+import EntwicklerProfilBearbeiten from "@/components/EntwicklerProfilBearbeiten";
 
 // Mock developer profile
 const ENTWICKLER_PROFIL = {
@@ -42,50 +31,10 @@ const ENTWICKLER_PROFIL = {
 
 // Mock matching inserate for this developer
 const MATCHING_INSERATE = [
-  {
-    id: "ins-m1",
-    titel: "Dachgeschoss-Sanierung",
-    adresse: "Leopoldstraße 45, 80802 München",
-    objekttyp: "Wohnung",
-    eigentuemer: "Hans Müller",
-    score: 96,
-    bedarf: "Elektroinstallation komplett erneuern",
-    flaeche: "95 m²",
-    matchGrund: "Elektro-Sanierung gesucht, Ihr Standort München passt perfekt",
-  },
-  {
-    id: "ins-m2",
-    titel: "Einfamilienhaus Neubau",
-    adresse: "Musterstraße 12, 80331 München",
-    objekttyp: "Einfamilienhaus",
-    eigentuemer: "Maria Schneider",
-    score: 93,
-    bedarf: "Komplette Elektroplanung + Smart Home",
-    flaeche: "180 m²",
-    matchGrund: "Smart-Home-Spezialist gesucht, Neubau in Ihrem Einzugsgebiet",
-  },
-  {
-    id: "ins-m3",
-    titel: "Bürogebäude Modernisierung",
-    adresse: "Schwanthalerstr. 90, 80336 München",
-    objekttyp: "Gewerbe",
-    eigentuemer: "Peter König",
-    score: 88,
-    bedarf: "Elektro-Modernisierung, Beleuchtungskonzept",
-    flaeche: "420 m²",
-    matchGrund: "Gewerbe-Elektrik Erfahrung, zertifizierter E-Check Partner",
-  },
-  {
-    id: "ins-m4",
-    titel: "Mehrfamilienhaus Sanierung",
-    adresse: "Balanstraße 22, 81669 München",
-    objekttyp: "Mehrfamilienhaus",
-    eigentuemer: "Immobilien Verwaltung GmbH",
-    score: 85,
-    bedarf: "Zählerschrank erneuern, E-Check für 8 Einheiten",
-    flaeche: "650 m²",
-    matchGrund: "E-Check Spezialist, Erfahrung mit MFH",
-  },
+  { id: "ins-m1", titel: "Dachgeschoss-Sanierung", adresse: "Leopoldstraße 45, 80802 München", objekttyp: "Wohnung", eigentuemer: "Hans Müller", score: 96, bedarf: "Elektroinstallation komplett erneuern", flaeche: "95 m²", matchGrund: "Elektro-Sanierung gesucht, Ihr Standort München passt perfekt" },
+  { id: "ins-m2", titel: "Einfamilienhaus Neubau", adresse: "Musterstraße 12, 80331 München", objekttyp: "Einfamilienhaus", eigentuemer: "Maria Schneider", score: 93, bedarf: "Komplette Elektroplanung + Smart Home", flaeche: "180 m²", matchGrund: "Smart-Home-Spezialist gesucht, Neubau in Ihrem Einzugsgebiet" },
+  { id: "ins-m3", titel: "Bürogebäude Modernisierung", adresse: "Schwanthalerstr. 90, 80336 München", objekttyp: "Gewerbe", eigentuemer: "Peter König", score: 88, bedarf: "Elektro-Modernisierung, Beleuchtungskonzept", flaeche: "420 m²", matchGrund: "Gewerbe-Elektrik Erfahrung, zertifizierter E-Check Partner" },
+  { id: "ins-m4", titel: "Mehrfamilienhaus Sanierung", adresse: "Balanstraße 22, 81669 München", objekttyp: "Mehrfamilienhaus", eigentuemer: "Immobilien Verwaltung GmbH", score: 85, bedarf: "Zählerschrank erneuern, E-Check für 8 Einheiten", flaeche: "650 m²", matchGrund: "E-Check Spezialist, Erfahrung mit MFH" },
 ];
 
 function getScoreColor(score: number) {
@@ -97,6 +46,7 @@ function getScoreColor(score: number) {
 export default function EntwicklerDashboard() {
   const profil = ENTWICKLER_PROFIL;
   const [supportUnread, setSupportUnread] = useState(0);
+  const [showProfilEdit, setShowProfilEdit] = useState(false);
 
   useEffect(() => {
     const update = () => setSupportUnread(getSupportUnreadCount());
@@ -105,6 +55,16 @@ export default function EntwicklerDashboard() {
     window.addEventListener("storage", update);
     return () => { clearInterval(interval); window.removeEventListener("storage", update); };
   }, []);
+
+  // Show profile edit view
+  if (showProfilEdit) {
+    return (
+      <div className="p-6 lg:p-8 min-h-screen dashboard-mesh-bg">
+        <EntwicklerProfilBearbeiten onBack={() => setShowProfilEdit(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-8 space-y-5 animate-fade-in min-h-screen dashboard-mesh-bg">
       {/* Header */}
@@ -116,8 +76,11 @@ export default function EntwicklerDashboard() {
         <p className="text-sm text-muted-foreground mt-1">Willkommen zurück, {profil.inhaber}! Hier ist Ihr Überblick.</p>
       </div>
 
-      {/* Profil-Übersicht */}
-      <div className="glass-card rounded-2xl p-5">
+      {/* Profil-Übersicht - now clickable */}
+      <button
+        onClick={() => setShowProfilEdit(true)}
+        className="w-full text-left glass-card rounded-2xl p-5 hover:border-primary/30 transition-all cursor-pointer"
+      >
         <div className="flex items-center gap-2 mb-4">
           <div className="w-6 h-1 rounded-full gradient-brand" />
           <h2 className="text-sm font-semibold text-foreground">Ihr Profil</h2>
@@ -171,19 +134,23 @@ export default function EntwicklerDashboard() {
             </div>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-border">
-          <p className="text-xs text-muted-foreground mb-1.5">Leistungen:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {profil.leistungen.map((l) => (
-              <Badge key={l} variant="secondary" className="text-[10px]">{l}</Badge>
-            ))}
+        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1.5">Leistungen:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {profil.leistungen.map((l) => (
+                <Badge key={l} variant="secondary" className="text-[10px]">{l}</Badge>
+              ))}
+            </div>
           </div>
+          <span className="text-[10px] text-accent flex items-center gap-1 shrink-0 ml-4">
+            Profil bearbeiten <ArrowRight className="h-3 w-3" />
+          </span>
         </div>
-      </div>
+      </button>
 
       {/* Nachrichten & Anfragen */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Chat-Nachrichten von Eigentümern */}
         <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-1 rounded-full gradient-brand" />
@@ -225,7 +192,6 @@ export default function EntwicklerDashboard() {
           </Link>
         </div>
 
-        {/* Anfragen / Kontaktanfragen */}
         <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-1 rounded-full gradient-brand" />
@@ -275,19 +241,10 @@ export default function EntwicklerDashboard() {
         <p className="text-xs text-muted-foreground mb-4">
           Inserate passend zu Ihrem Gewerk <span className="font-medium text-foreground">{profil.gewerk}</span> und Standort <span className="font-medium text-foreground">{profil.ort}</span>
         </p>
-
         <div className="space-y-3">
           {MATCHING_INSERATE.map((ins, i) => (
-            <div
-              key={ins.id}
-              className="flex items-center gap-4 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-all"
-            >
-              {/* Rank */}
-              <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">
-                {i + 1}
-              </div>
-
-              {/* Info */}
+            <div key={ins.id} className="flex items-center gap-4 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-all">
+              <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0">{i + 1}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-foreground truncate">{ins.titel}</p>
@@ -302,24 +259,12 @@ export default function EntwicklerDashboard() {
                   <span>· {ins.flaeche}</span>
                 </div>
               </div>
-
-              {/* Score */}
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center text-sm font-bold border ${getScoreColor(ins.score)}`}>
-                {ins.score}%
-              </div>
-
-              {/* Actions */}
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center text-sm font-bold border ${getScoreColor(ins.score)}`}>{ins.score}%</div>
               <div className="flex flex-col gap-1 shrink-0">
-                <Link
-                  to={`/chat?newChat=${encodeURIComponent(ins.eigentuemer)}&category=eigentuemer`}
-                  className="text-[11px] text-accent hover:underline flex items-center gap-1"
-                >
+                <Link to={`/chat?newChat=${encodeURIComponent(ins.eigentuemer)}&category=eigentuemer`} className="text-[11px] text-accent hover:underline flex items-center gap-1">
                   <MessageCircle className="h-3 w-3" /> Kontaktieren
                 </Link>
-                <Link
-                  to="/inserate"
-                  className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
-                >
+                <Link to="/inserate" className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1">
                   <ClipboardList className="h-3 w-3" /> Details
                 </Link>
               </div>
@@ -353,12 +298,12 @@ export default function EntwicklerDashboard() {
           </div>
           <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">Support kontaktieren</span>
         </Link>
-        <Link to="/inserate" className="glass-card rounded-2xl p-5 flex flex-col items-center gap-3 group">
+        <button onClick={() => setShowProfilEdit(true)} className="glass-card rounded-2xl p-5 flex flex-col items-center gap-3 group">
           <div className="h-11 w-11 rounded-full gradient-brand flex items-center justify-center">
             <Home className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">Meine Inserate</span>
-        </Link>
+          <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">Mein Profil</span>
+        </button>
       </div>
     </div>
   );
