@@ -438,6 +438,32 @@ export default function Helpdesk() {
   const [katFilter, setKatFilter] = useState<"alle" | TicketKategorie>("alle");
   const [view, setView] = useState<"liste" | "dashboard">("liste");
 
+  // Load tickets from Support-KI handoffs
+  useEffect(() => {
+    const loadNewTickets = () => {
+      try {
+        const raw = localStorage.getItem("helpdesk-new-tickets");
+        if (raw) {
+          const newTickets: Ticket[] = JSON.parse(raw);
+          if (newTickets.length > 0) {
+            setTickets(prev => {
+              const existingIds = new Set(prev.map(t => t.id));
+              const fresh = newTickets.filter(t => !existingIds.has(t.id));
+              return fresh.length > 0 ? [...fresh, ...prev] : prev;
+            });
+          }
+        }
+      } catch {}
+    };
+    loadNewTickets();
+    window.addEventListener("storage", loadNewTickets);
+    window.addEventListener("focus", loadNewTickets);
+    return () => {
+      window.removeEventListener("storage", loadNewTickets);
+      window.removeEventListener("focus", loadNewTickets);
+    };
+  }, []);
+
   const selected = tickets.find(t => t.id === selectedId);
 
   const handleStatusChange = (id: string, status: TicketStatus) => {
