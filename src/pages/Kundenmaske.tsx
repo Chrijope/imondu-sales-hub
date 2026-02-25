@@ -169,7 +169,7 @@ export default function Kundenmaske() {
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className={statusColors[selected.status]}>{selected.status}</Badge>
                   <Badge variant="secondary">{selected.typ}</Badge>
-                  <Button variant="outline" size="sm" className="gap-1"><Edit className="h-3.5 w-3.5" /> Bearbeiten</Button>
+                  
                 </div>
               </div>
             </div>

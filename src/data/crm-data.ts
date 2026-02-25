@@ -87,19 +87,17 @@ export interface PipelineStage {
 export const B2C_PIPELINE_STAGES: PipelineStage[] = [
   { id: 'b2c_new', name: 'Neuer Lead', order: 0, color: 'hsl(220 10% 46%)' },
   { id: 'b2c_contact', name: 'Kontaktversuch', order: 1, color: 'hsl(210 80% 52%)' },
-  { id: 'b2c_reached', name: 'Erreicht', order: 2, color: 'hsl(250 60% 52%)' },
-  { id: 'b2c_first_call', name: 'Erstgespräch geführt', order: 3, color: 'hsl(38 92% 50%)' },
-  { id: 'b2c_link_sent', name: 'Link versendet', order: 4, color: 'hsl(280 60% 55%)' },
-  { id: 'b2c_followup', name: 'Follow-Up', order: 5, color: 'hsl(195 70% 45%)' },
-  { id: 'b2c_registered', name: 'Registriert', order: 6, color: 'hsl(170 60% 45%)' },
-  { id: 'b2c_inserat', name: 'Inserat erstellt', order: 7, color: 'hsl(152 60% 42%)' },
-  { id: 'b2c_lost', name: 'Kein Interesse', order: 8, color: 'hsl(0 72% 51%)' },
+  { id: 'b2c_first_call', name: 'Erstgespräch geführt', order: 2, color: 'hsl(38 92% 50%)' },
+  { id: 'b2c_link_sent', name: 'Link versendet', order: 3, color: 'hsl(280 60% 55%)' },
+  { id: 'b2c_followup', name: 'Follow-Up', order: 4, color: 'hsl(195 70% 45%)' },
+  { id: 'b2c_inserat', name: 'Inserat erstellt', order: 5, color: 'hsl(152 60% 42%)' },
+  { id: 'b2c_lost', name: 'Kein Interesse', order: 6, color: 'hsl(0 72% 51%)' },
 ];
 
 export const B2B_PIPELINE_STAGES: PipelineStage[] = [
   { id: 'b2b_new', name: 'Neuer Lead', order: 0, color: 'hsl(220 10% 46%)' },
   { id: 'b2b_contact', name: 'Kontaktversuch', order: 1, color: 'hsl(210 80% 52%)' },
-  { id: 'b2b_consultation', name: 'Beratungsgespräch', order: 2, color: 'hsl(250 60% 52%)' },
+  { id: 'b2b_consultation', name: 'Beratungsgespräch vereinbart', order: 2, color: 'hsl(250 60% 52%)' },
   { id: 'b2b_followup', name: 'Follow-Up', order: 3, color: 'hsl(38 92% 50%)' },
   { id: 'b2b_offer', name: 'Angebot Mitgliedschaft', order: 4, color: 'hsl(280 60% 55%)' },
   { id: 'b2b_followup2', name: 'Follow-Up 2', order: 5, color: 'hsl(195 70% 45%)' },
@@ -146,7 +144,7 @@ export const SAMPLE_LEADS: Lead[] = [
     energieausweis: true, sanierungsstatus: 'Teilsaniert', eigentuemertyp: 'Vermieter', interesse: 'Fenstertausch',
   },
   {
-    id: '5', type: 'b2c', status: 'b2c_reached', priority: 'medium', assignee: 'Jan Fischer', source: 'Google Ads',
+    id: '5', type: 'b2c', status: 'b2c_first_call', priority: 'medium', assignee: 'Jan Fischer', source: 'Google Ads',
     createdAt: '2026-02-08', updatedAt: '2026-02-16', value: 10, notes: '',
     firstName: 'Maria', lastName: 'Hoffmann', phone: '+49 160 3334455', email: 'maria.h@gmail.com',
     address: 'Elbchaussee 88, 22763 Hamburg',
@@ -191,8 +189,8 @@ export const SAMPLE_LEADS: Lead[] = [
     energieausweis: true, sanierungsstatus: 'Teilsaniert', eigentuemertyp: 'Vermieter', interesse: 'Verkauf',
   },
   {
-    id: '16', type: 'b2c', status: 'b2c_registered', priority: 'medium', assignee: 'Max Müller', source: 'Google Ads',
-    createdAt: '2026-02-05', updatedAt: '2026-02-19', value: 10, notes: 'Hat sich registriert, Inserat steht noch aus',
+    id: '16', type: 'b2c', status: 'b2c_inserat', priority: 'medium', assignee: 'Max Müller', source: 'Google Ads',
+    createdAt: '2026-02-05', updatedAt: '2026-02-19', value: 10, notes: 'Inserat erstellt',
     firstName: 'Heike', lastName: 'Braun', phone: '+49 157 1112233', email: 'h.braun@email.de',
     address: 'Königstr. 10, 90402 Nürnberg',
     objekttyp: 'Einfamilienhaus', objektAdresse: 'Königstr. 10, 90402 Nürnberg',

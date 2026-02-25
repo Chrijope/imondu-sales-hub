@@ -42,13 +42,19 @@ const ALL_COLUMNS: ColumnDef[] = [
 ];
 
 const SUB_PAGE_CONFIG: Record<string, { title: string; description: string; filterFn: (l: Lead) => boolean }> = {
-  "neue-leads": { title: "Neue Leads", description: "Neue Eigentümer-Leads, die noch nicht kontaktiert wurden", filterFn: (l) => l.status === "b2c_new" },
-  "hot-leads": { title: "Hot Leads", description: "Eigentümer mit hoher Priorität", filterFn: (l) => l.priority === "high" },
-  "follow-up": { title: "Follow Up", description: "Eigentümer, die nachverfolgt werden müssen", filterFn: (l) => l.status === "b2c_followup" },
+  "neue-leads": { title: "Neue Leads", description: "Neue Eigentümer-Leads (Neuer Lead & Kontaktversuch)", filterFn: (l) => l.status === "b2c_new" || l.status === "b2c_contact" },
+  "hot-leads": { title: "Hot Leads", description: "Eigentümer mit Erstgespräch geführt", filterFn: (l) => l.status === "b2c_first_call" },
+  "follow-up": { title: "Follow Up", description: "Eigentümer, die nachverfolgt werden müssen", filterFn: (l) => l.status === "b2c_followup" || l.status === "b2c_link_sent" },
   "heutige-termine": { title: "Heutige Termine", description: "Eigentümer-Termine für heute", filterFn: () => false },
-  "termine-gebucht": { title: "Termine gebucht", description: "Eigentümer mit gebuchten Terminen", filterFn: (l) => l.status === "b2c_first_call" || l.status === "b2c_reached" },
+  "termine-gebucht": { title: "Termine gebucht", description: "Eigentümer mit gebuchten Terminen", filterFn: (l) => l.status === "b2c_first_call" },
   "gewonnen": { title: "Gewonnen", description: "Eigentümer mit erstelltem Inserat", filterFn: (l) => l.status === "b2c_inserat" },
-  "bestand": { title: "Bestand", description: "Alle aktiven Eigentümer-Leads im Bestand", filterFn: () => true },
+  "bestand": { title: "Bestand", description: "Eigentümer im langfristigen Bestand (30+ Tage gewonnen)", filterFn: (l) => {
+    if (l.status !== "b2c_inserat") return false;
+    const updated = new Date(l.updatedAt);
+    const daysSince = Math.floor((Date.now() - updated.getTime()) / (1000 * 60 * 60 * 24));
+    return daysSince >= 30;
+  }},
+  "verloren": { title: "Verloren", description: "Eigentümer ohne Interesse", filterFn: (l) => l.status === "b2c_lost" },
 };
 
 // Mock inserat data for gewonnen/bestand sidebar
