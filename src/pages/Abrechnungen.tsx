@@ -5,9 +5,13 @@ import { SAMPLE_LEADS, Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search, Gift, Award } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search, Gift, Award, Upload, FileText } from "lucide-react";
 import { BONUSES } from "@/pages/Auswertungen";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
   KARRIERESTUFEN, getB2CStufe, getB2BStufe,
@@ -44,12 +48,18 @@ const MY_B2B_MONATSUMSATZ = 3750;
 
 export default function Abrechnungen() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { currentRoleId } = useUserRole();
   const isAdmin = ["admin", "vertriebsleiter", "buchhaltung"].includes(currentRoleId);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState<{ title: string; leads: Lead[]; type: "b2c" | "b2b" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"alle" | "aktiv" | "inaktiv">("alle");
+  // PDF upload state
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploadMonth, setUploadMonth] = useState("");
+  const [uploadedPDFs, setUploadedPDFs] = useState<Record<string, { name: string; uploadedAt: string }>>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const vertriebspartner = SAMPLE_USERS.filter((u) => u.roleId === "vertriebspartner");
 
@@ -655,6 +665,16 @@ export default function Abrechnungen() {
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-1 rounded-full gradient-brand" />
             <h2 className="text-sm font-semibold text-foreground">Abrechnungshistorie</h2>
+            {isAdmin && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="ml-auto h-7 text-[10px] gap-1 border-primary/30 text-primary hover:bg-primary/5"
+                onClick={() => { setUploadDialogOpen(true); setUploadMonth(""); setSelectedFile(null); }}
+              >
+                <Upload className="h-3 w-3" /> PDF hochladen
+              </Button>
+            )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -693,19 +713,26 @@ export default function Abrechnungen() {
                       )}
                     </td>
                     <td className="text-center py-3">
-                      {row.status === "ausgezahlt" ? (
-                        <button
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                          onClick={() => {}}
-                          title={`${row.gutschriftNr}.pdf herunterladen`}
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">{row.gutschriftNr}.pdf</span>
-                          <span className="sm:hidden">PDF</span>
-                        </button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">–</span>
-                      )}
+                      <div className="flex items-center justify-center gap-2">
+                        {row.status === "ausgezahlt" ? (
+                          <button
+                            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                            onClick={() => {}}
+                            title={`${row.gutschriftNr}.pdf herunterladen`}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{row.gutschriftNr}.pdf</span>
+                            <span className="sm:hidden">PDF</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">–</span>
+                        )}
+                        {uploadedPDFs[row.monat] && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium" title={`Hochgeladen: ${uploadedPDFs[row.monat].name}`}>
+                            <FileText className="h-3 w-3" /> {uploadedPDFs[row.monat].name}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -773,6 +800,74 @@ export default function Abrechnungen() {
           </div>
         )}
       </div>
+
+      {/* PDF Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-4 w-4 text-primary" />
+              Gutschrift-PDF hochladen
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Abrechnungsmonat *</Label>
+              <Select value={uploadMonth} onValueChange={setUploadMonth}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Monat wählen…" /></SelectTrigger>
+                <SelectContent>
+                  {abrechnungsHistorie.map((row) => (
+                    <SelectItem key={row.monat} value={row.monat}>{row.monat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">PDF-Datei *</Label>
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/40 transition-colors">
+                <input
+                  type="file"
+                  accept=".pdf"
+                  className="hidden"
+                  id="pdf-upload"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
+                <label htmlFor="pdf-upload" className="cursor-pointer">
+                  {selectedFile ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-medium text-foreground">{selectedFile.name}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-xs text-muted-foreground">Klicke hier oder ziehe eine PDF-Datei hierher</p>
+                    </>
+                  )}
+                </label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>Abbrechen</Button>
+            <Button
+              className="gradient-brand border-0 text-white"
+              disabled={!uploadMonth || !selectedFile}
+              onClick={() => {
+                if (!uploadMonth || !selectedFile) return;
+                setUploadedPDFs(prev => ({
+                  ...prev,
+                  [uploadMonth]: { name: selectedFile.name, uploadedAt: new Date().toLocaleDateString("de-DE") },
+                }));
+                toast({ title: "PDF hochgeladen ✓", description: `${selectedFile.name} wurde für ${uploadMonth} hinterlegt.` });
+                setUploadDialogOpen(false);
+              }}
+            >
+              <Upload className="h-4 w-4 mr-1.5" /> Hochladen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </CRMLayout>
   );
 }

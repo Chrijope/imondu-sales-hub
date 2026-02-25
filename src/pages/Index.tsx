@@ -10,7 +10,16 @@ import {
   TrendingUp,
   Phone,
   CheckCircle2,
+  Trophy,
+  Euro,
+  Flame,
+  Crown,
+  Medal,
+  Award,
+  Gift,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS } from "@/data/crm-data";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -326,6 +335,149 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Row: Wettbewerb + Abrechnung Quick Widgets */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Wettbewerb Widget */}
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-1 rounded-full gradient-brand" />
+              <h2 className="text-sm font-semibold text-foreground">Wettbewerb</h2>
+            </div>
+            <div className="space-y-3">
+              {/* Top active challenge preview */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <span className="text-2xl">🎧</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">B2C Inserate Sprint</p>
+                  <p className="text-[10px] text-muted-foreground">Februar 2026 · 3 Tage übrig</p>
+                  <Progress value={84} className="h-1.5 mt-1.5" />
+                </div>
+                <div className="text-center shrink-0">
+                  <p className="text-lg font-bold text-foreground">#1</p>
+                  <p className="text-[9px] text-muted-foreground">Dein Platz</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                <span className="text-2xl">💰</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">Conversion-König</p>
+                  <p className="text-[10px] text-muted-foreground">Februar 2026 · 3 Tage übrig</p>
+                  <Progress value={80} className="h-1.5 mt-1.5" />
+                </div>
+                <div className="text-center shrink-0">
+                  <p className="text-lg font-bold text-foreground">#2</p>
+                  <p className="text-[9px] text-muted-foreground">Dein Platz</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-muted/40 rounded-lg py-2">
+                  <p className="text-sm font-bold text-foreground">3</p>
+                  <p className="text-[10px] text-muted-foreground">Aktiv</p>
+                </div>
+                <div className="bg-muted/40 rounded-lg py-2">
+                  <p className="text-sm font-bold text-foreground">#1</p>
+                  <p className="text-[10px] text-muted-foreground">Beste Pos.</p>
+                </div>
+                <div className="bg-muted/40 rounded-lg py-2">
+                  <p className="text-sm font-bold text-foreground">2</p>
+                  <p className="text-[10px] text-muted-foreground">Gewonnen</p>
+                </div>
+              </div>
+            </div>
+            <Link to="/wettbewerb" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
+              Alle Challenges ansehen <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          {/* Abrechnungs-Widget */}
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-1 rounded-full gradient-brand" />
+              <h2 className="text-sm font-semibold text-foreground">Abrechnung</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-muted/40 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-1">B2C Prov.</p>
+                  <p className="text-lg font-bold text-foreground">{b2cProvision} €</p>
+                  <p className="text-[10px] text-muted-foreground">{b2cBestand} Inserate</p>
+                </div>
+                <div className="bg-muted/40 rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-1">B2B Prov.</p>
+                  <p className="text-lg font-bold text-foreground">{b2bProvision.toLocaleString("de-DE")} €</p>
+                  <p className="text-[10px] text-muted-foreground">{b2bBestand} Partner</p>
+                </div>
+              </div>
+              <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase mb-1">Gesamt aktuell</p>
+                <p className="text-xl font-display font-bold text-foreground">{(b2cProvision + b2bProvision).toLocaleString("de-DE")} €</p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Gift className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>75 € Inserat-Boni verdient · Level 4</span>
+              </div>
+              {(currentRoleId === "admin" || currentRoleId === "vertriebsleiter" || currentRoleId === "buchhaltung") && (
+                <div className="border-t border-border pt-2 mt-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">Admin-Übersicht</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-foreground">20</p>
+                      <p className="text-[10px] text-muted-foreground">Partner gesamt</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-foreground">20.350 €</p>
+                      <p className="text-[10px] text-muted-foreground">Prov. gesamt</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <Link to="/abrechnungen" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
+              Zur Abrechnung <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          {/* Gamification Widget */}
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-1 rounded-full gradient-brand" />
+              <h2 className="text-sm font-semibold text-foreground">Dein Level</h2>
+            </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-14 w-14 rounded-xl gradient-brand flex items-center justify-center text-2xl shadow-crm-sm">💎</div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Level 4 – Experte</p>
+                <p className="text-[11px] text-muted-foreground">4.200 / 7.000 XP</p>
+                <Progress value={60} className="h-2 mt-1.5 w-32" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center mb-3">
+              <div className="bg-muted/40 rounded-lg py-2">
+                <p className="text-sm font-bold text-foreground">5/9</p>
+                <p className="text-[10px] text-muted-foreground">Achievements</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg py-2">
+                <p className="text-sm font-bold text-foreground">🔥 12</p>
+                <p className="text-[10px] text-muted-foreground">Streak</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg py-2">
+                <p className="text-sm font-bold text-foreground">75 €</p>
+                <p className="text-[10px] text-muted-foreground">Bonus</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-success/5 border border-success/20">
+              <span className="text-lg">📱</span>
+              <div className="text-xs">
+                <p className="font-semibold text-foreground">Nächste Prämie: iPhone 16 Pro</p>
+                <p className="text-muted-foreground">Noch 2.800 XP bis Level 5</p>
+              </div>
+            </div>
+            <Link to="/auswertungen" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
+              Auswertungen & Ranking <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </div>
 
         {/* Row 3: Social Media + Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
