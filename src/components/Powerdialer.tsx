@@ -50,14 +50,25 @@ interface PowerdialerProps {
   type: "b2c" | "b2b";
 }
 
-const CALL_OUTCOMES = [
-  { id: "reached", label: "Erreicht", icon: CheckCircle2, color: "text-[hsl(var(--success))]", bgColor: "bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20" },
-  { id: "not_reached", label: "Nicht erreicht", icon: XCircle, color: "text-destructive", bgColor: "bg-destructive/10 border-destructive/20" },
-  { id: "followup", label: "Follow-Up vereinbart", icon: Clock, color: "text-[hsl(var(--warning))]", bgColor: "bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20" },
-  { id: "appointment", label: "Termin buchen", icon: Calendar, color: "text-[hsl(var(--info))]", bgColor: "bg-[hsl(var(--info))]/10 border-[hsl(var(--info))]/20" },
-  { id: "no_interest", label: "Kein Interesse", icon: PhoneOff, color: "text-muted-foreground", bgColor: "bg-secondary border-border" },
-  { id: "callback", label: "Wiedervorlage", icon: Phone, color: "text-primary", bgColor: "bg-primary/10 border-primary/20" },
+const B2C_CALL_OUTCOMES = [
+  { id: "reached", label: "Erstgespräch geführt", icon: CheckCircle2, color: "text-[hsl(var(--success))]", bgColor: "bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20", statusId: "b2c_first_call" },
+  { id: "not_reached", label: "Nicht erreicht", icon: XCircle, color: "text-destructive", bgColor: "bg-destructive/10 border-destructive/20", statusId: "b2c_contact" },
+  { id: "followup", label: "Follow-Up vereinbart", icon: Clock, color: "text-[hsl(var(--warning))]", bgColor: "bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20", statusId: "b2c_followup" },
+  { id: "no_interest", label: "Kein Interesse", icon: PhoneOff, color: "text-muted-foreground", bgColor: "bg-secondary border-border", statusId: "b2c_lost" },
+  { id: "callback", label: "Wiedervorlage", icon: Phone, color: "text-primary", bgColor: "bg-primary/10 border-primary/20", statusId: "b2c_followup", hasCalendar: true },
 ];
+
+const B2B_CALL_OUTCOMES = [
+  { id: "consultation", label: "Beratungsgespräch vereinbart", icon: Calendar, color: "text-[hsl(var(--info))]", bgColor: "bg-[hsl(var(--info))]/10 border-[hsl(var(--info))]/20", statusId: "b2b_consultation", hasCalendar: true },
+  { id: "not_reached", label: "Nicht erreicht", icon: XCircle, color: "text-destructive", bgColor: "bg-destructive/10 border-destructive/20", statusId: "b2b_contact" },
+  { id: "followup", label: "Follow-Up vereinbart", icon: Clock, color: "text-[hsl(var(--warning))]", bgColor: "bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20", statusId: "b2b_followup" },
+  { id: "onboarding", label: "Onboarding buchen", icon: CheckCircle2, color: "text-[hsl(var(--success))]", bgColor: "bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20", statusId: "b2b_onboarding" },
+  { id: "no_interest", label: "Kein Interesse", icon: PhoneOff, color: "text-muted-foreground", bgColor: "bg-secondary border-border", statusId: "b2b_lost" },
+  { id: "callback", label: "Wiedervorlage", icon: Phone, color: "text-primary", bgColor: "bg-primary/10 border-primary/20", statusId: "b2b_followup", hasCalendar: true },
+];
+
+// Legacy compat
+const CALL_OUTCOMES = B2C_CALL_OUTCOMES;
 
 // ── Script Upload Dialog ──
 function ScriptUploadDialog({
@@ -199,6 +210,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   const activeScriptId = type === "b2c" ? activeB2CScriptId : activeB2BScriptId;
   const setActiveScriptId = type === "b2c" ? setActiveB2CScriptId : setActiveB2BScriptId;
   const activeScript = allScripts.find(s => s.id === activeScriptId);
+  const typeOutcomes = type === "b2c" ? B2C_CALL_OUTCOMES : B2B_CALL_OUTCOMES;
   const scriptsForType = allScripts.filter(s => s.type === type);
   const hasScriptSelected = !!activeScript;
 
@@ -240,8 +252,8 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
   }, []);
 
   const handleOutcome = (outcomeId: string) => {
-    if (!current) return;
-    const outcome = CALL_OUTCOMES.find((o) => o.id === outcomeId);
+    const outcome = typeOutcomes.find((o) => o.id === outcomeId);
+    const newStatusId = outcome && 'statusId' in outcome ? (outcome as any).statusId : undefined;
     setCallLog((prev) => [...prev, {
       leadId: current.id, outcome: outcomeId, note: callNote, duration: callSeconds,
       scriptResults: scriptResults.length > 0 ? scriptResults : undefined,
@@ -520,7 +532,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
           <div className="bg-card rounded-lg p-5 shadow-crm-sm border border-border">
             <h3 className="text-sm font-semibold text-foreground mb-3">Schnell-Aktionen</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {CALL_OUTCOMES.map((outcome) => (
+              {typeOutcomes.map((outcome) => (
                 <button
                   key={outcome.id}
                   onClick={() => handleOutcome(outcome.id)}
@@ -528,6 +540,9 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
                 >
                   <outcome.icon className={`h-4 w-4 ${outcome.color}`} />
                   <span className="text-foreground">{outcome.label}</span>
+                  {'hasCalendar' in outcome && (outcome as any).hasCalendar && (
+                    <Calendar className="h-3 w-3 text-muted-foreground ml-auto" />
+                  )}
                 </button>
               ))}
             </div>
@@ -597,7 +612,7 @@ export default function Powerdialer({ leads, type }: PowerdialerProps) {
             <DialogDescription>Wähle das Ergebnis des Gesprächs ({formatTime(callSeconds)})</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            {CALL_OUTCOMES.map((outcome) => (
+            {typeOutcomes.map((outcome) => (
               <button
                 key={outcome.id}
                 onClick={() => handleOutcome(outcome.id)}

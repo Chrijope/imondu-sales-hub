@@ -7,7 +7,8 @@ import {
   ChevronDown, ChevronRight, Flame, RotateCcw, CalendarCheck, Calendar, Download,
   CalendarDays, Trophy, Archive, Sparkles, GraduationCap, Home,
   MapPin, HardHat, ClipboardList, UsersRound, BotMessageSquare, Calculator,
-  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal, Video, Settings
+  Zap, HeadphonesIcon, Shield, BookOpen, Target, User, Medal, Video, Settings,
+  XCircle,
 } from "lucide-react";
 import imonduLogo from "@/assets/imondu-logo-full.png";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -51,6 +52,7 @@ const b2cSubItems = [
   { path: "/b2c/termine-gebucht", icon: CalendarCheck, label: "Termine gebucht" },
   { path: "/b2c/gewonnen", icon: Trophy, label: "Gewonnen" },
   { path: "/b2c/bestand", icon: Archive, label: "Bestand" },
+  { path: "/b2c/verloren", icon: XCircle, label: "Verloren" },
 ];
 
 const b2bSubItems = [
@@ -61,6 +63,7 @@ const b2bSubItems = [
   { path: "/b2b/termine-gebucht", icon: CalendarCheck, label: "Termine gebucht" },
   { path: "/b2b/gewonnen", icon: Trophy, label: "Gewonnen" },
   { path: "/b2b/bestand", icon: Archive, label: "Bestand" },
+  { path: "/b2b/verloren", icon: XCircle, label: "Verloren" },
 ];
 
 const rechnerSubItems = [

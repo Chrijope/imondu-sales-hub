@@ -41,13 +41,19 @@ const ALL_COLUMNS: ColumnDef[] = [
 ];
 
 const SUB_PAGE_CONFIG: Record<string, { title: string; description: string; filterFn: (l: Lead) => boolean }> = {
-  "neue-leads": { title: "Neue Leads", description: "Neue Partner-Leads, die noch nicht kontaktiert wurden", filterFn: (l) => l.status === "b2b_new" },
-  "hot-leads": { title: "Hot Leads", description: "Partner mit hoher Priorität", filterFn: (l) => l.priority === "high" },
+  "neue-leads": { title: "Neue Leads", description: "Neue Partner-Leads (Neuer Lead & Kontaktversuch)", filterFn: (l) => l.status === "b2b_new" || l.status === "b2b_contact" },
+  "hot-leads": { title: "Hot Leads", description: "Partner mit Angebot Mitgliedschaft oder Follow-Up 2", filterFn: (l) => l.status === "b2b_offer" || l.status === "b2b_followup2" },
   "follow-up": { title: "Follow Up", description: "Partner, die nachverfolgt werden müssen", filterFn: (l) => l.status === "b2b_followup" },
   "heutige-termine": { title: "Heutige Termine", description: "Partner-Termine für heute", filterFn: () => false },
-  "termine-gebucht": { title: "Termine gebucht", description: "Partner mit gebuchten Beratungsgesprächen", filterFn: (l) => l.status === "b2b_consultation" || l.status === "b2b_offer" },
+  "termine-gebucht": { title: "Termine gebucht", description: "Partner mit Beratungsgespräch oder Onboarding", filterFn: (l) => l.status === "b2b_consultation" || l.status === "b2b_onboarding" },
   "gewonnen": { title: "Gewonnen", description: "Partner mit aktiver Mitgliedschaft", filterFn: (l) => l.status === "b2b_won" },
-  "bestand": { title: "Bestand", description: "Alle aktiven Partner-Leads im Bestand", filterFn: () => true },
+  "bestand": { title: "Bestand", description: "Partner im langfristigen Bestand (30+ Tage gewonnen)", filterFn: (l) => {
+    if (l.status !== "b2b_won") return false;
+    const updated = new Date(l.updatedAt);
+    const daysSince = Math.floor((Date.now() - updated.getTime()) / (1000 * 60 * 60 * 24));
+    return daysSince >= 30;
+  }},
+  "verloren": { title: "Verloren", description: "Partner ohne Interesse", filterFn: (l) => l.status === "b2b_lost" },
 };
 
 // Mock membership/profile data
