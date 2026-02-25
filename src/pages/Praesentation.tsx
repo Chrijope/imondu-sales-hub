@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import {
   ChevronDown, ChevronUp, Play, Download, ExternalLink, FileText, ArrowRight,
-  Plus, Trash2, Pencil, Save,
+  Plus, Trash2, Pencil, Save, Youtube,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,6 +111,116 @@ function CollapsibleCard({ section, canEdit, onAddItem, onDeleteItem, onEditItem
   );
 }
 
+function getYouTubeId(url: string) {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
+  const [videoUrl, setVideoUrl] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editVideoUrl, setEditVideoUrl] = useState("");
+  const [editDownloadUrl, setEditDownloadUrl] = useState("");
+
+  const ytId = getYouTubeId(videoUrl);
+  const hasDownload = !!downloadUrl.trim();
+
+  const handleSave = () => {
+    setVideoUrl(editVideoUrl.trim());
+    setDownloadUrl(editDownloadUrl.trim());
+    setShowEditDialog(false);
+    toast.success("Erklärvideo aktualisiert");
+  };
+
+  return (
+    <>
+      <div className="glass-card-static rounded-xl overflow-hidden">
+        <div className="bg-muted/30 flex items-center justify-center py-8 px-6 relative">
+          {canEdit && (
+            <Button variant="ghost" size="sm" className="absolute top-3 right-3 gap-1 text-xs" onClick={() => {
+              setEditVideoUrl(videoUrl);
+              setEditDownloadUrl(downloadUrl);
+              setShowEditDialog(true);
+            }}>
+              <Pencil className="h-3.5 w-3.5" /> Bearbeiten
+            </Button>
+          )}
+          <div className="w-full max-w-3xl aspect-video bg-foreground/5 rounded-lg border border-border flex items-center justify-center relative overflow-hidden">
+            {ytId ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${ytId}`}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <>
+                <div className="absolute inset-0 gradient-brand opacity-10" />
+                <div className="text-center z-10">
+                  <div className="h-16 w-16 rounded-full bg-card/90 shadow-crm-md flex items-center justify-center mx-auto mb-3 cursor-pointer hover:scale-105 transition-transform">
+                    <Play className="h-7 w-7 text-accent ml-1" />
+                  </div>
+                  <p className="text-lg font-display font-bold text-foreground">Imondu Erklärvideo</p>
+                  <p className="text-sm text-muted-foreground mt-1">So funktioniert Imondu – für Vertriebspartner</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-3 py-4 border-t border-border">
+          {hasDownload ? (
+            <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10" asChild>
+              <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Video herunterladen
+              </a>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="text-xs" disabled>
+              <Download className="h-3.5 w-3.5 mr-1.5" /> Video herunterladen
+            </Button>
+          )}
+          {videoUrl ? (
+            <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10" asChild>
+              <a href={videoUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Auf YouTube ansehen
+              </a>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="text-xs" disabled>
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Auf YouTube ansehen
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Erklärvideo bearbeiten</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">YouTube-URL</label>
+              <Input value={editVideoUrl} onChange={e => setEditVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+              <p className="text-[10px] text-muted-foreground mt-1">Wird als eingebettetes Video und als "Auf YouTube ansehen"-Link verwendet.</p>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Download-Link (optional)</label>
+              <Input value={editDownloadUrl} onChange={e => setEditDownloadUrl(e.target.value)} placeholder="https://..." />
+              <p className="text-[10px] text-muted-foreground mt-1">Nur wenn ein Link hinterlegt ist, wird der Download-Button aktiv.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Abbrechen</Button>
+            <Button onClick={handleSave}><Save className="h-4 w-4 mr-1" /> Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export default function Praesentation() {
   const { currentRoleId } = useUserRole();
   const canEdit = currentRoleId === "admin" || currentRoleId === "vertriebsleiter";
@@ -167,28 +277,7 @@ export default function Praesentation() {
         </div>
 
         {/* Erklärvideo */}
-        <div className="glass-card-static rounded-xl overflow-hidden">
-          <div className="bg-muted/30 flex items-center justify-center py-8 px-6">
-            <div className="w-full max-w-3xl aspect-video bg-foreground/5 rounded-lg border border-border flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 gradient-brand opacity-10" />
-              <div className="text-center z-10">
-                <div className="h-16 w-16 rounded-full bg-card/90 shadow-crm-md flex items-center justify-center mx-auto mb-3 cursor-pointer hover:scale-105 transition-transform">
-                  <Play className="h-7 w-7 text-accent ml-1" />
-                </div>
-                <p className="text-lg font-display font-bold text-foreground">Imondu Erklärvideo</p>
-                <p className="text-sm text-muted-foreground mt-1">So funktioniert Imondu – für Vertriebspartner</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-3 py-4 border-t border-border">
-            <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10">
-              <Download className="h-3.5 w-3.5 mr-1.5" /> Video herunterladen
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10">
-              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Auf YouTube ansehen
-            </Button>
-          </div>
-        </div>
+        <ErklaervideoBlock canEdit={canEdit} />
 
         {/* Collapsible Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

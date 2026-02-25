@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Copy, ExternalLink, User, Building2, Home, Plus, ChevronDown, ChevronUp,
   Trash2, CheckCircle, TrendingUp, Users, Shield, Briefcase, Phone, Mail,
-  Star, ArrowRight, Smartphone
+  Star, ArrowRight, Smartphone, Pencil
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import imonduLogo from "@/assets/imondu-logo-full.png";
@@ -435,6 +435,16 @@ export default function BeraterMicroseite() {
   const [newCodeRabatt, setNewCodeRabatt] = useState(25);
   const [newCodeMitarbeiter, setNewCodeMitarbeiter] = useState("");
   const [mitarbeiterFilter, setMitarbeiterFilter] = useState("alle");
+  const [editCodeId, setEditCodeId] = useState<string | null>(null);
+
+  const openEditCode = (rc: RabattCode) => {
+    setEditCodeId(rc.id);
+    setNewCode(rc.code);
+    setNewCodeType(rc.type);
+    setNewCodeRabatt(rc.rabattProzent);
+    setNewCodeMitarbeiter(rc.mitarbeiterId || "");
+    setShowAddDialog(true);
+  };
 
   const devUrl = `https://imondu.com/developer?dev_code=${devCode}`;
   const cusUrl = `https://imondu.com/customer?cus_code=${cusCode}`;
@@ -457,15 +467,23 @@ export default function BeraterMicroseite() {
 
   const addRabattCode = () => {
     const code = newCode || generateCode();
-    setRabattCodes(prev => [...prev, {
-      id: Date.now().toString(), code, type: newCodeType, rabattProzent: newCodeRabatt,
-      nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: newCodeMitarbeiter || undefined,
-    }]);
+    if (editCodeId) {
+      setRabattCodes(prev => prev.map(rc => rc.id === editCodeId ? {
+        ...rc, code, type: newCodeType, rabattProzent: newCodeRabatt, mitarbeiterId: newCodeMitarbeiter || undefined,
+      } : rc));
+      toast({ title: "Rabattcode aktualisiert", description: `Code: ${code} (${newCodeRabatt}% Rabatt)` });
+    } else {
+      setRabattCodes(prev => [...prev, {
+        id: Date.now().toString(), code, type: newCodeType, rabattProzent: newCodeRabatt,
+        nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: newCodeMitarbeiter || undefined,
+      }]);
+      toast({ title: "Rabattcode erstellt", description: `Code: ${code} (${newCodeRabatt}% Rabatt)` });
+    }
     setNewCode("");
     setNewCodeRabatt(25);
     setNewCodeMitarbeiter("");
+    setEditCodeId(null);
     setShowAddDialog(false);
-    toast({ title: "Rabattcode erstellt", description: `Code: ${code} (${newCodeRabatt}% Rabatt)` });
   };
 
   const deleteRabattCode = (id: string) => {
@@ -590,7 +608,7 @@ export default function BeraterMicroseite() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button size="sm" onClick={() => setShowAddDialog(true)}>
+              <Button size="sm" onClick={() => { setEditCodeId(null); setNewCode(""); setNewCodeRabatt(25); setNewCodeMitarbeiter(""); setShowAddDialog(true); }}>
                 <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
               </Button>
             </div>
@@ -652,9 +670,14 @@ export default function BeraterMicroseite() {
                         <span className="text-muted-foreground">Zahlend: <span className="font-medium text-foreground">{rc.zahlend}</span></span>
                         <span className="text-muted-foreground">Promo: <span className="font-medium text-foreground">{rc.promo}</span></span>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRabattCode(rc.id)}>
-                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => openEditCode(rc)}>
+                          <Pencil className="h-3.5 w-3.5 mr-1" /> Bearbeiten
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRabattCode(rc.id)}>
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -725,7 +748,7 @@ export default function BeraterMicroseite() {
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Neuen Rabattcode anlegen</DialogTitle>
+              <DialogTitle>{editCodeId ? "Rabattcode bearbeiten" : "Neuen Rabattcode anlegen"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
@@ -775,7 +798,7 @@ export default function BeraterMicroseite() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowAddDialog(false)}>Abbrechen</Button>
-              <Button onClick={addRabattCode}>Code erstellen</Button>
+              <Button onClick={addRabattCode}>{editCodeId ? "Speichern" : "Code erstellen"}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
