@@ -679,7 +679,18 @@ export default function EntwicklerRegistrieren() {
                         <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-foreground">1.249,90 €</p>
+                        {(() => {
+                          const prices = calcPrice("premium", form.gutscheinCode);
+                          const hasDiscount = prices.rabatt > 0;
+                          return hasDiscount ? (
+                            <>
+                              <p className="text-sm text-muted-foreground line-through">{formatPreis(prices.original)}</p>
+                              <p className="text-lg font-bold text-primary">{formatPreis(prices.final)}</p>
+                            </>
+                          ) : (
+                            <p className="text-lg font-bold text-foreground">{formatPreis(prices.original)}</p>
+                          );
+                        })()}
                         <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt.</p>
                       </div>
                     </div>

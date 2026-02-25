@@ -31,7 +31,7 @@ interface RabattCode {
   mitarbeiterId?: string;
 }
 
-const RABATT_OPTIONEN = [10, 20, 25, 30, 40, 50, 100];
+const RABATT_OPTIONEN = [0, 10, 20, 25, 30, 40, 50, 100];
 
 const MITARBEITER_LISTE = [
   { id: "u1", name: "Christian Peetz" },
@@ -174,6 +174,9 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         </div>
       </section>
 
+      {/* Berater CTA */}
+      <BeraterCTA name={beraterName} titel={beraterTitel} telefon={beraterTelefon} email={beraterEmail} adresse={beraterAdresse} />
+
       {/* Noch Fragen */}
       <section className="px-8 py-12 text-center">
         <h2 className="text-2xl font-bold text-foreground">Noch Fragen?</h2>
@@ -182,13 +185,10 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         </p>
         <p className="font-semibold text-foreground mt-3">Wir beraten Sie gerne.</p>
         <div className="flex justify-center gap-3 mt-4">
-          <Button variant="outline"><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</Button>
-          <Button variant="outline"><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</Button>
+          <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
+          <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
         </div>
       </section>
-
-      {/* Berater CTA */}
-      <BeraterCTA name={beraterName} titel={beraterTitel} telefon={beraterTelefon} email={beraterEmail} adresse={beraterAdresse} />
 
       {/* App */}
       <section className="bg-muted/50 px-8 py-10 text-center">
@@ -346,6 +346,9 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
         </div>
       </section>
 
+      {/* Berater CTA */}
+      <BeraterCTA name={beraterName} titel={beraterTitel} telefon={beraterTelefon} email={beraterEmail} adresse={beraterAdresse} />
+
       {/* Noch Fragen */}
       <section className="bg-muted/50 px-8 py-12 text-center">
         <h2 className="text-2xl font-bold text-foreground">Noch Fragen?</h2>
@@ -354,13 +357,10 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
         </p>
         <p className="font-semibold text-foreground mt-3">Wir beraten Sie gerne.</p>
         <div className="flex justify-center gap-3 mt-4">
-          <Button variant="outline"><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</Button>
-          <Button variant="outline"><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</Button>
+          <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
+          <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
         </div>
       </section>
-
-      {/* Berater CTA */}
-      <BeraterCTA name={beraterName} titel={beraterTitel} telefon={beraterTelefon} email={beraterEmail} adresse={beraterAdresse} />
 
       {/* App */}
       <section className="px-8 py-10 text-center">
@@ -387,15 +387,15 @@ function BeraterCTA({ name, titel, telefon, email, adresse }: {
     <section className="px-8 py-12">
       <div className="max-w-2xl mx-auto">
         {/* Speech bubble */}
-        <div className="bg-[hsl(220,10%,35%)] text-white px-6 py-4 rounded-t-xl relative">
+        <div className="bg-foreground text-background px-6 py-4 rounded-t-xl relative">
           <p className="text-sm font-bold leading-snug">
-            HI, ICH BIN <span className="text-[hsl(38,92%,50%)]">{name.split(" ")[0]?.toUpperCase()}</span>, DEIN
+            HI, ICH BIN <span className="text-primary">{name.split(" ")[0]?.toUpperCase()}</span>, DEIN
             <br />PERSÖNLICHER BERATER.
           </p>
-          <div className="absolute -bottom-3 left-12 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-[hsl(220,10%,35%)]" />
+          <div className="absolute -bottom-3 left-12 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-foreground" />
         </div>
-        {/* Orange card */}
-        <div className="bg-[hsl(38,92%,50%)] p-6 flex items-center gap-6 rounded-b-xl">
+        {/* Brand card */}
+        <div className="gradient-brand p-6 flex items-center gap-6 rounded-b-xl">
           <div className="h-24 w-24 rounded-lg bg-white/20 flex items-center justify-center shrink-0 border-4 border-white/30">
             <User className="h-10 w-10 text-white/70" />
           </div>
@@ -560,14 +560,14 @@ export default function BeraterMicroseite() {
 
               {/* Preview Card */}
               <div className="relative overflow-hidden rounded-xl border border-border self-start">
-                <div className="bg-[hsl(220,10%,35%)] text-white px-5 py-3 relative">
+                <div className="bg-foreground text-background px-5 py-3 relative">
                   <p className="text-xs font-bold leading-snug">
-                    HI, ICH BIN <span className="text-[hsl(38,92%,50%)]">{beraterName.split(" ")[0]?.toUpperCase()}</span>, DEIN
+                    HI, ICH BIN <span className="text-primary">{beraterName.split(" ")[0]?.toUpperCase()}</span>, DEIN
                     <br />PERSÖNLICHER BERATER.
                   </p>
-                  <div className="absolute -bottom-3 left-10 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-[hsl(220,10%,35%)]" />
+                  <div className="absolute -bottom-3 left-10 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-foreground" />
                 </div>
-                <div className="bg-[hsl(38,92%,50%)] p-5 flex items-center gap-4">
+                <div className="gradient-brand p-5 flex items-center gap-4">
                   <div className="h-20 w-20 rounded-lg bg-white/20 flex items-center justify-center shrink-0 border-3 border-white/30">
                     <User className="h-8 w-8 text-white/70" />
                   </div>
