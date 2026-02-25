@@ -9,6 +9,7 @@ import type { Lead, Objekttyp, Sanierungsstatus } from "@/data/crm-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import {
@@ -314,6 +315,13 @@ const statusConfig: Record<InseratStatus, { label: string; icon: React.Component
 
 type StatusFilter = "alle" | InseratStatus;
 type ViewMode = "grid" | "list" | "map";
+type LandFilter = "alle" | "Deutschland" | "Österreich" | "Schweiz";
+
+const getLandFromAddress = (adresse: string): string => {
+  if (adresse.includes("Wien") || adresse.includes("Salzburg") || adresse.includes("Graz") || adresse.includes("Linz") || adresse.includes("Innsbruck")) return "Österreich";
+  if (adresse.includes("Zürich") || adresse.includes("Bern") || adresse.includes("Basel") || adresse.includes("Genf") || adresse.includes("Luzern")) return "Schweiz";
+  return "Deutschland";
+};
 
 export default function Inserate() {
   const navigate = useNavigate();
@@ -328,6 +336,7 @@ export default function Inserate() {
   const [objektFilter, setObjektFilter] = useState<ObjektFilterType>("Alle");
   const [selectedInserat, setSelectedInserat] = useState<Inserat | null>(null);
   const [matchScoreFilter, setMatchScoreFilter] = useState<number>(0);
+  const [landFilter, setLandFilter] = useState<LandFilter>("alle");
 
   const filtered = useMemo(() => {
     let list = inserate;
@@ -336,6 +345,7 @@ export default function Inserate() {
     // Vertriebspartner only sees their own referrals
     if (isVertriebspartner) list = list.filter((i) => i.vermitteltDurch === "vertriebspartner");
     if (statusFilter !== "alle") list = list.filter((i) => i.status === statusFilter);
+    if (landFilter !== "alle") list = list.filter((i) => getLandFromAddress(i.adresse) === landFilter);
     if (isEntwickler && matchScoreFilter > 0) {
       list = list.filter((i) => (i.matchingScore || 0) >= matchScoreFilter);
     }
@@ -350,7 +360,7 @@ export default function Inserate() {
       );
     }
     return list;
-  }, [inserate, search, statusFilter, isEntwickler, isVertriebspartner, matchScoreFilter]);
+  }, [inserate, search, statusFilter, isEntwickler, isVertriebspartner, matchScoreFilter, landFilter]);
 
   const counts = {
     alle: inserate.length,
@@ -519,6 +529,21 @@ export default function Inserate() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          {/* Land Filter */}
+          <Select value={landFilter} onValueChange={(v) => setLandFilter(v as LandFilter)}>
+            <SelectTrigger className="w-[160px] h-9 text-sm">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                <SelectValue placeholder="Alle Länder" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="alle">🌍 Alle Länder</SelectItem>
+              <SelectItem value="Deutschland">🇩🇪 Deutschland</SelectItem>
+              <SelectItem value="Österreich">🇦🇹 Österreich</SelectItem>
+              <SelectItem value="Schweiz">🇨🇭 Schweiz</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="flex items-center gap-1 ml-auto">
             <Button variant={viewMode === "grid" ? "default" : "ghost"} size="icon" className="h-8 w-8" onClick={() => setViewMode("grid")}>
               <LayoutGrid className="h-4 w-4" />

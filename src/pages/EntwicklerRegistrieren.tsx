@@ -87,6 +87,16 @@ const RABATT_CODES: Record<string, number> = {
 
 const PREISE = { basis: 899.90, premium: 1249.90 };
 
+function validatePLZ(plz: string, land: string): boolean {
+  if (!plz.trim()) return false;
+  switch (land) {
+    case "Deutschland": return /^\d{5}$/.test(plz.trim());
+    case "Österreich": return /^\d{4}$/.test(plz.trim());
+    case "Schweiz": return /^\d{4}$/.test(plz.trim());
+    default: return plz.trim().length >= 4;
+  }
+}
+
 function getRabatt(code: string): number {
   return RABATT_CODES[code.toUpperCase()] ?? 0;
 }
@@ -219,7 +229,7 @@ export default function EntwicklerRegistrieren() {
   // Form state
   const [form, setForm] = useState({
     // Firma
-    firmenname: "", strasse: "", hausnummer: "", plz: "", ort: "", website: "",
+    firmenname: "", strasse: "", hausnummer: "", plz: "", ort: "", land: "Deutschland", website: "",
     rechtsform: "", gruendungsjahr: "", mitarbeiter: "", steuernummer: "", ustId: "",
     // Profil
     anrede: "", position: "", vorname: "", nachname: "",
@@ -250,7 +260,7 @@ export default function EntwicklerRegistrieren() {
   const update = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const sectionsDone: Record<string, boolean> = {
-    firma: !!(form.firmenname && form.plz && form.ort),
+    firma: !!(form.firmenname && form.plz && form.ort && validatePLZ(form.plz, form.land)),
     profil: !!(form.vorname && form.nachname),
     info: form.berufsbezeichnungen.length > 0,
     referenz: !!(form.refTitel),
@@ -332,9 +342,21 @@ export default function EntwicklerRegistrieren() {
                       <Field label="Straße"><Input placeholder="Muster Street" value={form.strasse} onChange={(e) => update("strasse", e.target.value)} /></Field>
                       <Field label="Hausnummer"><Input placeholder="1" value={form.hausnummer} onChange={(e) => update("hausnummer", e.target.value)} /></Field>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Field label="PLZ" required><Input placeholder="78233" value={form.plz} onChange={(e) => update("plz", e.target.value)} /></Field>
-                      <Field label="Ort" required><Input placeholder="z.B. Berlin" value={form.ort} onChange={(e) => update("ort", e.target.value)} /></Field>
+                    <div className="grid grid-cols-3 gap-4">
+                      <Field label="PLZ" required hint={form.land === "Deutschland" ? "5-stellig" : form.land === "Österreich" ? "4-stellig" : "4-stellig"}>
+                        <Input placeholder={form.land === "Deutschland" ? "78233" : form.land === "Österreich" ? "1010" : "8001"} value={form.plz} onChange={(e) => update("plz", e.target.value)} />
+                      </Field>
+                      <Field label="Ort" required><Input placeholder={form.land === "Deutschland" ? "z.B. Berlin" : form.land === "Österreich" ? "z.B. Wien" : "z.B. Zürich"} value={form.ort} onChange={(e) => update("ort", e.target.value)} /></Field>
+                      <Field label="Land" required>
+                        <Select value={form.land} onValueChange={(v) => { update("land", v); update("plz", ""); }}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Deutschland">🇩🇪 Deutschland</SelectItem>
+                            <SelectItem value="Österreich">🇦🇹 Österreich</SelectItem>
+                            <SelectItem value="Schweiz">🇨🇭 Schweiz</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
                     </div>
                     <Field label="Webseite" hint="optional">
                       <Input placeholder="www.fensterbau.de" value={form.website} onChange={(e) => update("website", e.target.value)} />

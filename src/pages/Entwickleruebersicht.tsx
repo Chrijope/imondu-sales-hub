@@ -600,9 +600,16 @@ export default function Entwickleruebersicht() {
   const [search, setSearch] = useState("");
   const [gewerkFilter, setGewerkFilter] = useState<GewerkFilter>("alle");
   const [standortFilter, setStandortFilter] = useState("alle");
+  const [landFilter, setLandFilter] = useState("alle");
   const [selectedId, setSelectedId] = useState<string | null>(searchParams.get("dev"));
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [matchScoreFilter, setMatchScoreFilter] = useState<number>(0);
+
+  const getLandFromOrt = (ort: string): string => {
+    if (["Wien", "Salzburg", "Graz", "Linz", "Innsbruck"].includes(ort)) return "Österreich";
+    if (["Zürich", "Bern", "Basel", "Genf", "Luzern"].includes(ort)) return "Schweiz";
+    return "Deutschland";
+  };
 
   // Sync URL param on mount
   useEffect(() => {
@@ -627,9 +634,13 @@ export default function Entwickleruebersicht() {
     ? baseList
     : baseList.filter((e) => e.gewerk === gewerkFilter);
 
-  const withStandort = standortFilter === "alle"
+  const withLand = landFilter === "alle"
     ? filtered
-    : filtered.filter((e) => e.ort === standortFilter);
+    : filtered.filter((e) => getLandFromOrt(e.ort) === landFilter);
+
+  const withStandort = standortFilter === "alle"
+    ? withLand
+    : withLand.filter((e) => e.ort === standortFilter);
 
   const withMatchScore = matchScoreFilter > 0
     ? withStandort.filter((e) => {
@@ -722,6 +733,20 @@ export default function Entwickleruebersicht() {
                   {usedOrte.map((o) => (
                     <SelectItem key={o} value={o}>{o}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              <Select value={landFilter} onValueChange={setLandFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5" />
+                    <SelectValue placeholder="Land" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alle">🌍 Alle Länder</SelectItem>
+                  <SelectItem value="Deutschland">🇩🇪 Deutschland</SelectItem>
+                  <SelectItem value="Österreich">🇦🇹 Österreich</SelectItem>
+                  <SelectItem value="Schweiz">🇨🇭 Schweiz</SelectItem>
                 </SelectContent>
               </Select>
               <DropdownMenu>
