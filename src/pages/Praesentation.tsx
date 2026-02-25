@@ -119,9 +119,13 @@ function getYouTubeId(url: string) {
 function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
   const [videoUrl, setVideoUrl] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [videoTitle, setVideoTitle] = useState("Imondu Erklärvideo");
+  const [videoSubtitle, setVideoSubtitle] = useState("So funktioniert Imondu – für Vertriebspartner");
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editVideoUrl, setEditVideoUrl] = useState("");
   const [editDownloadUrl, setEditDownloadUrl] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editSubtitle, setEditSubtitle] = useState("");
 
   const ytId = getYouTubeId(videoUrl);
   const hasDownload = !!downloadUrl.trim();
@@ -129,6 +133,8 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
   const handleSave = () => {
     setVideoUrl(editVideoUrl.trim());
     setDownloadUrl(editDownloadUrl.trim());
+    setVideoTitle(editTitle.trim() || "Imondu Erklärvideo");
+    setVideoSubtitle(editSubtitle.trim() || "So funktioniert Imondu – für Vertriebspartner");
     setShowEditDialog(false);
     toast.success("Erklärvideo aktualisiert");
   };
@@ -141,6 +147,8 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
             <Button variant="ghost" size="sm" className="absolute top-3 right-3 gap-1 text-xs" onClick={() => {
               setEditVideoUrl(videoUrl);
               setEditDownloadUrl(downloadUrl);
+              setEditTitle(videoTitle);
+              setEditSubtitle(videoSubtitle);
               setShowEditDialog(true);
             }}>
               <Pencil className="h-3.5 w-3.5" /> Bearbeiten
@@ -161,8 +169,8 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
                   <div className="h-16 w-16 rounded-full bg-card/90 shadow-crm-md flex items-center justify-center mx-auto mb-3 cursor-pointer hover:scale-105 transition-transform">
                     <Play className="h-7 w-7 text-accent ml-1" />
                   </div>
-                  <p className="text-lg font-display font-bold text-foreground">Imondu Erklärvideo</p>
-                  <p className="text-sm text-muted-foreground mt-1">So funktioniert Imondu – für Vertriebspartner</p>
+                  <p className="text-lg font-display font-bold text-foreground">{videoTitle}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{videoSubtitle}</p>
                 </div>
               </>
             )}
@@ -200,6 +208,14 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
             <DialogTitle>Erklärvideo bearbeiten</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Video-Titel</label>
+              <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Imondu Erklärvideo" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Untertitel</label>
+              <Input value={editSubtitle} onChange={e => setEditSubtitle(e.target.value)} placeholder="So funktioniert Imondu – für Vertriebspartner" />
+            </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">YouTube-URL</label>
               <Input value={editVideoUrl} onChange={e => setEditVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
