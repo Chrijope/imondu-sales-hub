@@ -24,21 +24,33 @@ interface RabattCode {
   id: string;
   code: string;
   type: "developer" | "customer";
+  rabattProzent: number;
   nutzungen: number;
   zahlend: number;
   promo: number;
+  mitarbeiterId?: string;
 }
 
+const RABATT_OPTIONEN = [10, 20, 25, 30, 40, 50, 100];
+
+const MITARBEITER_LISTE = [
+  { id: "u1", name: "Christian Peetz" },
+  { id: "u2", name: "Manuel Schilling" },
+  { id: "u3", name: "Lisa Weber" },
+  { id: "u4", name: "Oliver Gjorgijev" },
+  { id: "u5", name: "Julia Fischer" },
+];
+
 const INITIAL_CODES: RabattCode[] = [
-  { id: "1", code: "K4P4", type: "customer", nutzungen: 1, zahlend: 0, promo: 1 },
-  { id: "2", code: "H991", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "3", code: "5Y31", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "4", code: "27J5", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "5", code: "178D", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "6", code: "6L7Y", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "7", code: "B8N8", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "8", code: "J9B3", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
-  { id: "9", code: "J12Q", type: "developer", nutzungen: 0, zahlend: 0, promo: 0 },
+  { id: "1", code: "K4P4", type: "customer", rabattProzent: 0, nutzungen: 1, zahlend: 0, promo: 1, mitarbeiterId: "u3" },
+  { id: "2", code: "H991", type: "developer", rabattProzent: 25, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u3" },
+  { id: "3", code: "5Y31", type: "developer", rabattProzent: 10, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u1" },
+  { id: "4", code: "27J5", type: "developer", rabattProzent: 20, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u1" },
+  { id: "5", code: "178D", type: "developer", rabattProzent: 50, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u2" },
+  { id: "6", code: "6L7Y", type: "developer", rabattProzent: 30, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u3" },
+  { id: "7", code: "B8N8", type: "developer", rabattProzent: 100, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u2" },
+  { id: "8", code: "J9B3", type: "developer", rabattProzent: 25, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u3" },
+  { id: "9", code: "J12Q", type: "developer", rabattProzent: 40, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u1" },
 ];
 
 /* ─── Eigentümer Landing Page ─── */
@@ -420,6 +432,9 @@ export default function BeraterMicroseite() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newCode, setNewCode] = useState("");
   const [newCodeType, setNewCodeType] = useState<"developer" | "customer">("developer");
+  const [newCodeRabatt, setNewCodeRabatt] = useState(25);
+  const [newCodeMitarbeiter, setNewCodeMitarbeiter] = useState("");
+  const [mitarbeiterFilter, setMitarbeiterFilter] = useState("alle");
 
   const devUrl = `https://imondu.com/developer?dev_code=${devCode}`;
   const cusUrl = `https://imondu.com/customer?cus_code=${cusCode}`;
@@ -443,11 +458,14 @@ export default function BeraterMicroseite() {
   const addRabattCode = () => {
     const code = newCode || generateCode();
     setRabattCodes(prev => [...prev, {
-      id: Date.now().toString(), code, type: newCodeType, nutzungen: 0, zahlend: 0, promo: 0,
+      id: Date.now().toString(), code, type: newCodeType, rabattProzent: newCodeRabatt,
+      nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: newCodeMitarbeiter || undefined,
     }]);
     setNewCode("");
+    setNewCodeRabatt(25);
+    setNewCodeMitarbeiter("");
     setShowAddDialog(false);
-    toast({ title: "Rabattcode erstellt", description: `Code: ${code}` });
+    toast({ title: "Rabattcode erstellt", description: `Code: ${code} (${newCodeRabatt}% Rabatt)` });
   };
 
   const deleteRabattCode = (id: string) => {
@@ -560,11 +578,22 @@ export default function BeraterMicroseite() {
                 <div className="w-8 h-1 bg-accent rounded-full" />
                 <h2 className="font-semibold text-foreground">Rabattcodes & Affiliate-Links</h2>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">Deine personalisierten Codes mit Tracking-Übersicht.</p>
+              <p className="text-sm text-muted-foreground mt-1">Rabattcodes mit Tracking-Übersicht. Admin kann je Mitarbeiter filtern.</p>
             </div>
-            <Button size="sm" onClick={() => setShowAddDialog(true)}>
-              <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={mitarbeiterFilter} onValueChange={setMitarbeiterFilter}>
+                <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="Alle Mitarbeiter" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alle">Alle Mitarbeiter</SelectItem>
+                  {MITARBEITER_LISTE.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button size="sm" onClick={() => setShowAddDialog(true)}>
+                <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
+              </Button>
+            </div>
           </div>
 
           {/* KPI */}
@@ -585,21 +614,25 @@ export default function BeraterMicroseite() {
 
           {/* Code List */}
           <div className="px-6 pb-6 space-y-2">
-            {rabattCodes.map((rc) => {
+            {rabattCodes.filter(rc => mitarbeiterFilter === "alle" || rc.mitarbeiterId === mitarbeiterFilter).map((rc) => {
               const url = getAffiliateUrl(rc);
               const isExpanded = expandedCode === rc.id;
+              const mitarbeiter = MITARBEITER_LISTE.find(m => m.id === rc.mitarbeiterId);
               return (
                 <div key={rc.id} className="border border-border rounded-lg bg-muted/30">
                   <div
                     className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => setExpandedCode(isExpanded ? null : rc.id)}
                   >
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-muted-foreground">Rabatt-Code:</span>
+                    <div className="flex items-center gap-3">
+                      <Badge className={`text-[10px] font-bold shrink-0 ${rc.rabattProzent === 100 ? "bg-destructive text-destructive-foreground" : rc.rabattProzent >= 50 ? "bg-warning text-warning-foreground" : rc.rabattProzent > 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        {rc.rabattProzent > 0 ? `${rc.rabattProzent}%` : "0%"}
+                      </Badge>
                       <span className="font-bold text-foreground">{rc.code}</span>
                       <Badge variant="outline" className="text-xs">
                         {rc.type === "customer" ? "Eigentümer" : "Entwickler"}
                       </Badge>
+                      {mitarbeiter && <span className="text-[11px] text-muted-foreground hidden lg:inline">({mitarbeiter.name})</span>}
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-muted-foreground hidden lg:inline">Affiliate-Link:</span>
@@ -706,6 +739,36 @@ export default function BeraterMicroseite() {
                   <SelectContent>
                     <SelectItem value="developer">Entwickler (dev_code)</SelectItem>
                     <SelectItem value="customer">Eigentümer (cus_code)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Rabatt-Prozentsatz</label>
+                <div className="flex flex-wrap gap-2">
+                  {RABATT_OPTIONEN.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setNewCodeRabatt(p)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                        newCodeRabatt === p
+                          ? "bg-primary text-primary-foreground ring-2 ring-ring ring-offset-1"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {p}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Mitarbeiter zuordnen</label>
+                <Select value={newCodeMitarbeiter} onValueChange={setNewCodeMitarbeiter}>
+                  <SelectTrigger><SelectValue placeholder="Mitarbeiter wählen…" /></SelectTrigger>
+                  <SelectContent>
+                    {MITARBEITER_LISTE.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
