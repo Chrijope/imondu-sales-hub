@@ -585,9 +585,9 @@ export default function EntwicklerRegistrieren() {
                   </button>
                 </div>
 
-                {/* Gutschein-Code */}
+                {/* Rabatt Code */}
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Sie haben einen Gutschein-Code? Bitte hier eintragen</p>
+                  <p className="text-xs text-muted-foreground mb-1.5">Sie haben einen Rabatt Code? Bitte hier eintragen (gilt nur für Premium⁺)</p>
                   <div className="flex gap-2">
                     <Input placeholder="z.B. J9B3" value={form.gutscheinCode} onChange={(e) => update("gutscheinCode", e.target.value)} className="max-w-xs" />
                     <Button size="sm" className="gradient-brand border-0 text-primary-foreground">Einlösen</Button>
