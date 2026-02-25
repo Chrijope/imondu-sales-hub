@@ -81,6 +81,127 @@ function Field({ label, required, hint, children }: { label: string; required?: 
   );
 }
 
+const RABATT_CODES: Record<string, number> = {
+  "178D": 50, "H991": 25, "5Y31": 10, "27J5": 20, "6L7Y": 30, "B8N8": 100, "J9B3": 25, "J12Q": 40, "K4P4": 0,
+};
+
+const PREISE = { basis: 899.90, premium: 1249.90 };
+
+function getRabatt(code: string): number {
+  return RABATT_CODES[code.toUpperCase()] ?? 0;
+}
+
+function calcPrice(mitgliedschaft: "basis" | "premium", code: string): { original: number; rabatt: number; final: number } {
+  const original = PREISE[mitgliedschaft];
+  const rabattProzent = mitgliedschaft === "premium" ? getRabatt(code) : 0;
+  const rabatt = original * rabattProzent / 100;
+  return { original, rabatt, final: original - rabatt };
+}
+
+function formatPreis(n: number) {
+  return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+}
+
+function RabattCodeEingabe({ mitgliedschaft, gutscheinCode, onCodeChange }: {
+  mitgliedschaft: "basis" | "premium"; gutscheinCode: string; onCodeChange: (c: string) => void;
+}) {
+  const { toast } = useToast();
+  const [applied, setApplied] = useState(false);
+  const rabatt = getRabatt(gutscheinCode);
+  const isValid = rabatt > 0;
+  const isPremium = mitgliedschaft === "premium";
+
+  const handleApply = () => {
+    if (!gutscheinCode.trim()) return;
+    if (!isPremium) {
+      toast({ title: "Rabattcode nur für Premium⁺", description: "Rabattcodes gelten nur für die Premium⁺ Mitgliedschaft.", variant: "destructive" });
+      return;
+    }
+    if (!isValid) {
+      toast({ title: "Ungültiger Code", description: "Dieser Rabattcode existiert nicht.", variant: "destructive" });
+      return;
+    }
+    setApplied(true);
+    const prices = calcPrice(mitgliedschaft, gutscheinCode);
+    toast({ title: `Rabattcode eingelöst: ${rabatt}%`, description: `Neuer Preis: ${formatPreis(prices.final)} (statt ${formatPreis(prices.original)})` });
+  };
+
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-1.5">Sie haben einen Rabatt Code? Bitte hier eintragen (gilt nur für Premium⁺)</p>
+      <div className="flex gap-2 items-center">
+        <Input placeholder="z.B. 178D" value={gutscheinCode} onChange={(e) => { onCodeChange(e.target.value.toUpperCase()); setApplied(false); }} className="max-w-xs" />
+        <Button size="sm" className="gradient-brand border-0 text-primary-foreground" onClick={handleApply}>Einlösen</Button>
+      </div>
+      {applied && isValid && isPremium && (
+        <div className="mt-2 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <span className="text-sm text-primary font-medium">{rabatt}% Rabatt angewendet – Neuer Preis: {formatPreis(calcPrice(mitgliedschaft, gutscheinCode).final)}</span>
+        </div>
+      )}
+      {applied && !isValid && gutscheinCode.trim() && (
+        <p className="mt-1 text-xs text-destructive">Ungültiger Rabattcode.</p>
+      )}
+      <p className="text-[10px] text-muted-foreground mt-2">
+        Hinweis: Der Rabattcode gilt nur für das erste Vertragsjahr. Bei automatischer Verlängerung nach 12 Monaten wird der reguläre Preis berechnet.
+      </p>
+    </div>
+  );
+}
+
+function PlanSummaryCard({ mitgliedschaft, gutscheinCode }: { mitgliedschaft: "basis" | "premium"; gutscheinCode: string }) {
+  const prices = calcPrice(mitgliedschaft, gutscheinCode);
+  const hasDiscount = prices.rabatt > 0;
+  return (
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-base font-bold text-foreground">
+          {mitgliedschaft === "premium" ? <>Premium<sup className="text-primary">+</sup></> : "Basis"}
+        </p>
+        <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
+        {hasDiscount && (
+          <p className="text-[10px] text-muted-foreground mt-1">Bei Verlängerung: {formatPreis(prices.original)}/Jahr (ohne Rabatt)</p>
+        )}
+      </div>
+      <div className="text-right">
+        {hasDiscount ? (
+          <>
+            <p className="text-sm text-muted-foreground line-through">{formatPreis(prices.original)}</p>
+            <p className="text-lg font-bold text-primary">{formatPreis(prices.final)}</p>
+          </>
+        ) : (
+          <p className="text-lg font-bold text-foreground">{formatPreis(prices.original)}</p>
+        )}
+        <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt.</p>
+      </div>
+    </div>
+  );
+}
+
+function PlanSummaryPrice({ mitgliedschaft, gutscheinCode }: { mitgliedschaft: "basis" | "premium"; gutscheinCode: string }) {
+  const prices = calcPrice(mitgliedschaft, gutscheinCode);
+  const hasDiscount = prices.rabatt > 0;
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-semibold text-foreground">Summe</p>
+        {hasDiscount && <p className="text-[10px] text-muted-foreground">Rabattcode: -{getRabatt(gutscheinCode)}%</p>}
+      </div>
+      <div className="text-right">
+        {hasDiscount ? (
+          <>
+            <p className="text-sm text-muted-foreground line-through">{formatPreis(prices.original)}</p>
+            <p className="text-lg font-bold text-primary">{formatPreis(prices.final)}</p>
+          </>
+        ) : (
+          <p className="text-lg font-bold text-foreground">{formatPreis(prices.original)}</p>
+        )}
+        <p className="text-[10px] text-muted-foreground">zzgl. 19% MwSt.</p>
+      </div>
+    </div>
+  );
+}
+
 export default function EntwicklerRegistrieren() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
@@ -586,13 +707,11 @@ export default function EntwicklerRegistrieren() {
                 </div>
 
                 {/* Rabatt Code */}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Sie haben einen Rabatt Code? Bitte hier eintragen (gilt nur für Premium⁺)</p>
-                  <div className="flex gap-2">
-                    <Input placeholder="z.B. J9B3" value={form.gutscheinCode} onChange={(e) => update("gutscheinCode", e.target.value)} className="max-w-xs" />
-                    <Button size="sm" className="gradient-brand border-0 text-primary-foreground">Einlösen</Button>
-                  </div>
-                </div>
+                <RabattCodeEingabe
+                  mitgliedschaft={form.mitgliedschaft}
+                  gutscheinCode={form.gutscheinCode}
+                  onCodeChange={(code) => update("gutscheinCode", code)}
+                />
               </div>
             )}
 
@@ -625,18 +744,7 @@ export default function EntwicklerRegistrieren() {
                 <div className="space-y-5">
                   <h2 className="text-lg font-semibold text-foreground">Dein Plan im Überblick</h2>
                   <div className="rounded-xl border-2 border-primary bg-primary/5 p-5">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-base font-bold text-foreground">
-                          {form.mitgliedschaft === "premium" ? <>Premium<sup className="text-primary">+</sup></> : "Basis"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-foreground">{form.mitgliedschaft === "premium" ? "1.249,90 €" : "899,90 €"}</p>
-                        <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt.</p>
-                      </div>
-                    </div>
+                    <PlanSummaryCard mitgliedschaft={form.mitgliedschaft} gutscheinCode={form.gutscheinCode} />
                   </div>
 
                   <Field label="E-Mail-Adresse">
@@ -645,13 +753,7 @@ export default function EntwicklerRegistrieren() {
 
                   <hr className="border-border" />
 
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground">Summe</p>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-foreground">{form.mitgliedschaft === "premium" ? "1.249,90 €" : "899,90 €"}</p>
-                      <p className="text-[10px] text-muted-foreground">zzgl. 19% MwSt.</p>
-                    </div>
-                  </div>
+                  <PlanSummaryPrice mitgliedschaft={form.mitgliedschaft} gutscheinCode={form.gutscheinCode} />
 
                   {/* Legal */}
                   <div className="space-y-3 text-xs text-muted-foreground">

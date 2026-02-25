@@ -118,7 +118,7 @@ export default function Ansprechpartner() {
   const [dialogMode, setDialogMode] = useState<"contact" | "section">("contact");
   const [editSectionId, setEditSectionId] = useState<string | null>(null);
   const [editContact, setEditContact] = useState<Contact | null>(null);
-  const [form, setForm] = useState({ name: "", title: "", tasks: "", email: "", phone: "", showChat: true, sectionHeading: "" });
+  const [form, setForm] = useState({ name: "", title: "", tasks: "", email: "", phone: "", showChat: true, sectionHeading: "", image: "" });
 
   const openAddSection = () => {
     setDialogMode("section");
@@ -131,7 +131,7 @@ export default function Ansprechpartner() {
     setDialogMode("contact");
     setEditSectionId(sectionId);
     setEditContact(null);
-    setForm({ name: "", title: "", tasks: "", email: "", phone: "", showChat: true, sectionHeading: "" });
+    setForm({ name: "", title: "", tasks: "", email: "", phone: "", showChat: true, sectionHeading: "", image: "" });
     setShowDialog(true);
   };
 
@@ -139,7 +139,7 @@ export default function Ansprechpartner() {
     setDialogMode("contact");
     setEditSectionId(sectionId);
     setEditContact(contact);
-    setForm({ name: contact.name, title: contact.title, tasks: contact.tasks, email: contact.email, phone: contact.phone, showChat: contact.showChat, sectionHeading: "" });
+    setForm({ name: contact.name, title: contact.title, tasks: contact.tasks, email: contact.email, phone: contact.phone, showChat: contact.showChat, sectionHeading: "", image: contact.image });
     setShowDialog(true);
   };
 
@@ -154,7 +154,7 @@ export default function Ansprechpartner() {
         id: editContact?.id || `c-${Date.now()}`,
         name: form.name.trim(), title: form.title.trim(), tasks: form.tasks.trim(),
         email: form.email.trim(), phone: form.phone.trim(),
-        image: editContact?.image || profil7, showChat: form.showChat,
+        image: form.image || editContact?.image || profil7, showChat: form.showChat,
       };
       setSections(prev => prev.map(s => {
         if (s.id !== editSectionId) return s;
@@ -249,6 +249,28 @@ export default function Ansprechpartner() {
                       <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
                     <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Telefon</label>
                       <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Profilbild</label>
+                    <div className="flex items-center gap-3">
+                      <div className="h-14 w-14 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
+                        {form.image ? (
+                          <img src={form.image} alt="Vorschau" className="h-full w-full object-cover" />
+                        ) : (
+                          <User className="h-6 w-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => setForm(prev => ({ ...prev, image: reader.result as string }));
+                          reader.readAsDataURL(file);
+                        }} />
+                        <span className="text-xs text-primary hover:underline">Bild auswählen…</span>
+                      </label>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Switch checked={form.showChat} onCheckedChange={v => setForm({ ...form, showChat: v })} />
