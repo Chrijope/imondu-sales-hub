@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Copy, ExternalLink, User, Building2, Home, Plus, ChevronDown, ChevronUp,
-  Trash2, CheckCircle, TrendingUp, Users, Shield, Briefcase, Phone, Mail,
-  Star, ArrowRight, Smartphone, Pencil, CheckCircle2, CreditCard
+  Trash2, TrendingUp, Users, Shield, Briefcase, Phone, Mail,
+  Star, ArrowRight, Smartphone, Pencil, CheckCircle2, Eye, Lock, Zap,
+  Target, BarChart3, Search, MessageCircle, Award, Clock, MapPin,
+  Wrench, Hammer, HardHat, Building, Lightbulb, ChevronRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import imonduLogo from "@/assets/imondu-logo-full.png";
+import imonduLogoDark from "@/assets/imondu-logo-dark.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -60,161 +63,356 @@ function formatPreis(n: number) {
   return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 }
 
-/* ─── Eigentümer Landing Page ─── */
+/* ═══════════════════════════════════════════════════════════
+   EIGENTÜMER LANDING PAGE
+   Verkaufspsychologie: Problem → Emotion → Lösung → Proof → CTA
+   ═══════════════════════════════════════════════════════════ */
 function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse }: {
   beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string;
 }) {
   return (
-    <div className="space-y-0">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-background to-muted px-8 py-16">
-        <h1 className="text-4xl font-bold text-foreground leading-tight">
-          Machen Sie aus Ihrer<br />Immobilie ein <span className="text-primary font-extrabold">Vermögen.</span>
-        </h1>
-        <p className="text-lg text-muted-foreground mt-4">
-          Auf <strong>IMONDU</strong> – Deutschlands führende Plattform für Immobilienentwicklung.
-        </p>
-        <div className="grid grid-cols-3 gap-4 mt-8">
+    <div className="space-y-0 bg-background">
+      {/* Sticky Nav */}
+      <nav className="bg-background/95 backdrop-blur-md border-b border-border px-8 py-3 flex items-center justify-between sticky top-0 z-10">
+        <img src={imonduLogoDark} alt="IMONDU" className="h-8 object-contain" />
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" className="text-xs">Wie funktioniert's?</Button>
+          <Button size="sm" className="gradient-brand border-0 text-primary-foreground text-xs">Jetzt kostenlos inserieren</Button>
+        </div>
+      </nav>
+
+      {/* ─── HERO: Pattern Interrupt + Neugier ─── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        <div className="relative px-8 py-20 max-w-4xl">
+          <Badge className="gradient-brand text-primary-foreground border-0 mb-4">Die Nr. 1 Plattform für Immobilienentwicklung</Badge>
+          <h1 className="text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
+            Was steckt wirklich<br />in Deiner <span className="text-primary">Immobilie?</span>
+          </h1>
+          <p className="text-xl text-muted-foreground mt-5 max-w-2xl leading-relaxed">
+            Entdecke, welches Entwicklungspotenzial in Deiner Immobilie oder Deinem Grundstück steckt – <strong className="text-foreground">kostenlos, unverbindlich</strong> und transparent.
+          </p>
+          <p className="text-base text-primary font-semibold mt-3 italic">
+            „Klarheit kostet nichts. Unwissen kann teuer sein."
+          </p>
+          <div className="flex items-center gap-4 mt-8">
+            <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg">
+              Jetzt kostenlos inserieren <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" /> <span>In nur 3 Minuten</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 mt-6 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Kosten</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Verpflichtung</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Maklerbindung</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CEO QUOTE: Authority + Trust ─── */}
+      <section className="bg-foreground text-background px-8 py-12">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-lg italic leading-relaxed opacity-90">
+            „Eigentümer brauchen keine schnellen Entscheidungen. Sie brauchen zuerst <strong className="text-primary">Klarheit über ihre Optionen</strong>."
+          </p>
+          <p className="text-sm font-bold mt-4 opacity-70">Marinko Marjanovic, Geschäftsführer</p>
+          <p className="text-sm mt-3 opacity-60">
+            Genau deshalb erhalten Eigentümer bei IMONDU zuerst Optionen – keine Verpflichtung, keine Kosten.
+          </p>
+        </div>
+      </section>
+
+      {/* ─── PROBLEM: Agitation – Die Situation vieler Eigentümer ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Die Situation vieler <span className="text-primary">Immobilieneigentümer</span>
+          </h2>
+          <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
+            Eine Immobilie mit Substanz oder Entwicklungspotenzial – aber ohne klaren Fahrplan.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
           {[
-            { icon: Users, title: "Voller Zugriff auf", sub: "zertifizierte Entwickler" },
-            { icon: Home, title: "Immobilie aufwerten", sub: "ohne finanzielle Vorleistung" },
-            { icon: TrendingUp, title: "Wertsteigerung Ihrer", sub: "Immobilie" },
+            { icon: Search, text: "Unsicherheit bei Kosten, Ablauf und Genehmigungen" },
+            { icon: Users, text: "Kein neutraler Ansprechpartner" },
+            { icon: Shield, text: "Angst vor Fehlentscheidungen" },
+            { icon: BarChart3, text: "Unklare Marktwerte bei Verkauf oder Projektierung" },
           ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 bg-card border border-border rounded-xl p-4">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <item.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">{item.title}</p>
-                <p className="text-sm text-muted-foreground">{item.sub}</p>
-              </div>
+            <div key={i} className="bg-destructive/5 border border-destructive/10 rounded-xl p-5 text-center">
+              <item.icon className="h-8 w-8 text-destructive/60 mx-auto mb-3" />
+              <p className="text-sm text-foreground font-medium">{item.text}</p>
             </div>
           ))}
         </div>
+        <p className="text-center text-muted-foreground text-sm mt-8 max-w-xl mx-auto italic">
+          Dieses Wertsteigerungspotenzial bleibt häufig ungenutzt – nicht aus Mangel an Substanz, sondern aus <strong className="text-foreground">fehlender Orientierung</strong>.
+        </p>
       </section>
 
-      {/* Immobilienwert CTA */}
-      <section className="bg-primary/5 border-y border-border px-8 py-10 text-center">
-        <h2 className="text-xl font-semibold text-foreground">Ihr Immobilienwert – direkt herausfinden:</h2>
-        <Button className="mt-4" size="lg">
-          Jetzt Immobilienwert ermitteln <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </section>
-
-      {/* Mehr Wert Section */}
-      <section className="px-8 py-14">
-        <h2 className="text-3xl font-bold text-foreground">
-          Mehr Wert. Mehr Möglichkeiten. Mehr <span className="text-primary font-extrabold">Lebensqualität.</span>
-        </h2>
-        <p className="text-base text-muted-foreground mt-4 max-w-3xl">
-          Immobilienentwicklung <strong>ohne</strong> Risiko und finanzielle Vorleistung.
-        </p>
-        <p className="text-sm text-muted-foreground mt-3 max-w-3xl leading-relaxed">
-          Immobilienentwicklung bedeutet, eine Immobilie so zu sanieren, umzubauen oder zu modernisieren, dass sie am Ende deutlich an Wert gewinnt.
-          Auf <strong>IMONDU</strong> können Eigentümer herausfinden, welches Potenzial wirklich in ihrem Objekt steckt.
-        </p>
-        <p className="text-sm text-muted-foreground mt-3 max-w-3xl leading-relaxed">
-          Egal ob Haus, Wohnung, Grundstück oder Gewerbeimmobilie: Hier verbinden sich Immobilieneigentümer mit erfahrenen Entwicklungspartnern, die Projekte professionell umsetzen und Wertsteigerungen von <strong>bis zu 300 %</strong> ermöglichen.
-        </p>
-        <Button variant="outline" className="mt-6">
-          Jetzt Immobilie inserieren <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </section>
-
-      {/* Nr. 1 Plattform */}
-      <section className="bg-muted/50 px-8 py-14 text-center">
-        <h2 className="text-3xl font-bold text-foreground">
-          Die <span className="text-primary font-extrabold">Nr. 1 Plattform</span> für Immobilienentwicklung
-        </h2>
-        <p className="text-sm text-muted-foreground mt-4 max-w-2xl mx-auto leading-relaxed">
-          Als digitale Vermittlungsplattform verbindet <strong>IMONDU</strong> Immobilieneigentümer mit professionellen Entwicklungspartnern. Einfach anmelden, Immobilie inserieren und Entwicklungspartner auswählen.
-        </p>
-        <p className="text-base font-semibold text-foreground mt-4">Ihr Projekt. Ihre Entscheidung. Ihr Gewinn.</p>
-      </section>
-
-      {/* Steps */}
-      <section className="px-8 py-14">
-        <h2 className="text-2xl font-bold text-foreground text-center">So einfach steigern Sie den Wert Ihrer Immobilie</h2>
-        <p className="text-sm text-muted-foreground text-center mt-2">Kurze Schritte, schnelle Prozesse.</p>
-        <div className="grid grid-cols-3 gap-6 mt-8">
+      {/* ─── LÖSUNG: Was möglich ist – Wertsteigerungsbeispiele ─── */}
+      <section className="bg-primary/5 px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Was möglich ist, wenn <span className="text-primary">Potenzial erkannt</span> wird
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {[
-            { step: "1", title: "Registrieren", desc: "Melden Sie sich mit Ihrer E-Mail-Adresse an." },
-            { step: "2", title: "Profil erstellen", desc: "Vervollständigen Sie Ihre Daten und veröffentlichen Sie Ihr Profil." },
-            { step: "3", title: "Immobilie aufwerten", desc: "Treten Sie in Kontakt mit Immobilienentwicklern und starten Sie die Aufwertung Ihrer Immobilie." },
-          ].map((s) => (
-            <div key={s.step} className="bg-card border border-border rounded-xl p-6 text-center">
-              <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto text-lg font-bold">{s.step}</div>
-              <h3 className="font-semibold text-foreground mt-4">{s.title}</h3>
-              <p className="text-sm text-muted-foreground mt-2">{s.desc}</p>
+            { title: "Sanierung", zeit: "6 Monate", kosten: "400.000 €", vorher: "600.000 €", nachher: "1.050.000 €", mehrwert: "450.000 €" },
+            { title: "Grundrissoptimierung", zeit: "2 Monate", kosten: "150.000 €", vorher: "600.000 €", nachher: "850.000 €", mehrwert: "250.000 €" },
+            { title: "Teilung & Neubau", zeit: "6 Monate", kosten: "500.000 €", vorher: "250.000 €", nachher: "950.000 €", mehrwert: "700.000 €" },
+          ].map((ex, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+              <div className="gradient-brand px-5 py-3">
+                <h3 className="text-white font-bold text-lg">{ex.title}</h3>
+                <p className="text-white/70 text-xs">Entwicklungszeit: {ex.zeit}</p>
+              </div>
+              <div className="p-5 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Vor Entwicklung</span>
+                  <span className="font-bold text-foreground">{ex.vorher}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Kosten</span>
+                  <span className="text-foreground">{ex.kosten}</span>
+                </div>
+                <hr className="border-border" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Nach Entwicklung</span>
+                  <span className="font-bold text-primary text-lg">{ex.nachher}</span>
+                </div>
+                <div className="bg-primary/10 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Mehrwert</p>
+                  <p className="text-xl font-bold text-primary">+{ex.mehrwert}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-        <div className="text-center mt-6">
-          <Button size="lg">Immobilie inserieren <ArrowRight className="ml-2 h-4 w-4" /></Button>
+      </section>
+
+      {/* ─── IMMOBILIENTYPEN ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Für welche Immobilientypen ist <span className="text-primary">IMONDU</span> geeignet?
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+          {[
+            { icon: Home, label: "Einfamilienhäuser" },
+            { icon: Building2, label: "Mehrfamilienhäuser" },
+            { icon: MapPin, label: "Grundstücke" },
+            { icon: Building, label: "Eigentumswohnungen" },
+            { icon: Briefcase, label: "Gewerbeimmobilien" },
+            { icon: Wrench, label: "Mischobjekte" },
+          ].map((t, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-5 flex items-center gap-3 hover:border-primary/30 transition-colors">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <t.icon className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">{t.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="bg-muted/50 px-8 py-14">
-        <h2 className="text-2xl font-bold text-foreground text-center mb-6">FAQ – Häufig gestellte Fragen</h2>
+      {/* ─── ENTWICKLUNGSPOTENZIAL ─── */}
+      <section className="bg-muted/50 px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Mehr als Sanierung oder Neubau –<br />es geht um <span className="text-primary">Dein Potenzial</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h3 className="font-bold text-foreground text-lg mb-4 flex items-center gap-2">
+              <Home className="h-5 w-5 text-primary" /> Für Wohnungseigentümer
+            </h3>
+            <ul className="space-y-3">
+              {["Zusammenlegung von Einheiten", "Dachgeschossausbau", "Teilungserklärung und Einzelverkauf", "Gezielte Aufwertung für profitablen Verkauf"].map((t) => (
+                <li key={t} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{t}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h3 className="font-bold text-foreground text-lg mb-4 flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-primary" /> Für Gewerbeeigentümer
+            </h3>
+            <ul className="space-y-3">
+              {["Umnutzung in Wohnen", "Mixed-Use-Konzepte", "Revitalisierung leerstehender Flächen", "Mietsteigerung durch Modernisierung"].map((t) => (
+                <li key={t} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{t}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="text-center mt-8 bg-primary/5 border border-primary/10 rounded-xl p-6 max-w-2xl mx-auto">
+          <p className="text-foreground font-semibold">Ziel: Mehr Wert aus bestehender Substanz schaffen.</p>
+          <p className="text-sm text-muted-foreground mt-1">Ertrag steigern, Risiko reduzieren, Zukunft sichern.</p>
+        </div>
+      </section>
+
+      {/* ─── SO FUNKTIONIERT'S ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            So sicherst Du Dir echte Optionen – <span className="text-primary">bevor</span> Du entscheidest
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {[
+            { step: "01", title: "Immobilie einstellen", desc: "Kostenfrei inserieren und Klarheit über Dein Entwicklungspotenzial erhalten.", icon: Home },
+            { step: "02", title: "Partner vergleichen", desc: "Alle Partner für Deine Entwicklung an einem Ort – transparent und vergleichbar.", icon: Users },
+            { step: "03", title: "Du entscheidest", desc: "Wähle die Lösung, die den größten Wert aus Deiner Immobilie holt.", icon: Star },
+          ].map((s) => (
+            <div key={s.step} className="relative bg-card border border-border rounded-xl p-6 text-center">
+              <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center mx-auto text-white font-bold text-lg shadow-lg">{s.step}</div>
+              <h3 className="font-bold text-foreground mt-4 text-lg">{s.title}</h3>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── TRUST: IMONDU Modell ─── */}
+      <section className="bg-foreground text-background px-8 py-14">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl font-bold">
+            Entwicklung – mit dem <span className="text-primary">richtigen Partner</span>
+          </h2>
+          <p className="text-sm opacity-80 mt-4 leading-relaxed">
+            IMONDU verbindet Hauseigentümer mit geprüften Projektentwicklern und Fachexperten – transparent, vergleichbar und <strong>komplett kostenfrei für Eigentümer.</strong>
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            {[
+              "Zugang zu Entwicklungspartnern",
+              "Klare Vergleichbarkeit",
+              "Volle Entscheidungsfreiheit",
+              "Kostenübernahme durch Entwickler möglich",
+            ].map((t, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-4">
+                <CheckCircle2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                <p className="text-xs opacity-80">{t}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs opacity-50 mt-6">IMONDU wird ausschließlich von geprüften Entwicklungspartnern vergütet. Für Eigentümer ist die Nutzung kostenfrei.</p>
+        </div>
+      </section>
+
+      {/* ─── KOSTENÜBERSICHT ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Das könnte Dein <span className="text-primary">Entwicklungspotenzial</span> sein
+          </h2>
+        </div>
+        <div className="max-w-4xl mx-auto overflow-hidden rounded-xl border border-border">
+          <div className="grid grid-cols-4 bg-muted/50">
+            <div className="p-4 border-r border-border"><p className="text-xs font-bold text-muted-foreground">KATEGORIE</p></div>
+            <div className="p-4 border-r border-border text-center"><p className="text-xs font-bold text-muted-foreground">EINFACHE SANIERUNG</p></div>
+            <div className="p-4 border-r border-border text-center"><p className="text-xs font-bold text-muted-foreground">KERNSANIERUNG</p></div>
+            <div className="p-4 text-center"><p className="text-xs font-bold text-muted-foreground">NEUBAU</p></div>
+          </div>
+          <div className="grid grid-cols-4">
+            <div className="p-4 border-r border-t border-border"><p className="text-sm text-muted-foreground">Entstehungskosten</p></div>
+            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-medium text-foreground">500 €/m²</p></div>
+            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-medium text-foreground">1.000 €/m²</p></div>
+            <div className="p-4 border-t border-border text-center"><p className="text-sm font-medium text-foreground">2.800–3.500 €/m²</p></div>
+          </div>
+          <div className="grid grid-cols-4 bg-primary/5">
+            <div className="p-4 border-r border-t border-border"><p className="text-sm font-semibold text-foreground">Preis Endkunde*</p></div>
+            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-bold text-primary">750–1.000 €/m²</p></div>
+            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-bold text-primary">1.500–2.000 €/m²</p></div>
+            <div className="p-4 border-t border-border text-center"><p className="text-sm font-bold text-primary">3.500–5.000 €/m²</p></div>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground text-center mt-3">*Preis abhängig von detaillierter Leistungsbeschreibung.</p>
+      </section>
+
+      {/* ─── FAQ ─── */}
+      <section className="bg-muted/50 px-8 py-16">
+        <h2 className="text-2xl font-bold text-foreground text-center mb-8">Häufig gestellte Fragen</h2>
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-2">
-            <AccordionItem value="faq1" className="bg-card border border-border rounded-lg px-4">
-              <AccordionTrigger className="text-sm font-medium">Wen oder was brauche ich für eine Immobilienentwicklung?</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">
-                Sie brauchen einen erfahrenen Immobilienentwickler, der Sie und Ihr Projekt von Anfang an begleitet. Er identifiziert die Potenziale Ihrer Immobilie sowie ungenutzte oder suboptimal genutzte Flächen und erstellt ein wertorientiertes Entwicklungskonzept. Diese erfahrenen Entwickler finden Sie auf <strong>IMONDU</strong>.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq2" className="bg-card border border-border rounded-lg px-4">
-              <AccordionTrigger className="text-sm font-medium">Welche Kosten kommen bei einer Immobilienentwicklung auf mich zu?</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">
-                Die Kosten setzen sich aus Planung, Bau und Material zusammen. Wenn Sie planen, Ihre Immobilie nach der Entwicklung zu verkaufen, müssen Sie bei Entwicklern von IMONDU nicht in finanzielle Vorleistung gehen. Sie bezahlen den Immobilienentwickler anteilig aus dem Verkauf der Immobilie.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq3" className="bg-card border border-border rounded-lg px-4">
-              <AccordionTrigger className="text-sm font-medium">Was macht IMONDU in der Immobilienentwicklung genau?</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">
-                IMONDU ist die führende Plattform für Immobilienentwicklung in Deutschland, bei der Immobilieneigentümer direkten Zugriff auf Immobilienentwickler haben. Auf IMONDU finden Sie den passenden Entwickler für Ihre Immobilie.
-              </AccordionContent>
-            </AccordionItem>
+            {[
+              { q: "Was kostet die Nutzung von IMONDU für Eigentümer?", a: "Für Eigentümer ist IMONDU komplett kostenfrei – unabhängig davon, ob Du Dich für eine Entwicklung entscheidest oder nicht. IMONDU wird ausschließlich von den Entwicklungspartnern vergütet." },
+              { q: "Wen oder was brauche ich für eine Immobilienentwicklung?", a: "Einen erfahrenen Immobilienentwickler, der Dein Projekt von Anfang an begleitet. Er identifiziert die Potenziale Deiner Immobilie und erstellt ein wertorientiertes Entwicklungskonzept. Diese Experten findest Du auf IMONDU." },
+              { q: "Welche Kosten kommen bei einer Entwicklung auf mich zu?", a: "Die Kosten setzen sich aus Planung, Bau und Material zusammen. Wenn Du planst, Deine Immobilie nach der Entwicklung zu verkaufen, musst Du bei Entwicklern von IMONDU nicht in finanzielle Vorleistung gehen." },
+              { q: "Bin ich an irgendetwas gebunden?", a: "Nein. Du entscheidest jederzeit frei, ob und wie Du weitergehst. Keine Maklerbindung, keine versteckten Klauseln." },
+            ].map((f, i) => (
+              <AccordionItem key={i} value={`faq${i}`} className="bg-card border border-border rounded-lg px-4">
+                <AccordionTrigger className="text-sm font-medium">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground">{f.a}</AccordionContent>
+              </AccordionItem>
+            ))}
           </Accordion>
         </div>
       </section>
 
-      {/* Berater CTA */}
+      {/* ─── BERATER CTA ─── */}
       <BeraterCTA name={beraterName} titel={beraterTitel} telefon={beraterTelefon} email={beraterEmail} adresse={beraterAdresse} />
 
-      {/* Noch Fragen */}
+      {/* ─── NOCH FRAGEN ─── */}
       <section className="px-8 py-12 text-center">
         <h2 className="text-2xl font-bold text-foreground">Noch Fragen?</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-          Sie möchten mehr Informationen über <strong>IMONDU</strong> und die vielen Möglichkeiten der Immobilienentwicklung erfahren? Dann kontaktieren Sie uns gerne.
+          Sie möchten mehr erfahren? Kontaktieren Sie uns gerne – wir beraten Sie persönlich.
         </p>
-        <p className="font-semibold text-foreground mt-3">Wir beraten Sie gerne.</p>
         <div className="flex justify-center gap-3 mt-4">
           <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
           <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
         </div>
       </section>
 
-      {/* App */}
+      {/* ─── FINAL CTA ─── */}
+      <section className="gradient-brand px-8 py-16 text-center">
+        <h2 className="text-3xl font-bold text-white">
+          Bevor Du entscheidest –<br />prüfe Dein Potenzial.
+        </h2>
+        <div className="flex flex-wrap justify-center gap-4 mt-6 text-white/80 text-sm">
+          <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> 3 Minuten Aufwand</span>
+          <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> Keine Verpflichtung</span>
+          <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> Keine Kosten</span>
+          <span className="flex items-center gap-1.5"><Lock className="h-4 w-4" /> Keine Maklerbindung</span>
+        </div>
+        <Button size="lg" className="mt-8 bg-white text-foreground hover:bg-white/90 text-base px-10 py-6 shadow-xl font-bold">
+          Jetzt kostenlos inserieren <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+        <p className="text-white/60 text-sm mt-4 italic">Jede Immobilie hat Potenzial. Die Frage ist nur, ob Du es kennst.</p>
+      </section>
+
+      {/* ─── APP ─── */}
       <section className="bg-muted/50 px-8 py-10 text-center">
         <h2 className="text-xl font-bold text-foreground">Demnächst auch als App</h2>
         <p className="text-sm text-muted-foreground mt-1">Für noch schnelleren Zugriff unterwegs.</p>
         <div className="flex justify-center gap-3 mt-4">
-          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium">
-            <Smartphone className="h-4 w-4" /> App Store
-          </div>
-          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium">
-            <Smartphone className="h-4 w-4" /> Google Play
-          </div>
+          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium"><Smartphone className="h-4 w-4" /> App Store</div>
+          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium"><Smartphone className="h-4 w-4" /> Google Play</div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-foreground text-background px-8 py-6 text-center">
+        <img src={imonduLogoDark} alt="IMONDU" className="h-6 mx-auto opacity-50 invert" />
+        <p className="text-xs opacity-40 mt-3">© {new Date().getFullYear()} IMONDU GmbH. Alle Rechte vorbehalten. | www.imondu.com</p>
+      </footer>
     </div>
   );
 }
 
-/* ─── Entwickler Landing Page ─── */
+/* ═══════════════════════════════════════════════════════════
+   ENTWICKLER LANDING PAGE
+   Verkaufspsychologie: Pain → Consequence → Solution → ROI → Close
+   Social-Media-Strategie: Hook → Story → Proof → Offer
+   ═══════════════════════════════════════════════════════════ */
 function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse, rabattCode }: {
   beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string; rabattCode?: string;
 }) {
@@ -224,93 +422,266 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
   const hasPremiumDiscount = rabattProzent > 0;
 
   return (
-    <div className="space-y-0">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-background to-muted px-8 py-16">
-        <h1 className="text-4xl font-bold text-foreground leading-tight">
-          Gewinnen Sie <span className="text-primary font-extrabold">neue Kunden</span><br />für Ihre Immobilienentwicklung!
-        </h1>
-        <p className="text-lg text-muted-foreground mt-4">
-          Auf <strong>IMONDU</strong> – Deutschlands größte Plattform für Immobilienentwicklung.
-        </p>
-        <div className="grid grid-cols-3 gap-4 mt-8">
+    <div className="space-y-0 bg-background">
+      {/* Sticky Nav */}
+      <nav className="bg-background/95 backdrop-blur-md border-b border-border px-8 py-3 flex items-center justify-between sticky top-0 z-10">
+        <img src={imonduLogoDark} alt="IMONDU" className="h-8 object-contain" />
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" className="text-xs">So funktioniert's</Button>
+          <Button size="sm" className="gradient-brand border-0 text-primary-foreground text-xs" asChild>
+            <a href="/entwickler-registrieren">Jetzt Partner werden</a>
+          </Button>
+        </div>
+      </nav>
+
+      {/* ─── HERO: Hook + Kontrast ─── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        <div className="relative px-8 py-20 max-w-4xl">
+          <Badge className="gradient-brand text-primary-foreground border-0 mb-4">Die Nr. 1 Plattform für Immobilienentwicklung</Badge>
+          <h1 className="text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
+            Projekte mit echtem<br /><span className="text-primary">Potenzial.</span>
+          </h1>
+          <p className="text-xl text-muted-foreground mt-5 max-w-2xl leading-relaxed">
+            IMONDU bringt Dir geprüfte Eigentümer – mit echtem Entwicklungspotenzial.
+            <strong className="text-foreground"> Günstiger als eine Printanzeige</strong> – mit deutlich höherer Abschlusswahrscheinlichkeit.
+          </p>
+          <div className="flex items-center gap-6 mt-6">
+            {[
+              { icon: Target, label: "Mehr qualifizierte Anfragen" },
+              { icon: Zap, label: "Weniger Streuverlust" },
+              { icon: Eye, label: "Volle Transparenz" },
+            ].map((item, i) => (
+              <span key={i} className="flex items-center gap-1.5 text-sm text-foreground font-medium">
+                <item.icon className="h-4 w-4 text-primary" /> {item.label}
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center gap-4 mt-8">
+            <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
+              <a href="/entwickler-registrieren">Jetzt Partner werden <ArrowRight className="ml-2 h-5 w-5" /></a>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a>
+            </Button>
+          </div>
+          <p className="text-primary text-sm font-semibold mt-4 italic">
+            „Ein Projekt finanziert Deine Mitgliedschaft für Jahre."
+          </p>
+        </div>
+      </section>
+
+      {/* ─── PAIN: Warum Entwickler Projekte verlieren ─── */}
+      <section className="bg-foreground text-background px-8 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-3">
+            Warum Entwickler heute <span className="text-primary">Projekte verlieren.</span>
+          </h2>
+          <p className="text-sm opacity-60 text-center mb-10">Die Realität des Marktes.</p>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {[
+              { icon: Clock, label: "Hoher Akquiseaufwand" },
+              { icon: TrendingUp, label: "Preisdruck durch Vergleichsportale" },
+              { icon: Users, label: "Unqualifizierte Anfragen" },
+              { icon: BarChart3, label: "Lange Entscheidungsprozesse" },
+              { icon: Target, label: "Steigende Marketingkosten" },
+            ].map((p, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                <p.icon className="h-7 w-7 text-destructive/80 mx-auto mb-2" />
+                <p className="text-xs opacity-80 font-medium">{p.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <h3 className="text-xl font-bold">Die Konsequenz:</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 max-w-3xl mx-auto">
+              {["Weniger Zeit für Projekte", "Mehr Aufwand für Akquise", "Sinkende Margen", "Steigende Kosten"].map((c, i) => (
+                <div key={i} className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                  <p className="text-xs text-destructive font-medium">{c}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CEO QUOTE ─── */}
+      <section className="bg-primary/5 px-8 py-12">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-lg italic text-foreground leading-relaxed">
+            „Gute Projekte entstehen nicht durch mehr Kaltakquise. Sie entstehen durch den <strong className="text-primary">richtigen Zugang zu Eigentümern</strong> – zur richtigen Zeit."
+          </p>
+          <p className="text-sm font-bold text-muted-foreground mt-4">Marinko Marjanovic, Geschäftsführer</p>
+        </div>
+      </section>
+
+      {/* ─── LÖSUNG: Kein Vergleichsportal ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Kein Vergleichsportal.<br />Sondern Dein strategischer <span className="text-primary">Zugang zu Eigentümern.</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
           {[
-            { icon: Home, title: "Projektentwicklung", sub: "ohne Ankaufskosten" },
-            { icon: Users, title: "Zugriff auf bundesweite", sub: "Immobilienleads" },
-            { icon: Briefcase, title: "Digitales", sub: "Projektmanagement" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 bg-card border border-border rounded-xl p-4">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <item.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">{item.title}</p>
-                <p className="text-sm text-muted-foreground">{item.sub}</p>
-              </div>
+            { num: "1", label: "Keine Streuverluste" },
+            { num: "2", label: "Keine Kaltakquise" },
+            { num: "3", label: "Keine Maklerabhängigkeit" },
+            { num: "4", label: "Eigentümer kommen aktiv" },
+            { num: "5", label: "Du wählst gezielt aus" },
+          ].map((s) => (
+            <div key={s.num} className="bg-card border border-border rounded-xl p-5 text-center">
+              <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center mx-auto text-white font-bold text-sm">{s.num}</div>
+              <p className="text-xs font-semibold text-foreground mt-3">{s.label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-primary font-bold text-lg mt-8">Pipeline statt Projekt-Hoffnung.</p>
+      </section>
+
+      {/* ─── RELEVANZ ─── */}
+      <section className="bg-muted/50 px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">Nicht Masse. <span className="text-primary">Relevanz.</span></h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+          {[
+            "Nur Eigentümer mit realem Entwicklungsinteresse",
+            "Vorqualifizierte Objekte",
+            "Konkretes Entwicklungspotenzial",
+            "Direkter Austausch möglich",
+          ].map((t, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-5 flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+              <p className="text-sm font-medium text-foreground">{t}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-muted-foreground text-sm mt-6">Monatlich neue qualifizierte Eigentümeranfragen.</p>
+      </section>
+
+      {/* ─── MARKT ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Der Markt ist riesig – nur nicht <span className="text-primary">strukturiert zugänglich</span>
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2">Es fehlt nicht an Nachfrage.</p>
+        </div>
+        <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto">
+          {[
+            { value: "6,61 Mio.", label: "Eigentümer in Deutschland", src: "¹ Deutschlandatlas" },
+            { value: "70 %", label: "digital erreichbar", src: "² Bitkom" },
+            { value: "125 Mrd. €", label: "adressierbares Entwicklungsvolumen p.a.", src: "³ Eigene Schätzung" },
+          ].map((stat, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-6 text-center">
+              <p className="text-3xl font-bold text-primary">{stat.value}</p>
+              <p className="text-sm text-foreground font-medium mt-2">{stat.label}</p>
+              <p className="text-[9px] text-muted-foreground mt-1">{stat.src}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Leads CTA */}
-      <section className="bg-primary/5 border-y border-border px-8 py-10 text-center">
-        <h2 className="text-xl font-semibold text-foreground">Entwicklungsprojekte in Ihrer Nähe:</h2>
-        <Button className="mt-4" size="lg" asChild>
-          <a href="/entwickler-registrieren">Jetzt Immobilien-Leads finden <ArrowRight className="ml-2 h-4 w-4" /></a>
-        </Button>
+      {/* ─── FÜR WEN ─── */}
+      <section className="bg-primary/5 px-8 py-16">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground">Für wen ist <span className="text-primary">IMONDU?</span></h2>
+          <p className="text-sm text-muted-foreground mt-2">Projektentwickler & Fachbetriebe</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          {[
+            { icon: Building2, label: "Projektentwickler" },
+            { icon: HardHat, label: "Architekten" },
+            { icon: Lightbulb, label: "Energieberater" },
+            { icon: Hammer, label: "Dachdecker" },
+            { icon: Wrench, label: "Fensterbauer" },
+            { icon: Zap, label: "Heizungsbauer" },
+            { icon: Building, label: "Generalunternehmer" },
+            { icon: Briefcase, label: "Handwerker" },
+          ].map((t, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+              <t.icon className="h-5 w-5 text-primary shrink-0" />
+              <p className="text-sm font-medium text-foreground">{t.label}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* Mehr Projekte */}
-      <section className="px-8 py-14">
-        <h2 className="text-3xl font-bold text-foreground">
-          Mehr Projekte. Mehr Kunden. Mehr <span className="text-primary font-extrabold">Gewinn.</span>
-        </h2>
-        <p className="text-base text-muted-foreground mt-4 max-w-3xl">
-          Ihre <strong>Immobilien-Leads</strong> sind nur einen Klick entfernt!
+      {/* ─── ROI: Was ein Projekt wert sein kann ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Was ein einziges Projekt <span className="text-primary">wert sein kann</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          {[
+            { label: "Sanierung", wert: "40.000 €", color: "bg-primary/10" },
+            { label: "Heizungsbau", wert: "25.000 €", color: "bg-primary/10" },
+            { label: "Dachbau", wert: "60.000 €", color: "bg-primary/10" },
+            { label: "Entwicklung", wert: "500.000 €", color: "bg-primary/20" },
+          ].map((p, i) => (
+            <div key={i} className={`${p.color} border border-primary/10 rounded-xl p-6 text-center`}>
+              <p className="text-sm text-muted-foreground">{p.label}</p>
+              <p className="text-2xl font-bold text-primary mt-2">{p.wert}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-foreground font-bold text-lg mt-8 italic">
+          Und Du fragst Dich, was eine 12-monatige Mitgliedschaft kosten soll?
         </p>
-        <p className="text-sm text-muted-foreground mt-3 max-w-3xl leading-relaxed">
-          Sie sind Bauträger, Architekt, Projektentwickler oder Handwerker mit Erfahrung in Immobilienentwicklung? Dann bekommen Sie auf <strong>IMONDU</strong> Zugang zu zahlreichen <strong>Immobilien-Leads in Ihrer Nähe!</strong>
-        </p>
-        <p className="text-sm text-muted-foreground mt-3 max-w-3xl leading-relaxed">
-          Ohne Akquise, ohne Ankaufskosten und im direkten Kontakt zu Immobilieneigentümern – für mehr Neukundengeschäft und mehr Gewinn. Effizient, digital und mit minimalem Aufwand.
-        </p>
-        <Button variant="outline" className="mt-6" asChild>
-          <a href="/entwickler-registrieren">Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" /></a>
-        </Button>
       </section>
 
-      {/* Mitgliedschaft / Preise */}
-      <section className="bg-muted/50 px-8 py-14">
-        <h2 className="text-2xl font-bold text-foreground text-center mb-2">Unsere Mitgliedschaften</h2>
-        <p className="text-sm text-muted-foreground text-center mb-8">Wählen Sie den passenden Plan für Ihr Unternehmen.</p>
+      {/* ─── ERFOLGE ─── */}
+      <section className="bg-muted/50 px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">Konkrete Erfolge durch <span className="text-primary">IMONDU</span></h2>
+          <p className="text-sm text-muted-foreground mt-2">Ergebnisse, die für sich sprechen.</p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="bg-card border border-border rounded-xl p-6">
+            <Badge className="bg-primary/10 text-primary border-0 mb-3">Architekt aus NRW</Badge>
+            <p className="text-foreground font-bold text-lg">3 Anfragen in 4 Wochen</p>
+            <p className="text-sm text-muted-foreground mt-1">1 Projekt beauftragt</p>
+            <p className="text-primary font-bold text-xl mt-2">Honorarvolumen: 26.780 €</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <Badge className="bg-primary/10 text-primary border-0 mb-3">Projektentwickler aus München</Badge>
+            <p className="text-foreground font-bold text-lg">Zugang zu Eigentümer mit MFH</p>
+            <p className="text-sm text-muted-foreground mt-1">Gemeinschaftsprojekt</p>
+            <p className="text-primary font-bold text-xl mt-2">Reduzierte Kapitalbindung</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PRICING ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-3">
+          <h2 className="text-3xl font-bold text-foreground">Zwei Wege. Ein Ziel:</h2>
+          <p className="text-xl font-bold text-primary mt-1">Mehr qualifizierte Projekte.</p>
+          <p className="text-sm text-muted-foreground mt-2">Ein einziges Projekt kann Deine Investition mehrfach amortisieren.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mt-8">
           {/* Basis */}
           <div className="rounded-xl border-2 border-border bg-card p-6">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-lg font-bold text-foreground">Basis</p>
-                <p className="text-xs text-muted-foreground">Laufzeit 12 Monate</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-foreground">{formatPreis(PREISE.basis)}</p>
-                <p className="text-[10px] text-muted-foreground">pro Jahr, exkl. 19% MwSt.</p>
-              </div>
-            </div>
-            <hr className="border-border my-3" />
-            <ul className="space-y-2">
+            <p className="text-lg font-bold text-foreground">Basis-Mitgliedschaft</p>
+            <p className="text-xs text-muted-foreground">12 Monate</p>
+            <p className="text-3xl font-bold text-foreground mt-3">899 €<span className="text-sm font-normal text-muted-foreground"> /Jahr</span></p>
+            <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt. | nur {(899/365).toFixed(2).replace(".", ",")} €/Tag</p>
+            <hr className="border-border my-4" />
+            <ul className="space-y-2.5">
               {[
                 "Unbegrenzte Kontaktanfragen",
-                "Identitätsprüfung",
-                "Support durch IMONDU",
+                "Verifiziertes Profil",
+                "Sichtbarkeit bei Eigentümern",
+                "12 Monate Mitgliedschaft",
               ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-xs text-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  {t}
-                </li>
+                <li key={t} className="flex items-start gap-2 text-xs text-foreground"><CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{t}</li>
               ))}
             </ul>
-            <Button className="w-full mt-4" variant="outline" asChild>
-              <a href="/entwickler-registrieren">Jetzt registrieren</a>
+            <Button className="w-full mt-5" variant="outline" asChild>
+              <a href="/entwickler-registrieren">Direkt starten</a>
             </Button>
           </div>
 
@@ -319,162 +690,112 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
             <div className="absolute -top-3 right-4">
               <Badge className="gradient-brand text-primary-foreground text-[10px] border-0">Empfohlen</Badge>
             </div>
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-lg font-bold text-foreground">Premium<sup className="text-primary">+</sup></p>
-                <p className="text-xs text-muted-foreground">Laufzeit 12 Monate</p>
-              </div>
-              <div className="text-right">
-                {hasPremiumDiscount ? (
-                  <>
-                    <p className="text-sm text-muted-foreground line-through">{formatPreis(premiumOriginal)}</p>
-                    <p className="text-xl font-bold text-primary">{formatPreis(premiumFinal)}</p>
-                    <p className="text-[10px] text-primary font-medium">-{rabattProzent}% Rabatt</p>
-                  </>
-                ) : (
-                  <p className="text-xl font-bold text-foreground">{formatPreis(premiumOriginal)}</p>
-                )}
-                <p className="text-[10px] text-muted-foreground">pro Jahr, exkl. 19% MwSt.</p>
-              </div>
+            <p className="text-lg font-bold text-foreground">Premium-Mitgliedschaft</p>
+            <p className="text-xs text-muted-foreground">12 Monate</p>
+            <div className="mt-3">
+              {hasPremiumDiscount ? (
+                <>
+                  <p className="text-sm text-muted-foreground line-through">{formatPreis(premiumOriginal)}</p>
+                  <p className="text-3xl font-bold text-primary">{formatPreis(premiumFinal)}<span className="text-sm font-normal"> /Jahr</span></p>
+                  <p className="text-[10px] text-primary font-medium">-{rabattProzent}% Rabatt</p>
+                </>
+              ) : (
+                <p className="text-3xl font-bold text-foreground">1.249 €<span className="text-sm font-normal text-muted-foreground"> /Jahr</span></p>
+              )}
             </div>
-            <hr className="border-border my-3" />
-            <ul className="space-y-2">
+            <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt. | nur {(1249/365).toFixed(2).replace(".", ",")} €/Tag</p>
+            <hr className="border-border my-4" />
+            <ul className="space-y-2.5">
               {[
                 "Alle Basis-Vorteile",
-                "Frühzeitiger Zugang zu Leads",
-                "Premium-Badge",
-                "Priorisierte Platzierung",
-                "Performance-Statistiken",
+                "Frühzeitiger Zugang zu neuen Anfragen",
+                "Frühzeitige Platzierung bei limitierten Kontakten",
+                "Premium-Badge für mehr Vertrauen",
+                "Performance-Statistiken & Conversion-Insights",
                 "Priorisierter Support",
+                "Hervorgehobene Platzierung in Deiner Region",
               ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-xs text-foreground font-medium">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  {t}
-                </li>
+                <li key={t} className="flex items-start gap-2 text-xs text-foreground font-medium"><CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{t}</li>
               ))}
             </ul>
+            <p className="text-[10px] text-destructive font-medium mt-3">* Begrenzte Branchenplätze je Region</p>
             <Button className="w-full mt-4 gradient-brand border-0 text-primary-foreground" asChild>
-              <a href="/entwickler-registrieren">Jetzt registrieren</a>
+              <a href="/entwickler-registrieren">Jetzt Premium starten</a>
             </Button>
           </div>
         </div>
         {hasPremiumDiscount && (
-          <p className="text-[10px] text-muted-foreground text-center mt-4">
-            * Rabatt gilt nur für das erste Vertragsjahr. Bei automatischer Verlängerung wird der reguläre Preis berechnet.
-          </p>
+          <p className="text-[10px] text-muted-foreground text-center mt-4">* Rabatt gilt nur für das erste Vertragsjahr.</p>
         )}
       </section>
 
-      {/* Marktpotenzial */}
-      <section className="bg-primary/5 border-y border-border px-8 py-12">
-        <h2 className="text-2xl font-bold text-foreground text-center">
-          Marktpotenzial auf <span className="text-primary font-extrabold">IMONDU</span>
-        </h2>
-        <div className="grid grid-cols-3 gap-6 mt-8">
-          {[
-            { value: "6,61 Mio.", label: "Immobilien-Besitzer in Deutschland" },
-            { value: "75 %", label: "aller Immobilien sind entwickelbar" },
-            { value: "250.000", label: "neue Besucher pro Monat" },
-          ].map((stat, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-6 text-center">
-              <p className="text-2xl font-bold text-primary">{stat.value}</p>
-              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Nr. 1 Plattform */}
-      <section className="px-8 py-14 text-center">
-        <h2 className="text-3xl font-bold text-foreground">
-          Die <span className="text-primary font-extrabold">Nr. 1 Plattform</span> für Immobilienentwicklung
-        </h2>
-        <p className="text-sm text-muted-foreground mt-4 max-w-2xl mx-auto leading-relaxed">
-          Als digitale Vermittlungsplattform verbindet <strong>IMONDU</strong> Projektentwickler mit potenziellen Immobilieneigentümern. Hier entsteht direkter Kontakt zu Eigentümern und ihren Immobilien.
-        </p>
-        <p className="text-base font-semibold text-foreground mt-4">Digital. Unkompliziert. Gewinnbringend.</p>
-      </section>
-
-      {/* Steps */}
-      <section className="bg-muted/50 px-8 py-14">
-        <h2 className="text-2xl font-bold text-foreground text-center">So einfach kommen Sie zu Ihren Immobilien-Leads</h2>
-        <p className="text-sm text-muted-foreground text-center mt-2">Kurze Schritte, schnelle Prozesse.</p>
-        <div className="grid grid-cols-3 gap-6 mt-8">
-          {[
-            { step: "1", title: "Registrieren", desc: "Melden Sie sich mit Ihrer E-Mail-Adresse an." },
-            { step: "2", title: "Profil erstellen", desc: "Vervollständigen Sie Ihre Daten und veröffentlichen Sie Ihr Profil." },
-            { step: "3", title: "Leads erhalten", desc: "Entdecken Sie bundesweite Leads und treten Sie in Kontakt mit Immobilieneigentümern." },
-          ].map((s) => (
-            <div key={s.step} className="bg-card border border-border rounded-xl p-6 text-center">
-              <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto text-lg font-bold">{s.step}</div>
-              <h3 className="font-semibold text-foreground mt-4">{s.title}</h3>
-              <p className="text-sm text-muted-foreground mt-2">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-        <div className="text-center mt-6">
-          <Button size="lg" asChild>
-            <a href="/entwickler-registrieren">Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" /></a>
-          </Button>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="px-8 py-14">
-        <h2 className="text-2xl font-bold text-foreground text-center mb-6">FAQ – Häufig gestellte Fragen</h2>
+      {/* ─── FAQ ─── */}
+      <section className="bg-muted/50 px-8 py-16">
+        <h2 className="text-2xl font-bold text-foreground text-center mb-8">Häufig gestellte Fragen</h2>
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-2">
-            <AccordionItem value="faq1" className="bg-card border border-border rounded-lg px-4">
-              <AccordionTrigger className="text-sm font-medium">Welche Vorteile bietet mir eine Partnerschaft mit IMONDU?</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">
-                Auf <strong>IMONDU</strong> werden Sie zuverlässig mit qualifizierten, hochwertigen Immobilien-Leads versorgt und sparen sich hohe Kosten für eigenes Marketing. Ohne Akquise, ohne Ankaufskosten und im direkten Kontakt zu Immobilieneigentümern.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq2" className="bg-card border border-border rounded-lg px-4">
-              <AccordionTrigger className="text-sm font-medium">Wie funktioniert Immobilienentwicklung ohne Ankaufskosten?</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">
-                Durch die Zusammenarbeit mit <strong>IMONDU</strong> bringen Sie Ihre Expertise direkt in die Projektentwicklung ein. Ein Kauf oder eine Finanzierung der Immobilie ist nicht nötig. Beim Verkauf wird der Gewinn gemäß vertraglicher Regelung aufgeteilt.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq3" className="bg-card border border-border rounded-lg px-4">
-              <AccordionTrigger className="text-sm font-medium">Welche Kosten entstehen für Immobilienentwickler?</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">
-                Als Mitglied im <strong>IMONDU</strong>-Netzwerk erhalten Sie eine unbegrenzte Anzahl an Immobilien-Leads. Dafür erhebt IMONDU einen jährlichen Beitrag, den Sie zwischen drei Varianten (Basis, Premium, Premium Plus) wählen können.
-              </AccordionContent>
-            </AccordionItem>
+            {[
+              { q: "Welche Vorteile bietet mir eine Partnerschaft mit IMONDU?", a: "Auf IMONDU werden Sie zuverlässig mit qualifizierten Immobilien-Leads versorgt und sparen sich hohe Kosten für eigenes Marketing. Ohne Akquise, ohne Ankaufskosten und im direkten Kontakt zu Eigentümern." },
+              { q: "Wie funktioniert Immobilienentwicklung ohne Ankaufskosten?", a: "Durch die Zusammenarbeit mit IMONDU bringen Sie Ihre Expertise direkt in die Projektentwicklung ein. Ein Kauf oder eine Finanzierung der Immobilie ist nicht nötig." },
+              { q: "Welche Kosten entstehen für Entwickler?", a: "Als Mitglied erhalten Sie unbegrenzte Kontaktanfragen für einen jährlichen Beitrag ab 899 € (Basis) oder 1.249 € (Premium)." },
+            ].map((f, i) => (
+              <AccordionItem key={i} value={`faq${i}`} className="bg-card border border-border rounded-lg px-4">
+                <AccordionTrigger className="text-sm font-medium">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground">{f.a}</AccordionContent>
+              </AccordionItem>
+            ))}
           </Accordion>
         </div>
       </section>
 
-      {/* Berater CTA */}
+      {/* ─── BERATER CTA ─── */}
       <BeraterCTA name={beraterName} titel={beraterTitel} telefon={beraterTelefon} email={beraterEmail} adresse={beraterAdresse} />
 
-      {/* Noch Fragen */}
-      <section className="bg-muted/50 px-8 py-12 text-center">
+      {/* ─── NOCH FRAGEN ─── */}
+      <section className="px-8 py-12 text-center">
         <h2 className="text-2xl font-bold text-foreground">Noch Fragen?</h2>
-        <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-          Sie möchten mehr Informationen über <strong>IMONDU</strong> und die vielen Möglichkeiten erfahren? Kontaktieren Sie uns gerne.
-        </p>
-        <p className="font-semibold text-foreground mt-3">Wir beraten Sie gerne.</p>
+        <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">Kontaktieren Sie uns gerne – wir beraten Sie persönlich.</p>
         <div className="flex justify-center gap-3 mt-4">
           <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
           <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
         </div>
       </section>
 
-      {/* App */}
-      <section className="px-8 py-10 text-center">
-        <h2 className="text-xl font-bold text-foreground">Demnächst auch als App</h2>
-        <p className="text-sm text-muted-foreground mt-1">Für noch schnelleren Zugriff unterwegs.</p>
-        <div className="flex justify-center gap-3 mt-4">
-          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium">
-            <Smartphone className="h-4 w-4" /> App Store
-          </div>
-          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium">
-            <Smartphone className="h-4 w-4" /> Google Play
-          </div>
+      {/* ─── FINAL CTA ─── */}
+      <section className="gradient-brand px-8 py-16 text-center">
+        <h2 className="text-3xl font-bold text-white">
+          Du kannst weiter akquirieren.<br />Oder Du wirst <span className="underline decoration-white/50">gefunden.</span>
+        </h2>
+        <div className="flex flex-wrap justify-center gap-6 mt-6 text-white/80 text-sm">
+          <span>✓ 12 Monate Mitgliedschaft</span>
+          <span>✓ Sofortige Profilfreischaltung</span>
+          <span>✓ Sichtbarkeit bei Eigentümern</span>
+          <span>✓ Unbegrenzte Kontaktanfragen</span>
+        </div>
+        <div className="flex justify-center gap-4 mt-8">
+          <Button size="lg" className="bg-white text-foreground hover:bg-white/90 text-base px-10 py-6 shadow-xl font-bold" asChild>
+            <a href="/entwickler-registrieren">Direkt starten <ArrowRight className="ml-2 h-5 w-5" /></a>
+          </Button>
+          <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-base px-8 py-6" asChild>
+            <a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> 30-Min Beratung</a>
+          </Button>
         </div>
       </section>
+
+      {/* ─── APP ─── */}
+      <section className="bg-muted/50 px-8 py-10 text-center">
+        <h2 className="text-xl font-bold text-foreground">Demnächst auch als App</h2>
+        <div className="flex justify-center gap-3 mt-4">
+          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium"><Smartphone className="h-4 w-4" /> App Store</div>
+          <div className="bg-foreground text-background rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium"><Smartphone className="h-4 w-4" /> Google Play</div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-foreground text-background px-8 py-6 text-center">
+        <img src={imonduLogoDark} alt="IMONDU" className="h-6 mx-auto opacity-50 invert" />
+        <p className="text-xs opacity-40 mt-3">© {new Date().getFullYear()} IMONDU GmbH. Alle Rechte vorbehalten. | www.imondu.com</p>
+      </footer>
     </div>
   );
 }
@@ -486,7 +807,6 @@ function BeraterCTA({ name, titel, telefon, email, adresse }: {
   return (
     <section className="px-8 py-12">
       <div className="max-w-2xl mx-auto">
-        {/* Speech bubble */}
         <div className="bg-foreground text-background px-6 py-4 rounded-t-xl relative">
           <p className="text-sm font-bold leading-snug">
             HI, ICH BIN <span className="text-primary">{name.split(" ")[0]?.toUpperCase()}</span>, DEIN
@@ -494,7 +814,6 @@ function BeraterCTA({ name, titel, telefon, email, adresse }: {
           </p>
           <div className="absolute -bottom-3 left-12 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-foreground" />
         </div>
-        {/* Brand card */}
         <div className="gradient-brand p-6 flex items-center gap-6 rounded-b-xl">
           <div className="h-24 w-24 rounded-lg bg-white/20 flex items-center justify-center shrink-0 border-4 border-white/30">
             <User className="h-10 w-10 text-white/70" />
@@ -516,7 +835,9 @@ function BeraterCTA({ name, titel, telefon, email, adresse }: {
   );
 }
 
-/* ─── Main Page ─── */
+/* ═══════════════════════════════════════════════════════════
+   MAIN PAGE
+   ═══════════════════════════════════════════════════════════ */
 export default function BeraterMicroseite() {
   const { toast } = useToast();
   const { currentRoleId } = useUserRole();
@@ -538,8 +859,6 @@ export default function BeraterMicroseite() {
   const [mitarbeiterFilter, setMitarbeiterFilter] = useState("alle");
   const [editCodeId, setEditCodeId] = useState<string | null>(null);
 
-  // Find codes assigned to this user (for non-admin, show their assigned codes as landing page links)
-  // For simplicity, assume current user = u2 (Manuel Schilling) for non-admin demo
   const myDevCodes = rabattCodes.filter(rc => rc.type === "developer");
   const myCusCodes = rabattCodes.filter(rc => rc.type === "customer");
 
@@ -571,22 +890,13 @@ export default function BeraterMicroseite() {
   const addRabattCode = () => {
     const code = newCode || generateCode();
     if (editCodeId) {
-      setRabattCodes(prev => prev.map(rc => rc.id === editCodeId ? {
-        ...rc, code, type: newCodeType, rabattProzent: newCodeRabatt, mitarbeiterId: newCodeMitarbeiter || undefined,
-      } : rc));
+      setRabattCodes(prev => prev.map(rc => rc.id === editCodeId ? { ...rc, code, type: newCodeType, rabattProzent: newCodeRabatt, mitarbeiterId: newCodeMitarbeiter || undefined } : rc));
       toast({ title: "Rabattcode aktualisiert", description: `Code: ${code} (${newCodeRabatt}% Rabatt)` });
     } else {
-      setRabattCodes(prev => [...prev, {
-        id: Date.now().toString(), code, type: newCodeType, rabattProzent: newCodeRabatt,
-        nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: newCodeMitarbeiter || undefined,
-      }]);
+      setRabattCodes(prev => [...prev, { id: Date.now().toString(), code, type: newCodeType, rabattProzent: newCodeRabatt, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: newCodeMitarbeiter || undefined }]);
       toast({ title: "Rabattcode erstellt", description: `Code: ${code} (${newCodeRabatt}% Rabatt)` });
     }
-    setNewCode("");
-    setNewCodeRabatt(25);
-    setNewCodeMitarbeiter("");
-    setEditCodeId(null);
-    setShowAddDialog(false);
+    setNewCode(""); setNewCodeRabatt(25); setNewCodeMitarbeiter(""); setEditCodeId(null); setShowAddDialog(false);
   };
 
   const deleteRabattCode = (id: string) => {
@@ -595,23 +905,17 @@ export default function BeraterMicroseite() {
   };
 
   const getAffiliateUrl = (rc: RabattCode) =>
-    rc.type === "customer"
-      ? `https://imondu.com/customer?code=${rc.code}`
-      : `https://imondu.com/developer?code=${rc.code}`;
+    rc.type === "customer" ? `https://imondu.com/customer?code=${rc.code}` : `https://imondu.com/developer?code=${rc.code}`;
 
-  // For landing page preview, use the first assigned dev/cus code
   const previewDevCode = myDevCodes[0]?.code;
   const previewCusCode = myCusCodes[0]?.code;
 
   const getLandingUrl = (type: "developer" | "customer", code?: string) =>
-    type === "developer"
-      ? `https://imondu.com/developer${code ? `?code=${code}` : ""}`
-      : `https://imondu.com/customer${code ? `?code=${code}` : ""}`;
+    type === "developer" ? `https://imondu.com/developer${code ? `?code=${code}` : ""}` : `https://imondu.com/customer${code ? `?code=${code}` : ""}`;
 
   return (
     <CRMLayout>
       <div className="p-6 space-y-6 min-h-screen dashboard-mesh-bg">
-        {/* Header */}
         <div className="flex items-center gap-2">
           <div className="w-1 h-10 bg-accent rounded-full" />
           <div>
@@ -627,52 +931,28 @@ export default function BeraterMicroseite() {
               <div className="w-8 h-1 bg-accent rounded-full" />
               <h2 className="font-semibold text-foreground">Personalisierung</h2>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Passe deine persönlichen Berater-Daten an. Diese erscheinen auf deinen Landingpages.
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">Passe deine persönlichen Berater-Daten an.</p>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Name</label>
-                    <Input value={beraterName} onChange={(e) => setBeraterName(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Titel / Position</label>
-                    <Input value={beraterTitel} onChange={(e) => setBeraterTitel(e.target.value)} />
-                  </div>
+                  <div><label className="text-sm font-medium text-foreground mb-1 block">Name</label><Input value={beraterName} onChange={(e) => setBeraterName(e.target.value)} /></div>
+                  <div><label className="text-sm font-medium text-foreground mb-1 block">Titel / Position</label><Input value={beraterTitel} onChange={(e) => setBeraterTitel(e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Telefon</label>
-                    <Input value={beraterTelefon} onChange={(e) => setBeraterTelefon(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">E-Mail</label>
-                    <Input value={beraterEmail} onChange={(e) => setBeraterEmail(e.target.value)} />
-                  </div>
+                  <div><label className="text-sm font-medium text-foreground mb-1 block">Telefon</label><Input value={beraterTelefon} onChange={(e) => setBeraterTelefon(e.target.value)} /></div>
+                  <div><label className="text-sm font-medium text-foreground mb-1 block">E-Mail</label><Input value={beraterEmail} onChange={(e) => setBeraterEmail(e.target.value)} /></div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Adresse</label>
-                  <Input value={beraterAdresse} onChange={(e) => setBeraterAdresse(e.target.value)} />
-                </div>
+                <div><label className="text-sm font-medium text-foreground mb-1 block">Adresse</label><Input value={beraterAdresse} onChange={(e) => setBeraterAdresse(e.target.value)} /></div>
               </div>
-
-              {/* Preview Card */}
               <div className="relative overflow-hidden rounded-xl border border-border self-start">
                 <div className="bg-foreground text-background px-5 py-3 relative">
-                  <p className="text-xs font-bold leading-snug">
-                    HI, ICH BIN <span className="text-primary">{beraterName.split(" ")[0]?.toUpperCase()}</span>, DEIN
-                    <br />PERSÖNLICHER BERATER.
-                  </p>
+                  <p className="text-xs font-bold leading-snug">HI, ICH BIN <span className="text-primary">{beraterName.split(" ")[0]?.toUpperCase()}</span>, DEIN<br />PERSÖNLICHER BERATER.</p>
                   <div className="absolute -bottom-3 left-10 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-foreground" />
                 </div>
                 <div className="gradient-brand p-5 flex items-center gap-4">
-                  <div className="h-20 w-20 rounded-lg bg-white/20 flex items-center justify-center shrink-0 border-3 border-white/30">
-                    <User className="h-8 w-8 text-white/70" />
-                  </div>
+                  <div className="h-20 w-20 rounded-lg bg-white/20 flex items-center justify-center shrink-0 border-3 border-white/30"><User className="h-8 w-8 text-white/70" /></div>
                   <div className="text-white space-y-0.5">
                     <h3 className="text-base font-bold uppercase tracking-wide">{beraterName}</h3>
                     <p className="text-xs italic opacity-90">{beraterTitel}</p>
@@ -694,51 +974,29 @@ export default function BeraterMicroseite() {
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-1 bg-accent rounded-full" />
-                <h2 className="font-semibold text-foreground">Rabattcodes & Affiliate-Links</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {isAdmin ? "Rabattcodes mit Tracking-Übersicht. Admin kann je Mitarbeiter filtern." : "Deine zugewiesenen Rabattcodes und Affiliate-Links."}
-              </p>
+              <div className="flex items-center gap-2"><div className="w-8 h-1 bg-accent rounded-full" /><h2 className="font-semibold text-foreground">Rabattcodes & Affiliate-Links</h2></div>
+              <p className="text-sm text-muted-foreground mt-1">{isAdmin ? "Admin: Codes verwalten und nach Mitarbeiter filtern." : "Deine zugewiesenen Rabattcodes."}</p>
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && (
                 <>
                   <Select value={mitarbeiterFilter} onValueChange={setMitarbeiterFilter}>
                     <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="Alle Mitarbeiter" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="alle">Alle Mitarbeiter</SelectItem>
-                      {MITARBEITER_LISTE.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectContent><SelectItem value="alle">Alle Mitarbeiter</SelectItem>{MITARBEITER_LISTE.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}</SelectContent>
                   </Select>
-                  <Button size="sm" onClick={() => { setEditCodeId(null); setNewCode(""); setNewCodeRabatt(25); setNewCodeMitarbeiter(""); setShowAddDialog(true); }}>
-                    <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
-                  </Button>
+                  <Button size="sm" onClick={() => { setEditCodeId(null); setNewCode(""); setNewCodeRabatt(25); setNewCodeMitarbeiter(""); setShowAddDialog(true); }}><Plus className="h-4 w-4 mr-1.5" /> Neuen Code</Button>
                 </>
               )}
             </div>
           </div>
-
-          {/* KPI */}
           <div className="p-6 grid grid-cols-3 gap-4">
-            <div className="border border-border rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Gesamt Code-Nutzungen</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{totalNutzungen}</p>
-            </div>
-            <div className="border border-border rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Zahlende Nutzungen</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{totalZahlend}</p>
-            </div>
-            <div className="border border-border rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Kostenlose Promo-Nutzungen</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{totalPromo}</p>
-            </div>
+            {[{ l: "Gesamt-Nutzungen", v: totalNutzungen }, { l: "Zahlend", v: totalZahlend }, { l: "Promo", v: totalPromo }].map((k) => (
+              <div key={k.l} className="border border-border rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">{k.l}</p>
+                <p className="text-2xl font-bold text-foreground mt-1">{k.v}</p>
+              </div>
+            ))}
           </div>
-
-          {/* Code List */}
           <div className="px-6 pb-6 space-y-2">
             {rabattCodes.filter(rc => mitarbeiterFilter === "alle" || rc.mitarbeiterId === mitarbeiterFilter).map((rc) => {
               const url = getAffiliateUrl(rc);
@@ -746,48 +1004,34 @@ export default function BeraterMicroseite() {
               const mitarbeiter = MITARBEITER_LISTE.find(m => m.id === rc.mitarbeiterId);
               return (
                 <div key={rc.id} className="border border-border rounded-lg bg-muted/30">
-                  <div
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => setExpandedCode(isExpanded ? null : rc.id)}
-                  >
+                  <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedCode(isExpanded ? null : rc.id)}>
                     <div className="flex items-center gap-3">
-                      <Badge className={`text-[10px] font-bold shrink-0 ${rc.rabattProzent === 100 ? "bg-destructive text-destructive-foreground" : rc.rabattProzent >= 50 ? "bg-warning text-warning-foreground" : rc.rabattProzent > 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        {rc.rabattProzent > 0 ? `${rc.rabattProzent}%` : "0%"}
-                      </Badge>
+                      <Badge className={`text-[10px] font-bold shrink-0 ${rc.rabattProzent === 100 ? "bg-destructive text-destructive-foreground" : rc.rabattProzent >= 50 ? "bg-warning text-warning-foreground" : rc.rabattProzent > 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{rc.rabattProzent}%</Badge>
                       <span className="font-bold text-foreground">{rc.code}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {rc.type === "customer" ? "Eigentümer" : "Entwickler"}
-                      </Badge>
+                      <Badge variant="outline" className="text-xs">{rc.type === "customer" ? "Eigentümer" : "Entwickler"}</Badge>
                       {mitarbeiter && <span className="text-[11px] text-muted-foreground hidden lg:inline">({mitarbeiter.name})</span>}
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm text-muted-foreground hidden lg:inline">Affiliate-Link:</span>
-                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline hidden md:inline" onClick={e => e.stopPropagation()}>
-                        {url}
-                      </a>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); copyToClipboard(url); }}>
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); copyToClipboard(url); }}><Copy className="h-3.5 w-3.5" /></Button>
                       {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
                   {isExpanded && (
-                    <div className="px-4 pb-3 pt-1 border-t border-border flex items-center justify-between">
-                      <div className="flex gap-6 text-sm">
-                        <span className="text-muted-foreground">Nutzungen: <span className="font-medium text-foreground">{rc.nutzungen}</span></span>
-                        <span className="text-muted-foreground">Zahlend: <span className="font-medium text-foreground">{rc.zahlend}</span></span>
-                        <span className="text-muted-foreground">Promo: <span className="font-medium text-foreground">{rc.promo}</span></span>
-                      </div>
-                      {isAdmin && (
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => openEditCode(rc)}>
-                            <Pencil className="h-3.5 w-3.5 mr-1" /> Bearbeiten
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRabattCode(rc.id)}>
-                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
-                          </Button>
+                    <div className="px-4 pb-3 pt-1 border-t border-border">
+                      <code className="text-xs text-primary block mb-2">{url}</code>
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-6 text-sm">
+                          <span className="text-muted-foreground">Nutzungen: <span className="font-medium text-foreground">{rc.nutzungen}</span></span>
+                          <span className="text-muted-foreground">Zahlend: <span className="font-medium text-foreground">{rc.zahlend}</span></span>
+                          <span className="text-muted-foreground">Promo: <span className="font-medium text-foreground">{rc.promo}</span></span>
                         </div>
-                      )}
+                        {isAdmin && (
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => openEditCode(rc)}><Pencil className="h-3.5 w-3.5 mr-1" /> Bearbeiten</Button>
+                            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteRabattCode(rc.id)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen</Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -796,122 +1040,47 @@ export default function BeraterMicroseite() {
           </div>
         </div>
 
-        {/* Landing Page Preview Tabs */}
+        {/* Landing Page Preview */}
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-1 bg-primary rounded-full" />
-              <h2 className="font-semibold text-foreground">Landingpage-Vorschau</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">So sehen deine personalisierten Landingpages aus. Die zugewiesenen Rabattcodes sind automatisch in den URLs hinterlegt.</p>
+            <div className="flex items-center gap-2"><div className="w-8 h-1 bg-primary rounded-full" /><h2 className="font-semibold text-foreground">Landingpage-Vorschau</h2></div>
+            <p className="text-sm text-muted-foreground mt-1">Verkaufspsychologisch optimierte Landingpages mit automatischen Rabattcodes.</p>
           </div>
-
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-6 pt-4 flex items-center justify-between">
               <TabsList>
-                <TabsTrigger value="customer" className="gap-2">
-                  <Home className="h-4 w-4" />
-                  Eigentümer-Landingpage
-                </TabsTrigger>
-                <TabsTrigger value="developer" className="gap-2">
-                  <Building2 className="h-4 w-4" />
-                  Entwickler-Landingpage
-                </TabsTrigger>
+                <TabsTrigger value="customer" className="gap-2"><Home className="h-4 w-4" /> Eigentümer</TabsTrigger>
+                <TabsTrigger value="developer" className="gap-2"><Building2 className="h-4 w-4" /> Entwickler</TabsTrigger>
               </TabsList>
-
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => copyToClipboard(getLandingUrl(activeTab === "customer" ? "customer" : "developer", activeTab === "customer" ? previewCusCode : previewDevCode))}>
-                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Link kopieren
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <a href={getLandingUrl(activeTab === "customer" ? "customer" : "developer", activeTab === "customer" ? previewCusCode : previewDevCode)} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Original öffnen
-                  </a>
-                </Button>
+                <Button variant="outline" size="sm" onClick={() => copyToClipboard(getLandingUrl(activeTab as any, activeTab === "customer" ? previewCusCode : previewDevCode))}><Copy className="h-3.5 w-3.5 mr-1.5" /> Link kopieren</Button>
+                <Button variant="outline" size="sm" asChild><a href={getLandingUrl(activeTab as any, activeTab === "customer" ? previewCusCode : previewDevCode)} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Öffnen</a></Button>
               </div>
             </div>
-
-            {/* URL display */}
-            <div className="px-6 py-3">
-              <code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded block">
-                {getLandingUrl(activeTab === "customer" ? "customer" : "developer", activeTab === "customer" ? previewCusCode : previewDevCode)}
-              </code>
-            </div>
-
-            <TabsContent value="customer" className="mt-0">
-              <CustomerLandingPreview
-                beraterName={beraterName} beraterTitel={beraterTitel}
-                beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse}
-              />
-            </TabsContent>
-
-            <TabsContent value="developer" className="mt-0">
-              <DeveloperLandingPreview
-                beraterName={beraterName} beraterTitel={beraterTitel}
-                beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse}
-                rabattCode={previewDevCode}
-              />
-            </TabsContent>
+            <div className="px-6 py-3"><code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded block">{getLandingUrl(activeTab as any, activeTab === "customer" ? previewCusCode : previewDevCode)}</code></div>
+            <TabsContent value="customer" className="mt-0"><CustomerLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} /></TabsContent>
+            <TabsContent value="developer" className="mt-0"><DeveloperLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} rabattCode={previewDevCode} /></TabsContent>
           </Tabs>
         </div>
 
-        {/* Add/Edit Code Dialog – Admin only */}
+        {/* Admin Dialog */}
         {isAdmin && (
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editCodeId ? "Rabattcode bearbeiten" : "Neuen Rabattcode anlegen"}</DialogTitle>
-              </DialogHeader>
+              <DialogHeader><DialogTitle>{editCodeId ? "Rabattcode bearbeiten" : "Neuen Rabattcode anlegen"}</DialogTitle></DialogHeader>
               <div className="space-y-4 py-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Code (leer = automatisch generiert)</label>
-                  <Input value={newCode} onChange={(e) => setNewCode(e.target.value.toUpperCase())} placeholder="z.B. X7K2" maxLength={6} />
+                <div><label className="text-sm font-medium text-foreground mb-1 block">Code</label><Input value={newCode} onChange={(e) => setNewCode(e.target.value.toUpperCase())} placeholder="z.B. X7K2" maxLength={6} /></div>
+                <div><label className="text-sm font-medium text-foreground mb-1 block">Typ</label>
+                  <Select value={newCodeType} onValueChange={(v) => setNewCodeType(v as any)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="developer">Entwickler</SelectItem><SelectItem value="customer">Eigentümer</SelectItem></SelectContent></Select>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Typ</label>
-                  <Select value={newCodeType} onValueChange={(v) => setNewCodeType(v as "developer" | "customer")}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="developer">Entwickler</SelectItem>
-                      <SelectItem value="customer">Eigentümer</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div><label className="text-sm font-medium text-foreground mb-1 block">Rabatt</label>
+                  <div className="flex flex-wrap gap-2">{RABATT_OPTIONEN.map((p) => (<button key={p} type="button" onClick={() => setNewCodeRabatt(p)} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${newCodeRabatt === p ? "bg-primary text-primary-foreground ring-2 ring-ring ring-offset-1" : "bg-muted text-muted-foreground"}`}>{p}%</button>))}</div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Rabatt-Prozentsatz</label>
-                  <div className="flex flex-wrap gap-2">
-                    {RABATT_OPTIONEN.map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setNewCodeRabatt(p)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                          newCodeRabatt === p
-                            ? "bg-primary text-primary-foreground ring-2 ring-ring ring-offset-1"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80"
-                        }`}
-                      >
-                        {p}%
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Mitarbeiter zuordnen</label>
-                  <Select value={newCodeMitarbeiter} onValueChange={setNewCodeMitarbeiter}>
-                    <SelectTrigger><SelectValue placeholder="Mitarbeiter wählen…" /></SelectTrigger>
-                    <SelectContent>
-                      {MITARBEITER_LISTE.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div><label className="text-sm font-medium text-foreground mb-1 block">Mitarbeiter</label>
+                  <Select value={newCodeMitarbeiter} onValueChange={setNewCodeMitarbeiter}><SelectTrigger><SelectValue placeholder="Wählen…" /></SelectTrigger><SelectContent>{MITARBEITER_LISTE.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}</SelectContent></Select>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowAddDialog(false)}>Abbrechen</Button>
-                <Button onClick={addRabattCode}>{editCodeId ? "Speichern" : "Code erstellen"}</Button>
-              </DialogFooter>
+              <DialogFooter><Button variant="outline" onClick={() => setShowAddDialog(false)}>Abbrechen</Button><Button onClick={addRabattCode}>{editCodeId ? "Speichern" : "Erstellen"}</Button></DialogFooter>
             </DialogContent>
           </Dialog>
         )}
