@@ -11,15 +11,19 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Trophy, Medal, Star, Zap, Target, TrendingUp, Crown,
   Flame, Award, Gift, ChevronDown, Sparkles, Users, Building2, Briefcase, PackageCheck, MapPin,
-  GraduationCap, ArrowUpRight, CheckCircle2, Euro, Info, Pencil, Trash2, Plus
+  GraduationCap, ArrowUpRight, CheckCircle2, Euro, Info, Pencil, Trash2, Plus, Send, Clock
 } from "lucide-react";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
   KARRIERESTUFEN, getB2CStufe, getB2BStufe,
 } from "@/data/karriereplan";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { addChatNotification } from "@/utils/chat-notifications";
 
 import { TIME_RANGE_OPTIONS, TimeRangeKey } from "@/utils/date-filters";
 
@@ -38,7 +42,7 @@ const MY_NAME = "Max Müller";
 
 function rand(min: number, max: number) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-function generateRanking(count: number, min: number, max: number, isEuro = false) {
+function generateRanking(count: number, min: number, max: number) {
   const entries = PARTNERS.slice(0, count).map(name => ({
     name, value: rand(min, max),
   }));
@@ -60,10 +64,27 @@ const b2bRankings = {
   "Ø Verkaufsvolumen": generateRanking(10, 280000, 490000),
 };
 
-// ── Gamification: Levels with clear XP rules ──
-// XP earned by: B2C Lead manual (+10), Eigentümer-Inserat via code (+50), Entwickler-Registrierung via code (+200)
-// Streak bonus (+10/day), Achievement unlock (variable), Top-3 ranking (+100)
-interface LevelDef {
+// ── XP Rules ──
+// B2C Lead manuell anlegen: +10 XP
+// Eigentümer-Inserat über Rabattcode: +50 XP
+// Entwickler-Registrierung über Rabattcode: +200 XP
+// B2B Mitgliedschaft verkauft: +300 XP
+// Tages-Streak: +10 XP/Tag
+// Achievement freigeschaltet: variabel
+// Top-3 Ranking: +100 XP
+
+const XP_RULES = [
+  { action: "B2C Lead manuell angelegt", xp: 10, icon: "👤" },
+  { action: "Eigentümer-Inserat (über Code)", xp: 50, icon: "🏠" },
+  { action: "Entwickler-Registrierung (über Code)", xp: 200, icon: "🏗️" },
+  { action: "B2B Mitgliedschaft verkauft", xp: 300, icon: "💼" },
+  { action: "Tages-Streak (pro Tag)", xp: 10, icon: "🔥" },
+  { action: "Achievement freigeschaltet", xp: "50–1.000", icon: "🏆" },
+  { action: "Top-3 Ranking-Platzierung", xp: 100, icon: "🥇" },
+];
+
+// ── Gamification: Levels ──
+export interface LevelDef {
   level: number; title: string; minXP: number; icon: string;
   reward: string | null; rewardLabel: string | null;
 }
@@ -79,14 +100,8 @@ const DEFAULT_LEVELS: LevelDef[] = [
 
 const MY_XP = 4200;
 
-// Track which levels have been claimed/confirmed
-const INITIAL_CLAIMED: Record<number, "none" | "requested" | "confirmed"> = {
-  3: "confirmed", // Already received
-  4: "none", // Reached but not yet claimed
-};
-
 // ── Achievements ──
-interface Achievement {
+export interface Achievement {
   id: string; title: string; description: string; iconName: string; unlocked: boolean; xpReward: number; bonusText?: string;
 }
 
@@ -109,8 +124,10 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   award: <Award className="h-5 w-5" />, gift: <Gift className="h-5 w-5" />, sparkles: <Sparkles className="h-5 w-5" />,
 };
 
+const ICON_OPTIONS = Object.keys(ICON_MAP);
+
 // ── Bonus Milestones ──
-const BONUSES = [
+export const BONUSES = [
   { target: 5, label: "5 Inserate", reward: 25, reached: true },
   { target: 10, label: "10 Inserate", reward: 50, reached: true },
   { target: 15, label: "15 Inserate", reward: 75, reached: false },
@@ -198,6 +215,8 @@ export default function Auswertungen() {
   const isAdmin = currentRoleId === "admin" || currentRoleId === "vertriebsleiter";
   const [timeFilter, setTimeFilter] = useState<TimeRangeKey>("Seit Anfang");
   const [tab, setTab] = useState<"b2c" | "b2b">("b2c");
+
+  // ── Claim Dialog ──
   const [claimDialogOpen, setClaimDialogOpen] = useState(false);
   const [claimReward, setClaimReward] = useState<{ level: number; title: string; reward: string; rewardLabel: string } | null>(null);
   const [claimForm, setClaimForm] = useState({
@@ -205,13 +224,22 @@ export default function Auswertungen() {
     strasse: "", hausnummer: "", plz: "", ort: "", land: "Deutschland", anmerkung: "",
   });
 
-  // State-based levels and achievements for admin editing
+  // ── State-based levels and achievements for admin editing ──
   const [levels, setLevels] = useState<LevelDef[]>(DEFAULT_LEVELS);
   const [achievements, setAchievements] = useState<Achievement[]>(DEFAULT_ACHIEVEMENTS);
-  const [claimedStatus, setClaimedStatus] = useState<Record<number, "none" | "requested" | "confirmed">>(INITIAL_CLAIMED);
+  // Track claim status per level: none = not claimed, requested = pending admin approval, confirmed = received
+  const [claimedStatus, setClaimedStatus] = useState<Record<number, "none" | "requested" | "confirmed">>({
+    3: "confirmed", // Demo: already received level 3 reward
+    4: "none",      // Demo: reached level 4 but not yet claimed
+  });
+
+  // ── Admin Edit Dialogs ──
   const [editLevelDialog, setEditLevelDialog] = useState<LevelDef | null>(null);
   const [editAchievementDialog, setEditAchievementDialog] = useState<Achievement | null>(null);
   const [addAchievementDialog, setAddAchievementDialog] = useState(false);
+  const [newAchievement, setNewAchievement] = useState<Achievement>({
+    id: "", title: "", description: "", iconName: "target", unlocked: false, xpReward: 100, bonusText: "",
+  });
 
   const currentLevel = [...levels].reverse().find(l => MY_XP >= l.minXP)!;
   const nextLevel = levels.find(l => l.minXP > MY_XP);
@@ -227,9 +255,65 @@ export default function Auswertungen() {
       toast({ title: "Bitte alle Pflichtfelder ausfüllen", variant: "destructive" });
       return;
     }
-    toast({ title: "Prämie angefordert! 🎉", description: `${claimReward?.rewardLabel} wird an deine Adresse versendet.` });
+    // Set status to "requested"
+    setClaimedStatus(prev => ({ ...prev, [claimReward!.level]: "requested" }));
+    // Send chat notification to Admin/VL
+    addChatNotification({
+      targetChatId: "intern-admin",
+      targetRole: "admin",
+      text: `📦 Prämien-Anforderung: ${MY_NAME} fordert "${claimReward?.rewardLabel}" (Level ${claimReward?.level} – ${claimReward?.title}) an. Lieferadresse: ${claimForm.strasse} ${claimForm.hausnummer}, ${claimForm.plz} ${claimForm.ort}, ${claimForm.land}.${claimForm.anmerkung ? ` Anmerkung: ${claimForm.anmerkung}` : ""}`,
+      sender: MY_NAME,
+      senderInitials: "MM",
+      type: "system",
+    });
+    toast({ title: "Prämie angefordert! 🎉", description: `${claimReward?.rewardLabel} – Admin und Vertriebsleitung wurden benachrichtigt.` });
     setClaimDialogOpen(false);
     setClaimForm({ vorname: "", nachname: "", email: "", telefon: "", strasse: "", hausnummer: "", plz: "", ort: "", land: "Deutschland", anmerkung: "" });
+  };
+
+  // Admin confirms a partner's claim
+  const confirmClaim = (level: number) => {
+    setClaimedStatus(prev => ({ ...prev, [level]: "confirmed" }));
+    toast({ title: "Prämie bestätigt ✓", description: `Level ${level} Sachprämie als erhalten markiert.` });
+  };
+
+  // Admin: save level reward edit
+  const saveLevelEdit = () => {
+    if (!editLevelDialog) return;
+    setLevels(prev => prev.map(l => l.level === editLevelDialog.level ? editLevelDialog : l));
+    toast({ title: "Level aktualisiert", description: `Level ${editLevelDialog.level} – ${editLevelDialog.title} gespeichert.` });
+    setEditLevelDialog(null);
+  };
+
+  // Admin: save achievement edit
+  const saveAchievementEdit = () => {
+    if (!editAchievementDialog) return;
+    setAchievements(prev => prev.map(a => a.id === editAchievementDialog.id ? editAchievementDialog : a));
+    toast({ title: "Achievement aktualisiert" });
+    setEditAchievementDialog(null);
+  };
+
+  // Admin: delete achievement
+  const deleteAchievement = (id: string) => {
+    setAchievements(prev => prev.filter(a => a.id !== id));
+    toast({ title: "Achievement gelöscht" });
+    setEditAchievementDialog(null);
+  };
+
+  // Admin: add new achievement
+  const addNewAchievement = () => {
+    if (!newAchievement.title || !newAchievement.description) {
+      toast({ title: "Titel und Beschreibung erforderlich", variant: "destructive" });
+      return;
+    }
+    const a: Achievement = {
+      ...newAchievement,
+      id: `ach-${Date.now()}`,
+    };
+    setAchievements(prev => [...prev, a]);
+    toast({ title: "Achievement hinzugefügt ✓" });
+    setAddAchievementDialog(false);
+    setNewAchievement({ id: "", title: "", description: "", iconName: "target", unlocked: false, xpReward: 100, bonusText: "" });
   };
 
   const rankings = tab === "b2c" ? b2cRankings : b2bRankings;
@@ -268,6 +352,27 @@ export default function Auswertungen() {
           </div>
         </div>
 
+        {/* ── XP-Regeln Übersicht ── */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">So sammelst du XP – Level-Aufstieg</h2>
+            <Badge variant="secondary" className="text-[10px]">Unabhängig vom Karriereplan</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">Das interne Level-System belohnt deine Leistung – je mehr du verkaufst, vermittelst und aktiv bist, desto schneller steigst du auf.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {XP_RULES.map((rule) => (
+              <div key={rule.action} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                <span className="text-xl">{rule.icon}</span>
+                <div>
+                  <p className="text-xs font-semibold text-foreground">{rule.action}</p>
+                  <p className="text-[11px] font-bold text-primary">+{rule.xp} XP</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* ── Karriereplan ── */}
         <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
           <div className="flex items-center gap-2 mb-1">
@@ -279,7 +384,7 @@ export default function Auswertungen() {
           {/* Karrierestufen */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {KARRIERESTUFEN.map((stufe, i) => {
-              const isActive = i === 0; // demo: Projektassistent
+              const isActive = i === 0;
               return (
                 <div
                   key={stufe.id}
@@ -480,12 +585,15 @@ export default function Auswertungen() {
             <Crown className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-display font-semibold text-foreground">Level-Übersicht & Sachprämien</h2>
             <Badge variant="secondary" className="text-[10px]">B2C + B2B kombiniert</Badge>
+            {isAdmin && <Badge variant="outline" className="text-[10px] ml-auto border-primary/30 text-primary">Admin: Klicke auf ✏️ um Prämien zu bearbeiten</Badge>}
           </div>
           <p className="text-xs text-muted-foreground mb-5">Sammle XP durch B2C-Inserate, B2B-Verkäufe, Streaks und Achievements – je höher dein Level, desto größer die Prämie!</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {levels.map((lvl) => {
               const isCurrentLevel2 = lvl.level === currentLevel.level;
               const isReached = MY_XP >= lvl.minXP;
+              const status = claimedStatus[lvl.level] || "none";
+              const hasReward = !!(lvl.reward && lvl.rewardLabel);
               return (
                 <div
                   key={lvl.level}
@@ -502,33 +610,67 @@ export default function Auswertungen() {
                       Aktuell
                     </Badge>
                   )}
+                  {/* Admin edit button for levels 3+ */}
+                  {isAdmin && lvl.level >= 3 && (
+                    <button
+                      onClick={() => setEditLevelDialog({ ...lvl })}
+                      className="absolute top-2 right-2 p-1 rounded-md hover:bg-muted/60 text-muted-foreground hover:text-primary transition-colors"
+                      title="Prämie bearbeiten"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  )}
                   <div className="text-3xl mb-1">{lvl.icon}</div>
                   <p className="text-xs font-bold text-foreground">Level {lvl.level}</p>
                   <p className="text-[11px] font-semibold text-foreground">{lvl.title}</p>
                   <p className="text-[10px] text-muted-foreground mt-1">{lvl.minXP.toLocaleString("de-DE")} XP</p>
-                  {lvl.reward && (
+                  {hasReward ? (
                     <div className={`mt-2 pt-2 border-t ${isReached ? "border-success/20" : "border-border"}`}>
                       <div className="text-xl mb-0.5">{lvl.reward}</div>
                       <p className={`text-[10px] font-bold leading-tight ${isReached ? "text-success" : "text-muted-foreground"}`}>
                         {lvl.rewardLabel}
                       </p>
-                      {isReached && (
-                        <Badge variant="outline" className="text-[8px] mt-1 border-success/30 text-success bg-success/10">
-                          ✓ Freigeschaltet
+                      {isReached && status === "none" && (
+                        <>
+                          <Badge variant="outline" className="text-[8px] mt-1 border-success/30 text-success bg-success/10">
+                            ✓ Freigeschaltet
+                          </Badge>
+                          <Button
+                            size="sm"
+                            className="mt-2 h-6 text-[9px] px-2 gradient-brand border-0 text-white w-full"
+                            onClick={() => openClaimDialog(lvl)}
+                          >
+                            <PackageCheck className="h-3 w-3 mr-1" /> Anfordern
+                          </Button>
+                        </>
+                      )}
+                      {isReached && status === "requested" && (
+                        <>
+                          <Badge variant="outline" className="text-[8px] mt-1 border-warning/30 text-warning bg-warning/10">
+                            <Clock className="h-2.5 w-2.5 mr-0.5" /> Angefordert
+                          </Badge>
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-2 h-6 text-[9px] px-2 w-full border-success/30 text-success hover:bg-success/10"
+                              onClick={() => confirmClaim(lvl.level)}
+                            >
+                              <CheckCircle2 className="h-3 w-3 mr-1" /> Bestätigen
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      {isReached && status === "confirmed" && (
+                        <Badge className="mt-1 text-[8px] bg-success text-success-foreground border-0">
+                          <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Erhalten
                         </Badge>
                       )}
-                      {isReached && (
-                        <Button
-                          size="sm"
-                          className="mt-2 h-6 text-[9px] px-2 gradient-brand border-0 text-white w-full"
-                          onClick={() => openClaimDialog(lvl)}
-                        >
-                          <PackageCheck className="h-3 w-3 mr-1" /> Anfordern
-                        </Button>
+                      {!isReached && (
+                        <p className="text-[9px] text-muted-foreground mt-1 italic">Noch {(lvl.minXP - MY_XP).toLocaleString("de-DE")} XP</p>
                       )}
                     </div>
-                  )}
-                  {!lvl.reward && (
+                  ) : (
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] text-muted-foreground italic">Keine Sachprämie</p>
                     </div>
@@ -540,7 +682,7 @@ export default function Auswertungen() {
           <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
             <p className="text-xs text-foreground flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span><strong>So sammelst du XP:</strong> B2C-Inserat erstellt (+50 XP) · B2B-Mitgliedschaft verkauft (+200 XP) · Tages-Streak (+10 XP/Tag) · Achievement freigeschaltet (bis zu +1.000 XP) · Top-3-Ranking (+100 XP)</span>
+              <span><strong>So sammelst du XP:</strong> B2C Lead (+10) · Eigentümer-Inserat via Code (+50) · Entwickler-Registrierung via Code (+200) · B2B Verkauf (+300) · Streak (+10/Tag) · Achievement (variabel) · Top-3 Ranking (+100)</span>
             </p>
           </div>
         </div>
@@ -575,17 +717,46 @@ export default function Auswertungen() {
           <div className="flex items-center gap-2 mb-4">
             <Award className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-display font-semibold text-foreground">Achievements</h2>
+            {isAdmin && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="ml-auto h-7 text-[10px] gap-1 border-primary/30 text-primary hover:bg-primary/5"
+                onClick={() => setAddAchievementDialog(true)}
+              >
+                <Plus className="h-3 w-3" /> Achievement hinzufügen
+              </Button>
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {achievements.map((a) => (
               <div
                 key={a.id}
-                className={`rounded-xl p-4 border transition-all ${
+                className={`rounded-xl p-4 border transition-all relative ${
                   a.unlocked
                     ? "bg-primary/5 border-primary/20 shadow-crm-sm"
                     : "bg-muted/30 border-border opacity-50 grayscale"
                 }`}
               >
+                {/* Admin edit/delete */}
+                {isAdmin && (
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    <button
+                      onClick={() => setEditAchievementDialog({ ...a })}
+                      className="p-1 rounded hover:bg-muted/60 text-muted-foreground hover:text-primary transition-colors"
+                      title="Bearbeiten"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => deleteAchievement(a.id)}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Löschen"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.unlocked ? "gradient-brand text-white" : "bg-muted text-muted-foreground"}`}>
                     {ICON_MAP[a.iconName] || <Award className="h-5 w-5" />}
@@ -674,6 +845,12 @@ export default function Auswertungen() {
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="text-xs text-muted-foreground">
+                <Info className="h-3 w-3 inline mr-1 text-primary" />
+                Nach dem Absenden wird dein Admin / Vertriebsleiter benachrichtigt. Sobald die Prämie bestätigt wurde, wird sie als „Erhalten" angezeigt.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Vorname *</Label>
@@ -720,7 +897,14 @@ export default function Auswertungen() {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Land</Label>
-                  <Input value={claimForm.land} onChange={(e) => setClaimForm(p => ({ ...p, land: e.target.value }))} className="h-9 text-sm" />
+                  <Select value={claimForm.land} onValueChange={(v) => setClaimForm(p => ({ ...p, land: v }))}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Deutschland">🇩🇪 Deutschland</SelectItem>
+                      <SelectItem value="Österreich">🇦🇹 Österreich</SelectItem>
+                      <SelectItem value="Schweiz">🇨🇭 Schweiz</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -733,7 +917,152 @@ export default function Auswertungen() {
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setClaimDialogOpen(false)}>Abbrechen</Button>
             <Button className="gradient-brand border-0 text-white" onClick={submitClaim}>
-              <PackageCheck className="h-4 w-4 mr-1.5" /> Prämie anfordern
+              <Send className="h-4 w-4 mr-1.5" /> Prämie anfordern
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Admin: Level-Prämie bearbeiten Dialog ── */}
+      <Dialog open={!!editLevelDialog} onOpenChange={(open) => !open && setEditLevelDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-primary" />
+              Level {editLevelDialog?.level} – Sachprämie bearbeiten
+            </DialogTitle>
+          </DialogHeader>
+          {editLevelDialog && (
+            <div className="space-y-4 mt-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Level-Titel</Label>
+                <Input value={editLevelDialog.title} onChange={(e) => setEditLevelDialog({ ...editLevelDialog, title: e.target.value })} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Mindest-XP</Label>
+                <Input type="number" value={editLevelDialog.minXP} onChange={(e) => setEditLevelDialog({ ...editLevelDialog, minXP: parseInt(e.target.value) || 0 })} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Icon (Emoji)</Label>
+                <Input value={editLevelDialog.icon} onChange={(e) => setEditLevelDialog({ ...editLevelDialog, icon: e.target.value })} className="h-9 text-sm" placeholder="z.B. 🔥" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Sachprämie Emoji (leer = keine Prämie)</Label>
+                <Input value={editLevelDialog.reward || ""} onChange={(e) => setEditLevelDialog({ ...editLevelDialog, reward: e.target.value || null })} className="h-9 text-sm" placeholder="z.B. 📱" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Sachprämie Beschreibung</Label>
+                <Input value={editLevelDialog.rewardLabel || ""} onChange={(e) => setEditLevelDialog({ ...editLevelDialog, rewardLabel: e.target.value || null })} className="h-9 text-sm" placeholder="z.B. Apple iPhone 16 Pro" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setEditLevelDialog(null)}>Abbrechen</Button>
+            <Button className="gradient-brand border-0 text-white" onClick={saveLevelEdit}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Admin: Achievement bearbeiten Dialog ── */}
+      <Dialog open={!!editAchievementDialog} onOpenChange={(open) => !open && setEditAchievementDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-primary" />
+              Achievement bearbeiten
+            </DialogTitle>
+          </DialogHeader>
+          {editAchievementDialog && (
+            <div className="space-y-4 mt-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Titel *</Label>
+                <Input value={editAchievementDialog.title} onChange={(e) => setEditAchievementDialog({ ...editAchievementDialog, title: e.target.value })} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Beschreibung *</Label>
+                <Input value={editAchievementDialog.description} onChange={(e) => setEditAchievementDialog({ ...editAchievementDialog, description: e.target.value })} className="h-9 text-sm" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Icon</Label>
+                  <Select value={editAchievementDialog.iconName} onValueChange={(v) => setEditAchievementDialog({ ...editAchievementDialog, iconName: v })}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ICON_OPTIONS.map((ico) => (
+                        <SelectItem key={ico} value={ico}>
+                          <span className="flex items-center gap-2">{ICON_MAP[ico]} {ico}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">XP-Belohnung</Label>
+                  <Input type="number" value={editAchievementDialog.xpReward} onChange={(e) => setEditAchievementDialog({ ...editAchievementDialog, xpReward: parseInt(e.target.value) || 0 })} className="h-9 text-sm" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Bonus-Text (optional, z.B. "🎁 +25 € Bonus!")</Label>
+                <Input value={editAchievementDialog.bonusText || ""} onChange={(e) => setEditAchievementDialog({ ...editAchievementDialog, bonusText: e.target.value })} className="h-9 text-sm" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="mt-4">
+            <Button variant="destructive" size="sm" onClick={() => editAchievementDialog && deleteAchievement(editAchievementDialog.id)} className="mr-auto">
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
+            </Button>
+            <Button variant="outline" onClick={() => setEditAchievementDialog(null)}>Abbrechen</Button>
+            <Button className="gradient-brand border-0 text-white" onClick={saveAchievementEdit}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Admin: Neues Achievement Dialog ── */}
+      <Dialog open={addAchievementDialog} onOpenChange={setAddAchievementDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-4 w-4 text-primary" />
+              Neues Achievement erstellen
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Titel *</Label>
+              <Input value={newAchievement.title} onChange={(e) => setNewAchievement(p => ({ ...p, title: e.target.value }))} className="h-9 text-sm" placeholder="z.B. 100er Club" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Beschreibung *</Label>
+              <Input value={newAchievement.description} onChange={(e) => setNewAchievement(p => ({ ...p, description: e.target.value }))} className="h-9 text-sm" placeholder="z.B. 100 B2C-Kontakte angelegt" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Icon</Label>
+                <Select value={newAchievement.iconName} onValueChange={(v) => setNewAchievement(p => ({ ...p, iconName: v }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ICON_OPTIONS.map((ico) => (
+                      <SelectItem key={ico} value={ico}>
+                        <span className="flex items-center gap-2">{ICON_MAP[ico]} {ico}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">XP-Belohnung</Label>
+                <Input type="number" value={newAchievement.xpReward} onChange={(e) => setNewAchievement(p => ({ ...p, xpReward: parseInt(e.target.value) || 0 }))} className="h-9 text-sm" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Bonus-Text (optional)</Label>
+              <Input value={newAchievement.bonusText || ""} onChange={(e) => setNewAchievement(p => ({ ...p, bonusText: e.target.value }))} className="h-9 text-sm" placeholder="z.B. 🎁 +50 € Bonus!" />
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setAddAchievementDialog(false)}>Abbrechen</Button>
+            <Button className="gradient-brand border-0 text-white" onClick={addNewAchievement}>
+              <Plus className="h-4 w-4 mr-1" /> Erstellen
             </Button>
           </DialogFooter>
         </DialogContent>

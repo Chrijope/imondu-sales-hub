@@ -5,7 +5,8 @@ import { SAMPLE_LEADS, Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search, Gift, Award } from "lucide-react";
+import { BONUSES } from "@/pages/Auswertungen";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
@@ -596,6 +597,56 @@ export default function Abrechnungen() {
                 <span className="text-sm font-bold text-foreground">{b2bProvisionAktuell.toLocaleString("de-DE")} €</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ── Inserat-Bonus Meilensteine in Abrechnung ── */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Gift className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Verdiente Inserat-Boni</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Meilenstein</th>
+                  <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Bonus</th>
+                  <th className="text-center py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {BONUSES.map((b) => (
+                  <tr key={b.target} className={`border-b border-border/40 ${b.reached ? "" : "opacity-40"}`}>
+                    <td className="py-2.5 font-medium text-foreground flex items-center gap-2">
+                      <Award className="h-3.5 w-3.5 text-primary" />
+                      {b.label}
+                    </td>
+                    <td className="py-2.5 text-right font-bold text-primary">+{b.reward} €</td>
+                    <td className="py-2.5 text-center">
+                      {b.reached ? (
+                        <Badge className="bg-success text-success-foreground text-[9px]">
+                          <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Gutgeschrieben
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[9px]">Ausstehend</Badge>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-muted/40 border-t-2 border-border">
+                  <td className="py-2.5 font-bold text-foreground">Gesamt verdiente Boni</td>
+                  <td className="py-2.5 text-right font-bold text-primary text-lg">
+                    +{BONUSES.filter(b => b.reached).reduce((s, b) => s + b.reward, 0)} €
+                  </td>
+                  <td className="py-2.5 text-center">
+                    <span className="text-xs text-muted-foreground">{BONUSES.filter(b => b.reached).length}/{BONUSES.length} erreicht</span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         </div>
 
