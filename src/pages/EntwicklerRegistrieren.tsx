@@ -91,9 +91,9 @@ function getRabatt(code: string): number {
   return RABATT_CODES[code.toUpperCase()] ?? 0;
 }
 
-function calcPrice(mitgliedschaft: "basis" | "premium", code: string): { original: number; rabatt: number; final: number } {
+function calcPrice(mitgliedschaft: "basis" | "premium", code: string, applied: boolean): { original: number; rabatt: number; final: number } {
   const original = PREISE[mitgliedschaft];
-  const rabattProzent = mitgliedschaft === "premium" ? getRabatt(code) : 0;
+  const rabattProzent = (mitgliedschaft === "premium" && applied) ? getRabatt(code) : 0;
   const rabatt = original * rabattProzent / 100;
   return { original, rabatt, final: original - rabatt };
 }
@@ -102,11 +102,10 @@ function formatPreis(n: number) {
   return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 }
 
-function RabattCodeEingabe({ mitgliedschaft, gutscheinCode, onCodeChange }: {
-  mitgliedschaft: "basis" | "premium"; gutscheinCode: string; onCodeChange: (c: string) => void;
+function RabattCodeEingabe({ mitgliedschaft, gutscheinCode, onCodeChange, onApplied, isApplied }: {
+  mitgliedschaft: "basis" | "premium"; gutscheinCode: string; onCodeChange: (c: string) => void; onApplied: (v: boolean) => void; isApplied: boolean;
 }) {
   const { toast } = useToast();
-  const [applied, setApplied] = useState(false);
   const rabatt = getRabatt(gutscheinCode);
   const isValid = rabatt > 0;
   const isPremium = mitgliedschaft === "premium";
@@ -121,8 +120,8 @@ function RabattCodeEingabe({ mitgliedschaft, gutscheinCode, onCodeChange }: {
       toast({ title: "Ungültiger Code", description: "Dieser Rabattcode existiert nicht.", variant: "destructive" });
       return;
     }
-    setApplied(true);
-    const prices = calcPrice(mitgliedschaft, gutscheinCode);
+    onApplied(true);
+    const prices = calcPrice(mitgliedschaft, gutscheinCode, true);
     toast({ title: `Rabattcode eingelöst: ${rabatt}%`, description: `Neuer Preis: ${formatPreis(prices.final)} (statt ${formatPreis(prices.original)})` });
   };
 
@@ -130,27 +129,29 @@ function RabattCodeEingabe({ mitgliedschaft, gutscheinCode, onCodeChange }: {
     <div>
       <p className="text-xs text-muted-foreground mb-1.5">Sie haben einen Rabatt Code? Bitte hier eintragen (gilt nur für Premium⁺)</p>
       <div className="flex gap-2 items-center">
-        <Input placeholder="z.B. 178D" value={gutscheinCode} onChange={(e) => { onCodeChange(e.target.value.toUpperCase()); setApplied(false); }} className="max-w-xs" />
+        <Input placeholder="z.B. 178D" value={gutscheinCode} onChange={(e) => { onCodeChange(e.target.value.toUpperCase()); onApplied(false); }} className="max-w-xs" />
         <Button size="sm" className="gradient-brand border-0 text-primary-foreground" onClick={handleApply}>Einlösen</Button>
       </div>
-      {applied && isValid && isPremium && (
+      {isApplied && isValid && isPremium && (
         <div className="mt-2 flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-primary" />
-          <span className="text-sm text-primary font-medium">{rabatt}% Rabatt angewendet – Neuer Preis: {formatPreis(calcPrice(mitgliedschaft, gutscheinCode).final)}</span>
+          <span className="text-sm text-primary font-medium">{rabatt}% Rabatt angewendet – Neuer Preis: {formatPreis(calcPrice(mitgliedschaft, gutscheinCode, true).final)}</span>
         </div>
       )}
-      {applied && !isValid && gutscheinCode.trim() && (
+      {isApplied && !isValid && gutscheinCode.trim() && (
         <p className="mt-1 text-xs text-destructive">Ungültiger Rabattcode.</p>
       )}
-      <p className="text-[10px] text-muted-foreground mt-2">
-        Hinweis: Der Rabattcode gilt nur für das erste Vertragsjahr. Bei automatischer Verlängerung nach 12 Monaten wird der reguläre Preis berechnet.
-      </p>
+      {isApplied && isValid && isPremium && (
+        <p className="text-[10px] text-muted-foreground mt-2">
+          Hinweis: Der Rabattcode gilt nur für das erste Vertragsjahr. Bei automatischer Verlängerung nach 12 Monaten wird der reguläre Preis berechnet.
+        </p>
+      )}
     </div>
   );
 }
 
-function PlanSummaryCard({ mitgliedschaft, gutscheinCode }: { mitgliedschaft: "basis" | "premium"; gutscheinCode: string }) {
-  const prices = calcPrice(mitgliedschaft, gutscheinCode);
+function PlanSummaryCard({ mitgliedschaft, gutscheinCode, applied }: { mitgliedschaft: "basis" | "premium"; gutscheinCode: string; applied: boolean }) {
+  const prices = calcPrice(mitgliedschaft, gutscheinCode, applied);
   const hasDiscount = prices.rabatt > 0;
   return (
     <div className="flex items-start justify-between">
@@ -178,8 +179,8 @@ function PlanSummaryCard({ mitgliedschaft, gutscheinCode }: { mitgliedschaft: "b
   );
 }
 
-function PlanSummaryPrice({ mitgliedschaft, gutscheinCode }: { mitgliedschaft: "basis" | "premium"; gutscheinCode: string }) {
-  const prices = calcPrice(mitgliedschaft, gutscheinCode);
+function PlanSummaryPrice({ mitgliedschaft, gutscheinCode, applied }: { mitgliedschaft: "basis" | "premium"; gutscheinCode: string; applied: boolean }) {
+  const prices = calcPrice(mitgliedschaft, gutscheinCode, applied);
   const hasDiscount = prices.rabatt > 0;
   return (
     <div className="flex items-center justify-between">
@@ -205,6 +206,7 @@ function PlanSummaryPrice({ mitgliedschaft, gutscheinCode }: { mitgliedschaft: "
 export default function EntwicklerRegistrieren() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
+  const [codeApplied, setCodeApplied] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     firma: true, profil: false, info: false, referenz: false,
     leistung: true, leistungDetail: false,
@@ -680,7 +682,7 @@ export default function EntwicklerRegistrieren() {
                       </div>
                       <div className="text-right">
                         {(() => {
-                          const prices = calcPrice("premium", form.gutscheinCode);
+                          const prices = calcPrice("premium", form.gutscheinCode, codeApplied);
                           const hasDiscount = prices.rabatt > 0;
                           return hasDiscount ? (
                             <>
@@ -722,6 +724,8 @@ export default function EntwicklerRegistrieren() {
                   mitgliedschaft={form.mitgliedschaft}
                   gutscheinCode={form.gutscheinCode}
                   onCodeChange={(code) => update("gutscheinCode", code)}
+                  onApplied={setCodeApplied}
+                  isApplied={codeApplied}
                 />
               </div>
             )}
@@ -755,7 +759,7 @@ export default function EntwicklerRegistrieren() {
                 <div className="space-y-5">
                   <h2 className="text-lg font-semibold text-foreground">Dein Plan im Überblick</h2>
                   <div className="rounded-xl border-2 border-primary bg-primary/5 p-5">
-                    <PlanSummaryCard mitgliedschaft={form.mitgliedschaft} gutscheinCode={form.gutscheinCode} />
+                    <PlanSummaryCard mitgliedschaft={form.mitgliedschaft} gutscheinCode={form.gutscheinCode} applied={codeApplied} />
                   </div>
 
                   <Field label="E-Mail-Adresse">
@@ -764,7 +768,7 @@ export default function EntwicklerRegistrieren() {
 
                   <hr className="border-border" />
 
-                  <PlanSummaryPrice mitgliedschaft={form.mitgliedschaft} gutscheinCode={form.gutscheinCode} />
+                  <PlanSummaryPrice mitgliedschaft={form.mitgliedschaft} gutscheinCode={form.gutscheinCode} applied={codeApplied} />
 
                   {/* Legal */}
                   <div className="space-y-3 text-xs text-muted-foreground">

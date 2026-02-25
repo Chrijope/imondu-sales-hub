@@ -105,7 +105,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
       "dashboard", "inbox", "email", "kalender", "news",
       "kontakte", "marketing",
       "auswertungen", "statistik", "analysetool",
-      "academy",
+      "academy", "ansprechpartner",
     ],
   },
   {
@@ -127,7 +127,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     fixed: true,
     menuItems: [
       "dashboard", "inbox", "kalender",
-      "abrechnungen", "auswertungen", "statistik",
+      "abrechnungen", "auswertungen", "statistik", "ansprechpartner",
     ],
   },
   {

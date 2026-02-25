@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Copy, ExternalLink, User, Building2, Home, Plus, ChevronDown, ChevronUp,
   Trash2, CheckCircle, TrendingUp, Users, Shield, Briefcase, Phone, Mail,
-  Star, ArrowRight, Smartphone, Pencil
+  Star, ArrowRight, Smartphone, Pencil, CheckCircle2, CreditCard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import imonduLogo from "@/assets/imondu-logo-full.png";
@@ -19,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 interface RabattCode {
   id: string;
@@ -52,6 +53,12 @@ const INITIAL_CODES: RabattCode[] = [
   { id: "8", code: "J9B3", type: "developer", rabattProzent: 25, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u3" },
   { id: "9", code: "J12Q", type: "developer", rabattProzent: 40, nutzungen: 0, zahlend: 0, promo: 0, mitarbeiterId: "u1" },
 ];
+
+const PREISE = { basis: 899.90, premium: 1249.90 };
+
+function formatPreis(n: number) {
+  return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+}
 
 /* ─── Eigentümer Landing Page ─── */
 function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse }: {
@@ -208,9 +215,14 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
 }
 
 /* ─── Entwickler Landing Page ─── */
-function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse }: {
-  beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string;
+function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse, rabattCode }: {
+  beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string; rabattCode?: string;
 }) {
+  const rabattProzent = rabattCode ? (INITIAL_CODES.find(c => c.code === rabattCode)?.rabattProzent ?? 0) : 0;
+  const premiumOriginal = PREISE.premium;
+  const premiumFinal = premiumOriginal - (premiumOriginal * rabattProzent / 100);
+  const hasPremiumDiscount = rabattProzent > 0;
+
   return (
     <div className="space-y-0">
       {/* Hero */}
@@ -243,8 +255,8 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
       {/* Leads CTA */}
       <section className="bg-primary/5 border-y border-border px-8 py-10 text-center">
         <h2 className="text-xl font-semibold text-foreground">Entwicklungsprojekte in Ihrer Nähe:</h2>
-        <Button className="mt-4" size="lg">
-          Jetzt Immobilien-Leads finden <ArrowRight className="ml-2 h-4 w-4" />
+        <Button className="mt-4" size="lg" asChild>
+          <a href="/entwickler-registrieren">Jetzt Immobilien-Leads finden <ArrowRight className="ml-2 h-4 w-4" /></a>
         </Button>
       </section>
 
@@ -262,9 +274,95 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
         <p className="text-sm text-muted-foreground mt-3 max-w-3xl leading-relaxed">
           Ohne Akquise, ohne Ankaufskosten und im direkten Kontakt zu Immobilieneigentümern – für mehr Neukundengeschäft und mehr Gewinn. Effizient, digital und mit minimalem Aufwand.
         </p>
-        <Button variant="outline" className="mt-6">
-          Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" />
+        <Button variant="outline" className="mt-6" asChild>
+          <a href="/entwickler-registrieren">Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" /></a>
         </Button>
+      </section>
+
+      {/* Mitgliedschaft / Preise */}
+      <section className="bg-muted/50 px-8 py-14">
+        <h2 className="text-2xl font-bold text-foreground text-center mb-2">Unsere Mitgliedschaften</h2>
+        <p className="text-sm text-muted-foreground text-center mb-8">Wählen Sie den passenden Plan für Ihr Unternehmen.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* Basis */}
+          <div className="rounded-xl border-2 border-border bg-card p-6">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-lg font-bold text-foreground">Basis</p>
+                <p className="text-xs text-muted-foreground">Laufzeit 12 Monate</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-foreground">{formatPreis(PREISE.basis)}</p>
+                <p className="text-[10px] text-muted-foreground">pro Jahr, exkl. 19% MwSt.</p>
+              </div>
+            </div>
+            <hr className="border-border my-3" />
+            <ul className="space-y-2">
+              {[
+                "Unbegrenzte Kontaktanfragen",
+                "Identitätsprüfung",
+                "Support durch IMONDU",
+              ].map((t) => (
+                <li key={t} className="flex items-start gap-2 text-xs text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <Button className="w-full mt-4" variant="outline" asChild>
+              <a href="/entwickler-registrieren">Jetzt registrieren</a>
+            </Button>
+          </div>
+
+          {/* Premium */}
+          <div className="rounded-xl border-2 border-primary bg-primary/5 p-6 relative">
+            <div className="absolute -top-3 right-4">
+              <Badge className="gradient-brand text-primary-foreground text-[10px] border-0">Empfohlen</Badge>
+            </div>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-lg font-bold text-foreground">Premium<sup className="text-primary">+</sup></p>
+                <p className="text-xs text-muted-foreground">Laufzeit 12 Monate</p>
+              </div>
+              <div className="text-right">
+                {hasPremiumDiscount ? (
+                  <>
+                    <p className="text-sm text-muted-foreground line-through">{formatPreis(premiumOriginal)}</p>
+                    <p className="text-xl font-bold text-primary">{formatPreis(premiumFinal)}</p>
+                    <p className="text-[10px] text-primary font-medium">-{rabattProzent}% Rabatt</p>
+                  </>
+                ) : (
+                  <p className="text-xl font-bold text-foreground">{formatPreis(premiumOriginal)}</p>
+                )}
+                <p className="text-[10px] text-muted-foreground">pro Jahr, exkl. 19% MwSt.</p>
+              </div>
+            </div>
+            <hr className="border-border my-3" />
+            <ul className="space-y-2">
+              {[
+                "Alle Basis-Vorteile",
+                "Frühzeitiger Zugang zu Leads",
+                "Premium-Badge",
+                "Priorisierte Platzierung",
+                "Performance-Statistiken",
+                "Priorisierter Support",
+              ].map((t) => (
+                <li key={t} className="flex items-start gap-2 text-xs text-foreground font-medium">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <Button className="w-full mt-4 gradient-brand border-0 text-primary-foreground" asChild>
+              <a href="/entwickler-registrieren">Jetzt registrieren</a>
+            </Button>
+          </div>
+        </div>
+        {hasPremiumDiscount && (
+          <p className="text-[10px] text-muted-foreground text-center mt-4">
+            * Rabatt gilt nur für das erste Vertragsjahr. Bei automatischer Verlängerung wird der reguläre Preis berechnet.
+          </p>
+        )}
       </section>
 
       {/* Marktpotenzial */}
@@ -315,7 +413,9 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
           ))}
         </div>
         <div className="text-center mt-6">
-          <Button size="lg">Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" /></Button>
+          <Button size="lg" asChild>
+            <a href="/entwickler-registrieren">Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" /></a>
+          </Button>
         </div>
       </section>
 
@@ -419,13 +519,14 @@ function BeraterCTA({ name, titel, telefon, email, adresse }: {
 /* ─── Main Page ─── */
 export default function BeraterMicroseite() {
   const { toast } = useToast();
+  const { currentRoleId } = useUserRole();
+  const isAdmin = currentRoleId === "admin";
+
   const [beraterName, setBeraterName] = useState("Max Müller");
   const [beraterTitel, setBeraterTitel] = useState("Immobilienberater");
   const [beraterTelefon, setBeraterTelefon] = useState("+49 170 1234567");
   const [beraterEmail, setBeraterEmail] = useState("max.mueller@imondu.de");
   const [beraterAdresse, setBeraterAdresse] = useState("Musterstr. 1, 12345 Musterstadt");
-  const [devCode, setDevCode] = useState("J9B3");
-  const [cusCode, setCusCode] = useState("K4P4");
   const [activeTab, setActiveTab] = useState("customer");
   const [rabattCodes, setRabattCodes] = useState<RabattCode[]>(INITIAL_CODES);
   const [expandedCode, setExpandedCode] = useState<string | null>(null);
@@ -437,6 +538,11 @@ export default function BeraterMicroseite() {
   const [mitarbeiterFilter, setMitarbeiterFilter] = useState("alle");
   const [editCodeId, setEditCodeId] = useState<string | null>(null);
 
+  // Find codes assigned to this user (for non-admin, show their assigned codes as landing page links)
+  // For simplicity, assume current user = u2 (Manuel Schilling) for non-admin demo
+  const myDevCodes = rabattCodes.filter(rc => rc.type === "developer");
+  const myCusCodes = rabattCodes.filter(rc => rc.type === "customer");
+
   const openEditCode = (rc: RabattCode) => {
     setEditCodeId(rc.id);
     setNewCode(rc.code);
@@ -445,9 +551,6 @@ export default function BeraterMicroseite() {
     setNewCodeMitarbeiter(rc.mitarbeiterId || "");
     setShowAddDialog(true);
   };
-
-  const devUrl = `https://imondu.com/developer?dev_code=${devCode}`;
-  const cusUrl = `https://imondu.com/customer?cus_code=${cusCode}`;
 
   const totalNutzungen = rabattCodes.reduce((s, c) => s + c.nutzungen, 0);
   const totalZahlend = rabattCodes.reduce((s, c) => s + c.zahlend, 0);
@@ -493,8 +596,17 @@ export default function BeraterMicroseite() {
 
   const getAffiliateUrl = (rc: RabattCode) =>
     rc.type === "customer"
-      ? `https://imondu.com/customer?cus_code=${rc.code}`
-      : `https://imondu.com/developer?dev_code=${rc.code}`;
+      ? `https://imondu.com/customer?code=${rc.code}`
+      : `https://imondu.com/developer?code=${rc.code}`;
+
+  // For landing page preview, use the first assigned dev/cus code
+  const previewDevCode = myDevCodes[0]?.code;
+  const previewCusCode = myCusCodes[0]?.code;
+
+  const getLandingUrl = (type: "developer" | "customer", code?: string) =>
+    type === "developer"
+      ? `https://imondu.com/developer${code ? `?code=${code}` : ""}`
+      : `https://imondu.com/customer${code ? `?code=${code}` : ""}`;
 
   return (
     <CRMLayout>
@@ -546,16 +658,6 @@ export default function BeraterMicroseite() {
                   <label className="text-sm font-medium text-foreground mb-1 block">Adresse</label>
                   <Input value={beraterAdresse} onChange={(e) => setBeraterAdresse(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Entwickler-Code (dev_code)</label>
-                    <Input value={devCode} onChange={(e) => setDevCode(e.target.value)} placeholder="z.B. J9B3" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Eigentümer-Code (cus_code)</label>
-                    <Input value={cusCode} onChange={(e) => setCusCode(e.target.value)} placeholder="z.B. K4P4" />
-                  </div>
-                </div>
               </div>
 
               {/* Preview Card */}
@@ -596,21 +698,27 @@ export default function BeraterMicroseite() {
                 <div className="w-8 h-1 bg-accent rounded-full" />
                 <h2 className="font-semibold text-foreground">Rabattcodes & Affiliate-Links</h2>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">Rabattcodes mit Tracking-Übersicht. Admin kann je Mitarbeiter filtern.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isAdmin ? "Rabattcodes mit Tracking-Übersicht. Admin kann je Mitarbeiter filtern." : "Deine zugewiesenen Rabattcodes und Affiliate-Links."}
+              </p>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={mitarbeiterFilter} onValueChange={setMitarbeiterFilter}>
-                <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="Alle Mitarbeiter" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="alle">Alle Mitarbeiter</SelectItem>
-                  {MITARBEITER_LISTE.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button size="sm" onClick={() => { setEditCodeId(null); setNewCode(""); setNewCodeRabatt(25); setNewCodeMitarbeiter(""); setShowAddDialog(true); }}>
-                <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
-              </Button>
+              {isAdmin && (
+                <>
+                  <Select value={mitarbeiterFilter} onValueChange={setMitarbeiterFilter}>
+                    <SelectTrigger className="w-[180px] h-8 text-xs"><SelectValue placeholder="Alle Mitarbeiter" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alle">Alle Mitarbeiter</SelectItem>
+                      {MITARBEITER_LISTE.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={() => { setEditCodeId(null); setNewCode(""); setNewCodeRabatt(25); setNewCodeMitarbeiter(""); setShowAddDialog(true); }}>
+                    <Plus className="h-4 w-4 mr-1.5" /> Neuen Code anlegen
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
@@ -670,14 +778,16 @@ export default function BeraterMicroseite() {
                         <span className="text-muted-foreground">Zahlend: <span className="font-medium text-foreground">{rc.zahlend}</span></span>
                         <span className="text-muted-foreground">Promo: <span className="font-medium text-foreground">{rc.promo}</span></span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => openEditCode(rc)}>
-                          <Pencil className="h-3.5 w-3.5 mr-1" /> Bearbeiten
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRabattCode(rc.id)}>
-                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
-                        </Button>
-                      </div>
+                      {isAdmin && (
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => openEditCode(rc)}>
+                            <Pencil className="h-3.5 w-3.5 mr-1" /> Bearbeiten
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRabattCode(rc.id)}>
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Löschen
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -693,7 +803,7 @@ export default function BeraterMicroseite() {
               <div className="w-8 h-1 bg-primary rounded-full" />
               <h2 className="font-semibold text-foreground">Landingpage-Vorschau</h2>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">So sehen deine personalisierten Landingpages aus.</p>
+            <p className="text-sm text-muted-foreground mt-1">So sehen deine personalisierten Landingpages aus. Die zugewiesenen Rabattcodes sind automatisch in den URLs hinterlegt.</p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -710,11 +820,11 @@ export default function BeraterMicroseite() {
               </TabsList>
 
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => copyToClipboard(activeTab === "customer" ? cusUrl : devUrl)}>
+                <Button variant="outline" size="sm" onClick={() => copyToClipboard(getLandingUrl(activeTab === "customer" ? "customer" : "developer", activeTab === "customer" ? previewCusCode : previewDevCode))}>
                   <Copy className="h-3.5 w-3.5 mr-1.5" /> Link kopieren
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <a href={activeTab === "customer" ? cusUrl : devUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={getLandingUrl(activeTab === "customer" ? "customer" : "developer", activeTab === "customer" ? previewCusCode : previewDevCode)} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Original öffnen
                   </a>
                 </Button>
@@ -724,7 +834,7 @@ export default function BeraterMicroseite() {
             {/* URL display */}
             <div className="px-6 py-3">
               <code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded block">
-                {activeTab === "customer" ? cusUrl : devUrl}
+                {getLandingUrl(activeTab === "customer" ? "customer" : "developer", activeTab === "customer" ? previewCusCode : previewDevCode)}
               </code>
             </div>
 
@@ -739,69 +849,72 @@ export default function BeraterMicroseite() {
               <DeveloperLandingPreview
                 beraterName={beraterName} beraterTitel={beraterTitel}
                 beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse}
+                rabattCode={previewDevCode}
               />
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Add Code Dialog */}
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editCodeId ? "Rabattcode bearbeiten" : "Neuen Rabattcode anlegen"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Code (leer = automatisch generiert)</label>
-                <Input value={newCode} onChange={(e) => setNewCode(e.target.value.toUpperCase())} placeholder="z.B. X7K2" maxLength={6} />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Typ</label>
-                <Select value={newCodeType} onValueChange={(v) => setNewCodeType(v as "developer" | "customer")}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="developer">Entwickler (dev_code)</SelectItem>
-                    <SelectItem value="customer">Eigentümer (cus_code)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Rabatt-Prozentsatz</label>
-                <div className="flex flex-wrap gap-2">
-                  {RABATT_OPTIONEN.map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setNewCodeRabatt(p)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                        newCodeRabatt === p
-                          ? "bg-primary text-primary-foreground ring-2 ring-ring ring-offset-1"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}
-                    >
-                      {p}%
-                    </button>
-                  ))}
+        {/* Add/Edit Code Dialog – Admin only */}
+        {isAdmin && (
+          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editCodeId ? "Rabattcode bearbeiten" : "Neuen Rabattcode anlegen"}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Code (leer = automatisch generiert)</label>
+                  <Input value={newCode} onChange={(e) => setNewCode(e.target.value.toUpperCase())} placeholder="z.B. X7K2" maxLength={6} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Typ</label>
+                  <Select value={newCodeType} onValueChange={(v) => setNewCodeType(v as "developer" | "customer")}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="developer">Entwickler</SelectItem>
+                      <SelectItem value="customer">Eigentümer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Rabatt-Prozentsatz</label>
+                  <div className="flex flex-wrap gap-2">
+                    {RABATT_OPTIONEN.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setNewCodeRabatt(p)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                          newCodeRabatt === p
+                            ? "bg-primary text-primary-foreground ring-2 ring-ring ring-offset-1"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        {p}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Mitarbeiter zuordnen</label>
+                  <Select value={newCodeMitarbeiter} onValueChange={setNewCodeMitarbeiter}>
+                    <SelectTrigger><SelectValue placeholder="Mitarbeiter wählen…" /></SelectTrigger>
+                    <SelectContent>
+                      {MITARBEITER_LISTE.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Mitarbeiter zuordnen</label>
-                <Select value={newCodeMitarbeiter} onValueChange={setNewCodeMitarbeiter}>
-                  <SelectTrigger><SelectValue placeholder="Mitarbeiter wählen…" /></SelectTrigger>
-                  <SelectContent>
-                    {MITARBEITER_LISTE.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddDialog(false)}>Abbrechen</Button>
-              <Button onClick={addRabattCode}>{editCodeId ? "Speichern" : "Code erstellen"}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowAddDialog(false)}>Abbrechen</Button>
+                <Button onClick={addRabattCode}>{editCodeId ? "Speichern" : "Code erstellen"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </CRMLayout>
   );
