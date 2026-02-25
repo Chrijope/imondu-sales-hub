@@ -159,11 +159,12 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
             Was möglich ist, wenn <span className="text-primary">Potenzial erkannt</span> wird
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {[
             { title: "Sanierung", zeit: "6 Monate", kosten: "400.000 €", vorher: "600.000 €", nachher: "1.050.000 €", mehrwert: "450.000 €" },
             { title: "Grundrissoptimierung", zeit: "2 Monate", kosten: "150.000 €", vorher: "600.000 €", nachher: "850.000 €", mehrwert: "250.000 €" },
             { title: "Teilung & Neubau", zeit: "6 Monate", kosten: "500.000 €", vorher: "250.000 €", nachher: "950.000 €", mehrwert: "700.000 €" },
+            { title: "Umnutzung / Nachverdichtung", zeit: "6 Monate", kosten: "400.000 €", vorher: "1.000.000 €", nachher: "2.600.000 €", mehrwert: "1.200.000 €" },
           ].map((ex, i) => (
             <div key={i} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               <div className="gradient-brand px-5 py-3">
@@ -188,6 +189,115 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
                   <p className="text-xs text-muted-foreground">Mehrwert</p>
                   <p className="text-xl font-bold text-primary">+{ex.mehrwert}</p>
                 </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── PLATTFORM: Alle Partner an einem Ort ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Alle Partner für Deine Entwicklung. <span className="text-primary">An einem Ort.</span>
+          </h2>
+          <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
+            Auf IMONDU findest Du geprüfte Projektentwickler, Architekten, Energieberater und Fachbetriebe – transparent vergleichbar und mit einem Klick erreichbar.
+          </p>
+        </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-muted/50 px-6 py-3 border-b border-border flex items-center gap-3">
+              <div className="flex gap-1.5">
+                <div className="h-3 w-3 rounded-full bg-destructive/40" />
+                <div className="h-3 w-3 rounded-full bg-warning/40" />
+                <div className="h-3 w-3 rounded-full bg-primary/40" />
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">imondu.com – Entwickler finden</p>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex gap-2">
+                  {["Architekt", "Projektentwickler", "Energieberater", "Handwerker"].map((b) => (
+                    <Badge key={b} variant="outline" className="text-xs">{b}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { name: "Florian Maier", rolle: "Projektentwickler", badge: "PremiumPartner", score: "92%" },
+                  { name: "Gianluca Schick", rolle: "Projektleiter", badge: "PremiumPartner", score: "88%" },
+                  { name: "Rinor Hoxha", rolle: "Immobilieninvestor", badge: "Partner", score: "85%" },
+                  { name: "Maximilian S.", rolle: "Projektentwickler", badge: "Partner", score: "79%" },
+                ].map((dev, i) => (
+                  <div key={i} className="border border-border rounded-lg p-4 text-center hover:border-primary/30 transition-colors">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                    <p className="text-sm font-bold text-foreground">{dev.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{dev.rolle}</p>
+                    <Badge className={`text-[9px] mt-1 ${dev.badge === "PremiumPartner" ? "gradient-brand text-white border-0" : "bg-muted text-muted-foreground"}`}>{dev.badge}</Badge>
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground">Match</p>
+                      <p className="text-sm font-bold text-primary">{dev.score}</p>
+                    </div>
+                    <Button size="sm" variant="outline" className="w-full mt-2 text-[10px] h-7">Kontaktanfrage</Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ANGEBOTE VERGLEICHEN ─── */}
+      <section className="bg-primary/5 px-8 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Wähle die Lösung, die den <span className="text-primary">größten Wert</span> aus Deiner Immobilie holt
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2">Du entscheidest jederzeit, ob und wie Du weitergehst.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {[
+            { nr: "O-839018744", entwickler: "Herr S.", score: "58%", wertsteigerung: "250.000 €", wertVorher: "600.000 €", wertNachher: "1.200.000 €", kosten: "350.000 €" },
+            { nr: "O-363000142", entwickler: "Herr Schick", score: "68%", wertsteigerung: "800.000 €", wertVorher: "550.000 €", wertNachher: "1.600.000 €", kosten: "550.000 €" },
+          ].map((angebot, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Angebot Nr.</p>
+                  <p className="text-sm font-bold text-foreground">{angebot.nr}</p>
+                </div>
+                <Badge variant="outline" className="text-xs">Offen</Badge>
+              </div>
+              <div className="p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Ihr Entwickler</span>
+                  <span className="text-sm font-medium text-foreground">{angebot.entwickler}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Match-Score</span>
+                  <span className="text-sm font-bold text-primary">{angebot.score}</span>
+                </div>
+                <hr className="border-border" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Aktueller Wert</span>
+                  <span className="text-sm font-medium text-foreground">{angebot.wertVorher}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Entwicklungskosten</span>
+                  <span className="text-sm text-foreground">{angebot.kosten}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Nach Entwicklung</span>
+                  <span className="text-sm font-bold text-primary">{angebot.wertNachher}</span>
+                </div>
+                <div className="bg-primary/10 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Potenzielle Wertsteigerung</p>
+                  <p className="text-xl font-bold text-primary">+{angebot.wertsteigerung}</p>
+                </div>
+                <Button size="sm" variant="outline" className="w-full text-xs">Nachricht schreiben</Button>
               </div>
             </div>
           ))}
@@ -307,34 +417,58 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         </div>
       </section>
 
-      {/* ─── KOSTENÜBERSICHT ─── */}
+      {/* ─── KOSTENÜBERSICHT (erweitert) ─── */}
       <section className="px-8 py-16">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-foreground">
             Das könnte Dein <span className="text-primary">Entwicklungspotenzial</span> sein
           </h2>
         </div>
-        <div className="max-w-4xl mx-auto overflow-hidden rounded-xl border border-border">
-          <div className="grid grid-cols-4 bg-muted/50">
-            <div className="p-4 border-r border-border"><p className="text-xs font-bold text-muted-foreground">KATEGORIE</p></div>
-            <div className="p-4 border-r border-border text-center"><p className="text-xs font-bold text-muted-foreground">EINFACHE SANIERUNG</p></div>
-            <div className="p-4 border-r border-border text-center"><p className="text-xs font-bold text-muted-foreground">KERNSANIERUNG</p></div>
-            <div className="p-4 text-center"><p className="text-xs font-bold text-muted-foreground">NEUBAU</p></div>
-          </div>
-          <div className="grid grid-cols-4">
-            <div className="p-4 border-r border-t border-border"><p className="text-sm text-muted-foreground">Entstehungskosten</p></div>
-            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-medium text-foreground">500 €/m²</p></div>
-            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-medium text-foreground">1.000 €/m²</p></div>
-            <div className="p-4 border-t border-border text-center"><p className="text-sm font-medium text-foreground">2.800–3.500 €/m²</p></div>
-          </div>
-          <div className="grid grid-cols-4 bg-primary/5">
-            <div className="p-4 border-r border-t border-border"><p className="text-sm font-semibold text-foreground">Preis Endkunde*</p></div>
-            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-bold text-primary">750–1.000 €/m²</p></div>
-            <div className="p-4 border-r border-t border-border text-center"><p className="text-sm font-bold text-primary">1.500–2.000 €/m²</p></div>
-            <div className="p-4 border-t border-border text-center"><p className="text-sm font-bold text-primary">3.500–5.000 €/m²</p></div>
+        <div className="max-w-5xl mx-auto overflow-x-auto">
+          <div className="min-w-[700px] overflow-hidden rounded-xl border border-border">
+            <div className="grid grid-cols-5 bg-muted/50">
+              <div className="p-3 border-r border-border"><p className="text-[10px] font-bold text-muted-foreground">KATEGORIE</p></div>
+              <div className="p-3 border-r border-border text-center"><p className="text-[10px] font-bold text-muted-foreground">EINFACHE SANIERUNG</p><p className="text-[9px] text-muted-foreground">Innen & Außen</p></div>
+              <div className="p-3 border-r border-border text-center"><p className="text-[10px] font-bold text-muted-foreground">KERNSANIERUNG</p></div>
+              <div className="p-3 border-r border-border text-center"><p className="text-[10px] font-bold text-muted-foreground">NEUBAU</p><p className="text-[9px] text-muted-foreground">Ohne Tiefgarage</p></div>
+              <div className="p-3 text-center"><p className="text-[10px] font-bold text-muted-foreground">NEUBAU</p><p className="text-[9px] text-muted-foreground">Mit Tiefgarage</p></div>
+            </div>
+            <div className="grid grid-cols-5">
+              <div className="p-3 border-r border-t border-border"><p className="text-xs text-muted-foreground">Entstehungskosten</p></div>
+              <div className="p-3 border-r border-t border-border text-center"><p className="text-xs font-medium text-foreground">500 €/m²</p></div>
+              <div className="p-3 border-r border-t border-border text-center"><p className="text-xs font-medium text-foreground">1.000 €/m²</p></div>
+              <div className="p-3 border-r border-t border-border text-center"><p className="text-xs font-medium text-foreground">2.800–3.000 €/m²</p></div>
+              <div className="p-3 border-t border-border text-center"><p className="text-xs font-medium text-foreground">3.000–3.500 €/m²</p></div>
+            </div>
+            <div className="grid grid-cols-5 bg-primary/5">
+              <div className="p-3 border-r border-t border-border"><p className="text-xs font-semibold text-foreground">Preis Endkunde*</p></div>
+              <div className="p-3 border-r border-t border-border text-center"><p className="text-xs font-bold text-primary">750–1.000 €/m²</p></div>
+              <div className="p-3 border-r border-t border-border text-center"><p className="text-xs font-bold text-primary">1.500–2.000 €/m²</p></div>
+              <div className="p-3 border-r border-t border-border text-center"><p className="text-xs font-bold text-primary">3.500–4.000 €/m²</p></div>
+              <div className="p-3 border-t border-border text-center"><p className="text-xs font-bold text-primary">4.000–5.000 €/m²</p></div>
+            </div>
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground text-center mt-3">*Preis abhängig von detaillierter Leistungsbeschreibung.</p>
+
+        {/* Partnernetzwerk berücksichtigt */}
+        <div className="max-w-3xl mx-auto mt-10">
+          <h3 className="text-lg font-bold text-foreground text-center mb-4">Unser Partnernetzwerk berücksichtigt dabei:</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {[
+              { icon: MapPin, label: "Lage & Umfeld" },
+              { icon: Home, label: "Art der Immobilie" },
+              { icon: Building2, label: "Wohn- oder Nutzfläche" },
+              { icon: Wrench, label: "Zustand & Bebauung" },
+              { icon: Shield, label: "Baurechtliche Optionen" },
+            ].map((item, i) => (
+              <div key={i} className="bg-card border border-border rounded-lg p-3 text-center">
+                <item.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-medium text-foreground">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ─── FAQ ─── */}
@@ -505,13 +639,54 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
         </div>
       </section>
 
-      {/* ─── CEO QUOTE ─── */}
-      <section className="bg-primary/5 px-8 py-12">
+      {/* ─── CEO QUOTE (erweitert) ─── */}
+      <section className="bg-primary/5 px-8 py-16">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-lg italic text-foreground leading-relaxed">
             „Gute Projekte entstehen nicht durch mehr Kaltakquise. Sie entstehen durch den <strong className="text-primary">richtigen Zugang zu Eigentümern</strong> – zur richtigen Zeit."
           </p>
           <p className="text-sm font-bold text-muted-foreground mt-4">Marinko Marjanovic, Geschäftsführer</p>
+          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
+            Genau deshalb verbindet IMONDU geprüfte Entwickler direkt mit Eigentümern – strukturiert, transparent und ohne Streuverlust.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
+            {[
+              "Planbare Projektpipeline",
+              "Qualifizierte Eigentümeranfragen",
+              "Kein Preiskampf über Vergleichsportale",
+            ].map((t, i) => (
+              <div key={i} className="bg-card border border-border rounded-lg p-3 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                <p className="text-xs font-medium text-foreground">{t}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── STRATEGISCHER ZUGANG ─── */}
+      <section className="bg-foreground text-background px-8 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-3">
+            Vom Zufall zur <span className="text-primary">planbaren Pipeline.</span>
+          </h2>
+          <p className="text-sm opacity-60 text-center mb-10">Dein strategischer Zugang zu Eigentümern.</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              { icon: Users, title: "Direkter Zugang", desc: "Kontakt zu Eigentümern ohne Makler, ohne Umwege – direkt über die Plattform." },
+              { icon: MessageCircle, title: "Früher Austausch", desc: "Tritt frühzeitig in den Dialog – bevor Eigentümer andere Optionen prüfen." },
+              { icon: Target, title: "Einfluss auf Projekte", desc: "Gestalte Projekte aktiv mit, statt nur auf Ausschreibungen zu reagieren." },
+              { icon: BarChart3, title: "Planbare Pipeline", desc: "Baue Dir eine kontinuierliche Projektpipeline auf – unabhängig von Empfehlungen." },
+            ].map((item, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+                <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center mx-auto mb-3">
+                  <item.icon className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-sm font-bold mb-2">{item.title}</h3>
+                <p className="text-xs opacity-70 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -758,6 +933,36 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
         <div className="flex justify-center gap-3 mt-4">
           <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
           <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
+        </div>
+      </section>
+
+      {/* ─── ZWEI WEGE. EINE ENTSCHEIDUNG. ─── */}
+      <section className="px-8 py-16">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground">Zwei Wege. <span className="text-primary">Eine Entscheidung.</span></h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="bg-card border-2 border-primary rounded-xl p-8 text-center">
+            <div className="h-14 w-14 rounded-full gradient-brand flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <ArrowRight className="h-7 w-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Direkt starten</h3>
+            <p className="text-sm text-muted-foreground mt-2">12 Monate Mitgliedschaft*</p>
+            <Button className="w-full mt-6 gradient-brand border-0 text-primary-foreground" size="lg" asChild>
+              <a href="/entwickler-registrieren">Jetzt registrieren</a>
+            </Button>
+            <p className="text-[10px] text-muted-foreground mt-3">* Begrenzte Branchenplätze je Region</p>
+          </div>
+          <div className="bg-card border-2 border-border rounded-xl p-8 text-center">
+            <div className="h-14 w-14 rounded-full bg-foreground flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Phone className="h-7 w-7 text-background" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">30-Minuten Beratungsgespräch</h3>
+            <p className="text-sm text-muted-foreground mt-2">Persönlich, unverbindlich, kostenfrei</p>
+            <Button className="w-full mt-6" variant="outline" size="lg" asChild>
+              <a href={`tel:${beraterTelefon}`}>Jetzt vereinbaren</a>
+            </Button>
+          </div>
         </div>
       </section>
 
