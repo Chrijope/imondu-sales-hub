@@ -13,12 +13,13 @@ import {
 import {
   Trophy, Medal, Star, Zap, Target, TrendingUp, Crown,
   Flame, Award, Gift, ChevronDown, Sparkles, Users, Building2, Briefcase, PackageCheck, MapPin,
-  GraduationCap, ArrowUpRight, CheckCircle2, Euro, Info
+  GraduationCap, ArrowUpRight, CheckCircle2, Euro, Info, Pencil, Trash2, Plus
 } from "lucide-react";
 import {
   B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS, B2C_QUARTALSBONUS, B2C_QUARTALSBONUS_SCHWELLE,
   KARRIERESTUFEN, getB2CStufe, getB2BStufe,
 } from "@/data/karriereplan";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 import { TIME_RANGE_OPTIONS, TimeRangeKey } from "@/utils/date-filters";
 
@@ -59,8 +60,15 @@ const b2bRankings = {
   "Ø Verkaufsvolumen": generateRanking(10, 280000, 490000),
 };
 
-// ── Gamification: Levels ──
-const LEVELS = [
+// ── Gamification: Levels with clear XP rules ──
+// XP earned by: B2C Lead manual (+10), Eigentümer-Inserat via code (+50), Entwickler-Registrierung via code (+200)
+// Streak bonus (+10/day), Achievement unlock (variable), Top-3 ranking (+100)
+interface LevelDef {
+  level: number; title: string; minXP: number; icon: string;
+  reward: string | null; rewardLabel: string | null;
+}
+
+const DEFAULT_LEVELS: LevelDef[] = [
   { level: 1, title: "Rookie", minXP: 0, icon: "🌱", reward: null, rewardLabel: null },
   { level: 2, title: "Aufsteiger", minXP: 500, icon: "⚡", reward: null, rewardLabel: null },
   { level: 3, title: "Profi", minXP: 1500, icon: "🔥", reward: "🖊️", rewardLabel: "Montblanc Kugelschreiber" },
@@ -70,26 +78,36 @@ const LEVELS = [
 ];
 
 const MY_XP = 4200;
-const currentLevel = [...LEVELS].reverse().find(l => MY_XP >= l.minXP)!;
-const nextLevel = LEVELS.find(l => l.minXP > MY_XP);
-const xpProgress = nextLevel ? ((MY_XP - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100 : 100;
+
+// Track which levels have been claimed/confirmed
+const INITIAL_CLAIMED: Record<number, "none" | "requested" | "confirmed"> = {
+  3: "confirmed", // Already received
+  4: "none", // Reached but not yet claimed
+};
 
 // ── Achievements ──
 interface Achievement {
-  id: string; title: string; description: string; icon: React.ReactNode; unlocked: boolean; xpReward: number; bonusText?: string;
+  id: string; title: string; description: string; iconName: string; unlocked: boolean; xpReward: number; bonusText?: string;
 }
 
-const ACHIEVEMENTS: Achievement[] = [
-  { id: "first10", title: "Erste 10 B2C Leads", description: "Lege 10 B2C-Kontakte an", icon: <Target className="h-5 w-5" />, unlocked: true, xpReward: 100 },
-  { id: "first50", title: "50er Club", description: "50 B2C-Kontakte angelegt", icon: <Users className="h-5 w-5" />, unlocked: true, xpReward: 300 },
-  { id: "inserat5", title: "Inserats-Starter", description: "5 kostenlose Inserate aktiviert", icon: <Building2 className="h-5 w-5" />, unlocked: true, xpReward: 250, bonusText: "🎁 +25 € Bonus!" },
-  { id: "inserat15", title: "Inserats-Profi", description: "15 kostenlose Inserate aktiviert", icon: <Star className="h-5 w-5" />, unlocked: false, xpReward: 500, bonusText: "🎁 +75 € Bonus!" },
-  { id: "b2b5", title: "B2B Networker", description: "5 B2B-Mitgliedschaften verkauft", icon: <Briefcase className="h-5 w-5" />, unlocked: true, xpReward: 400 },
-  { id: "streak7", title: "7-Tage-Streak", description: "7 Tage in Folge aktiv gewesen", icon: <Flame className="h-5 w-5" />, unlocked: true, xpReward: 200 },
-  { id: "streak30", title: "30-Tage-Streak", description: "30 Tage in Folge aktiv", icon: <Zap className="h-5 w-5" />, unlocked: false, xpReward: 600 },
-  { id: "top3", title: "Top 3 Platzierung", description: "Erreiche Top 3 in einer Kategorie", icon: <Trophy className="h-5 w-5" />, unlocked: false, xpReward: 500, bonusText: "🎁 +100 € Bonus!" },
-  { id: "volume1m", title: "Millionär", description: "1 Mio. € Verkaufsvolumen erreicht", icon: <Crown className="h-5 w-5" />, unlocked: false, xpReward: 1000, bonusText: "🎁 +250 € Bonus!" },
+const DEFAULT_ACHIEVEMENTS: Achievement[] = [
+  { id: "first10", title: "Erste 10 B2C Leads", description: "Lege 10 B2C-Kontakte manuell an", iconName: "target", unlocked: true, xpReward: 100 },
+  { id: "first50", title: "50er Club", description: "50 B2C-Kontakte angelegt", iconName: "users", unlocked: true, xpReward: 300 },
+  { id: "inserat5", title: "Inserats-Starter", description: "5 Eigentümer-Inserate über deinen Code", iconName: "building", unlocked: true, xpReward: 250, bonusText: "🎁 +25 € Bonus!" },
+  { id: "inserat15", title: "Inserats-Profi", description: "15 Eigentümer-Inserate über deinen Code", iconName: "star", unlocked: false, xpReward: 500, bonusText: "🎁 +75 € Bonus!" },
+  { id: "b2b5", title: "B2B Networker", description: "5 Entwickler-Registrierungen über deinen Code", iconName: "briefcase", unlocked: true, xpReward: 400 },
+  { id: "streak7", title: "7-Tage-Streak", description: "7 Tage in Folge aktiv gewesen", iconName: "flame", unlocked: true, xpReward: 200 },
+  { id: "streak30", title: "30-Tage-Streak", description: "30 Tage in Folge aktiv", iconName: "zap", unlocked: false, xpReward: 600 },
+  { id: "top3", title: "Top 3 Platzierung", description: "Erreiche Top 3 in einer Kategorie", iconName: "trophy", unlocked: false, xpReward: 500, bonusText: "🎁 +100 € Bonus!" },
+  { id: "volume1m", title: "Millionär", description: "1 Mio. € Verkaufsvolumen erreicht", iconName: "crown", unlocked: false, xpReward: 1000, bonusText: "🎁 +250 € Bonus!" },
 ];
+
+const ICON_MAP: Record<string, React.ReactNode> = {
+  target: <Target className="h-5 w-5" />, users: <Users className="h-5 w-5" />, building: <Building2 className="h-5 w-5" />,
+  star: <Star className="h-5 w-5" />, briefcase: <Briefcase className="h-5 w-5" />, flame: <Flame className="h-5 w-5" />,
+  zap: <Zap className="h-5 w-5" />, trophy: <Trophy className="h-5 w-5" />, crown: <Crown className="h-5 w-5" />,
+  award: <Award className="h-5 w-5" />, gift: <Gift className="h-5 w-5" />, sparkles: <Sparkles className="h-5 w-5" />,
+};
 
 // ── Bonus Milestones ──
 const BONUSES = [
@@ -176,6 +194,8 @@ function RankingTable({ title, data, valueLabel = "Anzahl", formatValue }: {
 
 export default function Auswertungen() {
   const { toast } = useToast();
+  const { currentRoleId } = useUserRole();
+  const isAdmin = currentRoleId === "admin" || currentRoleId === "vertriebsleiter";
   const [timeFilter, setTimeFilter] = useState<TimeRangeKey>("Seit Anfang");
   const [tab, setTab] = useState<"b2c" | "b2b">("b2c");
   const [claimDialogOpen, setClaimDialogOpen] = useState(false);
@@ -185,7 +205,19 @@ export default function Auswertungen() {
     strasse: "", hausnummer: "", plz: "", ort: "", land: "Deutschland", anmerkung: "",
   });
 
-  const openClaimDialog = (lvl: typeof LEVELS[0]) => {
+  // State-based levels and achievements for admin editing
+  const [levels, setLevels] = useState<LevelDef[]>(DEFAULT_LEVELS);
+  const [achievements, setAchievements] = useState<Achievement[]>(DEFAULT_ACHIEVEMENTS);
+  const [claimedStatus, setClaimedStatus] = useState<Record<number, "none" | "requested" | "confirmed">>(INITIAL_CLAIMED);
+  const [editLevelDialog, setEditLevelDialog] = useState<LevelDef | null>(null);
+  const [editAchievementDialog, setEditAchievementDialog] = useState<Achievement | null>(null);
+  const [addAchievementDialog, setAddAchievementDialog] = useState(false);
+
+  const currentLevel = [...levels].reverse().find(l => MY_XP >= l.minXP)!;
+  const nextLevel = levels.find(l => l.minXP > MY_XP);
+  const xpProgress = nextLevel ? ((MY_XP - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100 : 100;
+
+  const openClaimDialog = (lvl: LevelDef) => {
     setClaimReward({ level: lvl.level, title: lvl.title, reward: lvl.reward!, rewardLabel: lvl.rewardLabel! });
     setClaimDialogOpen(true);
   };
@@ -427,7 +459,7 @@ export default function Auswertungen() {
             </div>
             <div className="md:ml-auto flex gap-4">
               <div className="bg-white/15 backdrop-blur-sm rounded-xl px-5 py-3 text-center border border-white/10">
-                <p className="text-2xl font-display font-bold">{ACHIEVEMENTS.filter(a => a.unlocked).length}/{ACHIEVEMENTS.length}</p>
+                <p className="text-2xl font-display font-bold">{achievements.filter(a => a.unlocked).length}/{achievements.length}</p>
                 <p className="text-[11px] text-white/70">Achievements</p>
               </div>
               <div className="bg-white/15 backdrop-blur-sm rounded-xl px-5 py-3 text-center border border-white/10">
@@ -451,7 +483,7 @@ export default function Auswertungen() {
           </div>
           <p className="text-xs text-muted-foreground mb-5">Sammle XP durch B2C-Inserate, B2B-Verkäufe, Streaks und Achievements – je höher dein Level, desto größer die Prämie!</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {LEVELS.map((lvl) => {
+            {levels.map((lvl) => {
               const isCurrentLevel2 = lvl.level === currentLevel.level;
               const isReached = MY_XP >= lvl.minXP;
               return (
@@ -545,7 +577,7 @@ export default function Auswertungen() {
             <h2 className="text-sm font-display font-semibold text-foreground">Achievements</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {ACHIEVEMENTS.map((a) => (
+            {achievements.map((a) => (
               <div
                 key={a.id}
                 className={`rounded-xl p-4 border transition-all ${
@@ -556,7 +588,7 @@ export default function Auswertungen() {
               >
                 <div className="flex items-start gap-3">
                   <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.unlocked ? "gradient-brand text-white" : "bg-muted text-muted-foreground"}`}>
-                    {a.icon}
+                    {ICON_MAP[a.iconName] || <Award className="h-5 w-5" />}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground">{a.title}</p>
