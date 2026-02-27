@@ -1,6 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
+// Draft pages: only admin can access
+const DRAFT_MENU_IDS = new Set([
+  "automations", "auswertungen", "statistik", "abrechnungen", "wettbewerb",
+  "lead-scouring", "webinar", "support-ki", "teampartner",
+  "berater-microseite", "helpdesk", "shop",
+]);
+
 // Maps route paths to menu permission IDs
 const ROUTE_TO_MENU_ID: Record<string, string> = {
   "/inbox": "inbox",
@@ -40,6 +47,9 @@ const ROUTE_TO_MENU_ID: Record<string, string> = {
   "/webinar": "webinar",
   "/bewerber-portal": "bewerber-portal",
   "/bewerbungsmanagement": "bewerbungsmanagement",
+  "/wettbewerb": "wettbewerb",
+  "/lead-scouring": "lead-scouring",
+  "/zielplanung": "zielplanung",
 };
 
 interface ProtectedRouteProps {
@@ -48,7 +58,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ path, children }: ProtectedRouteProps) {
-  const { allowedMenuItems } = useUserRole();
+  const { allowedMenuItems, currentRoleId } = useUserRole();
 
   // Dashboard is always accessible
   if (path === "/") return <>{children}</>;
@@ -60,8 +70,13 @@ export default function ProtectedRoute({ path, children }: ProtectedRouteProps) 
   // If no mapping exists, allow access (unmapped routes)
   if (!menuId) return <>{children}</>;
 
+  // Draft pages: only admin can access
+  if (DRAFT_MENU_IDS.has(menuId) && currentRoleId !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
   // Check permission
-  if (!allowedMenuItems.includes(menuId)) {
+  if (!allowedMenuItems.includes(menuId) && !DRAFT_MENU_IDS.has(menuId)) {
     return <Navigate to="/" replace />;
   }
 

@@ -159,28 +159,54 @@ const sectionTeam = [
   { path: "/helpdesk", icon: HeadphonesIcon, label: "Helpdesk" },
 ];
 
+// ── Draft (Coming Soon) menu IDs ──
+const DRAFT_MENU_IDS = new Set([
+  "automations", "auswertungen", "statistik", "abrechnungen", "wettbewerb",
+  "lead-scouring", "webinar", "support-ki", "teampartner",
+  "berater-microseite", "helpdesk", "shop",
+]);
+
+function isDraftPath(path: string): boolean {
+  const menuId = PATH_TO_MENU_ID[path];
+  return menuId ? DRAFT_MENU_IDS.has(menuId) : false;
+}
+
+function isDraftGroup(groupLabel: string): boolean {
+  const menuId = GROUP_MENU_ID[groupLabel];
+  return menuId ? DRAFT_MENU_IDS.has(menuId) : false;
+}
+
 // ── Components ──
 
-function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount }: {
-  path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean; collapsed: boolean; badgeCount?: number;
+function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount, draft, isAdmin }: {
+  path: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean; collapsed: boolean; badgeCount?: number; draft?: boolean; isAdmin?: boolean;
 }) {
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    if (draft && !isAdmin) {
+      e.preventDefault();
+      return;
+    }
     const nav = document.getElementById('crm-sidebar-nav');
     if (nav) sessionStorage.setItem('sidebar-scroll', String(nav.scrollTop));
   };
+
+  const draftNonAdmin = draft && !isAdmin;
+
   return (
     <Link
-      to={path}
+      to={draftNonAdmin ? "#" : path}
       onClick={handleClick}
-      title={collapsed ? label : undefined}
+      title={collapsed ? label + (draft ? (isAdmin ? " (Entwurf)" : " (Kommt bald)") : "") : undefined}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
-        isActive
-          ? "gradient-brand text-primary-foreground shadow-crm-sm"
-          : "text-foreground/70 hover:bg-background hover:text-foreground"
+        draftNonAdmin
+          ? "text-foreground/30 cursor-default"
+          : isActive
+            ? "gradient-brand text-primary-foreground shadow-crm-sm"
+            : "text-foreground/70 hover:bg-background hover:text-foreground"
       } ${collapsed ? "justify-center px-2" : ""}`}
     >
       <div className="relative shrink-0">
-        <Icon className="h-[16px] w-[16px]" />
+        <Icon className={`h-[16px] w-[16px] ${draftNonAdmin ? "opacity-40" : ""}`} />
         {badgeCount != null && badgeCount > 0 && collapsed && (
           <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
             {badgeCount > 9 ? "9+" : badgeCount}
@@ -190,7 +216,12 @@ function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount }: {
       {!collapsed && (
         <>
           <span className="flex-1">{label}</span>
-          {badgeCount != null && badgeCount > 0 && (
+          {draft && isAdmin && (
+            <span className="h-4 px-1.5 rounded bg-amber-500/20 text-[9px] font-semibold text-amber-600 dark:text-amber-400 flex items-center">
+              Entwurf
+            </span>
+          )}
+          {!draft && badgeCount != null && badgeCount > 0 && (
             <span className="h-5 min-w-5 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
               {badgeCount > 99 ? "99+" : badgeCount}
             </span>
@@ -230,16 +261,17 @@ function SectionGroup({ label, children, collapsed }: {
   );
 }
 
-function CollapsibleGroup({ label, icon: Icon, items, color, collapsed }: {
-  label: string; icon: React.ComponentType<{ className?: string }>; items: typeof b2cSubItems; color: string; collapsed: boolean;
+function CollapsibleGroup({ label, icon: Icon, items, color, collapsed, draft, isAdmin }: {
+  label: string; icon: React.ComponentType<{ className?: string }>; items: typeof b2cSubItems; color: string; collapsed: boolean; draft?: boolean; isAdmin?: boolean;
 }) {
   const location = useLocation();
   const hasActiveChild = items.some((i) => location.pathname.startsWith(i.path));
   const [open, setOpen] = useState(hasActiveChild);
+  const draftNonAdmin = draft && !isAdmin;
 
   if (collapsed) {
     return (
-      <div title={label} className="flex items-center justify-center px-2 py-2">
+      <div title={label + (draft ? (isAdmin ? " (Entwurf)" : "") : "")} className={`flex items-center justify-center px-2 py-2 ${draftNonAdmin ? "opacity-30" : ""}`}>
         <Icon className={`h-[16px] w-[16px] ${color}`} />
       </div>
     );
@@ -248,25 +280,32 @@ function CollapsibleGroup({ label, icon: Icon, items, color, collapsed }: {
   return (
     <div>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => { if (!draftNonAdmin) setOpen(!open); }}
         className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all duration-150 w-full ${
-          hasActiveChild
-            ? "bg-background text-foreground shadow-crm-sm"
-            : "text-foreground/70 hover:bg-background hover:text-foreground"
+          draftNonAdmin
+            ? "text-foreground/30 cursor-default"
+            : hasActiveChild
+              ? "bg-background text-foreground shadow-crm-sm"
+              : "text-foreground/70 hover:bg-background hover:text-foreground"
         }`}
       >
-        <Icon className={`h-[16px] w-[16px] shrink-0 ${color}`} />
+        <Icon className={`h-[16px] w-[16px] shrink-0 ${color} ${draftNonAdmin ? "opacity-40" : ""}`} />
         {label}
-        {open ? (
+        {draft && isAdmin && (
+          <span className="h-4 px-1.5 rounded bg-amber-500/20 text-[9px] font-semibold text-amber-600 dark:text-amber-400 flex items-center ml-1">
+            Entwurf
+          </span>
+        )}
+        {!draftNonAdmin && (open ? (
           <ChevronDown className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
         ) : (
           <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
-        )}
+        ))}
       </button>
-      {open && (
+      {open && !draftNonAdmin && (
         <div className="ml-3 pl-3 border-l-2 border-border/60 mt-0.5 space-y-0.5">
           {items.map((item) => {
-const isActive = location.pathname.startsWith(item.path);
+            const isActive = location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}
@@ -337,6 +376,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
+  const isAdminRole = currentRoleId === "admin";
+
   const canSee = (path: string) => {
     const menuId = PATH_TO_MENU_ID[path];
     if (!menuId) return true;
@@ -349,8 +390,9 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
     return allowedMenuItems.includes(menuId);
   };
 
+  // Filter items: keep draft items visible for all roles, filter others by permission
   const filterItems = (items: { path: string; icon: React.ComponentType<{ className?: string }>; label: string }[]) =>
-    items.filter((item) => canSee(item.path));
+    items.filter((item) => canSee(item.path) || isDraftPath(item.path));
 
   return (
     <aside
@@ -379,9 +421,10 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
           </SectionGroup>
         ) : currentRoleId === "hr" ? (
           <SectionGroup label="HR" collapsed={collapsed}>
-            {filterItems(sectionHR).map((item) => (
+           {filterItems(sectionHR).map((item) => (
               <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
-                badgeCount={item.path === "/chat" ? chatUnread : undefined} />
+                badgeCount={item.path === "/chat" ? chatUnread : undefined}
+                draft={isDraftPath(item.path)} isAdmin={isAdminRole} />
             ))}
           </SectionGroup>
         ) : (
@@ -406,7 +449,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
               {showB2C && <CollapsibleGroup label="B2C – Eigentümer" icon={Building2} items={b2cSubItems} color="text-b2c" collapsed={collapsed} />}
               {showB2B && <CollapsibleGroup label="B2B – Partner" icon={Briefcase} items={b2bSubItems} color="text-b2b" collapsed={collapsed} />}
               {vertriebItems.map((item) => (
-                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed} />
+                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
+                  draft={isDraftPath(item.path)} isAdmin={isAdminRole} />
               ))}
             </SectionGroup>
           );
@@ -432,7 +476,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
           return (
             <SectionGroup label="Auswertung" collapsed={collapsed}>
               {items.map((item) => (
-                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed} />
+                <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
+                  draft={isDraftPath(item.path)} isAdmin={isAdminRole} />
               ))}
             </SectionGroup>
           );
@@ -452,7 +497,8 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
               {showMarketing && <CollapsibleGroup label="Marketing" icon={Megaphone} items={marketingSubItems} color="text-foreground" collapsed={collapsed} />}
               {toolItems.map((item) => (
                 <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
-                  badgeCount={item.path === "/support-ki" ? supportUnread : item.path === "/chat" ? chatUnread : undefined} />
+                  badgeCount={item.path === "/support-ki" ? supportUnread : item.path === "/chat" ? chatUnread : undefined}
+                  draft={isDraftPath(item.path)} isAdmin={isAdminRole} />
               ))}
             </SectionGroup>
           );
@@ -466,16 +512,18 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
             <SectionGroup label="Team & Admin" collapsed={collapsed}>
               {items.map((item) => (
                 <NavItem key={item.path} {...item} isActive={isActive(item.path)} collapsed={collapsed}
-                  badgeCount={item.path === "/helpdesk" ? helpdeskUnread : undefined} />
+                  badgeCount={item.path === "/helpdesk" ? helpdeskUnread : undefined}
+                  draft={isDraftPath(item.path)} isAdmin={isAdminRole} />
               ))}
             </SectionGroup>
           );
         })()}
 
         {/* SHOP */}
-        {canSeeGroup("Shop") && (
+        {(canSeeGroup("Shop") || isDraftGroup("Shop")) && (
           <SectionGroup label="Shop" collapsed={collapsed}>
-            <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" collapsed={collapsed} />
+            <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" collapsed={collapsed}
+              draft={isDraftGroup("Shop")} isAdmin={isAdminRole} />
           </SectionGroup>
         )}
         </>
