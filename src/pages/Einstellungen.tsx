@@ -72,6 +72,29 @@ interface RequiredDoc {
   required: boolean;
 }
 
+// Role-specific required documents
+function getRequiredDocuments(roleId: string): RequiredDoc[] {
+  if (roleId === "vertriebspartner") {
+    return [
+      { id: "personalausweis", label: "Personalausweiskopie", description: "Vorder- und Rückseite deines gültigen Personalausweises oder Reisepasses", required: true },
+      { id: "gewerbeanmeldung", label: "Gewerbeanmeldung", description: "Aktuelle Gewerbeanmeldung deines Unternehmens", required: true },
+      { id: "fuehrungszeugnis", label: "Polizeiliches Führungszeugnis", description: "Aktuelles polizeiliches Führungszeugnis (nicht älter als 3 Monate)", required: true },
+      { id: "vp-vertrag", label: "Vertriebspartnervertrag", description: "Unterschriebener Vertriebspartnervertrag mit Imondu", required: true },
+      { id: "agb", label: "AGB", description: "Bestätigung der Allgemeinen Geschäftsbedingungen", required: true },
+      { id: "verschwiegenheit", label: "Verschwiegenheitsvereinbarung", description: "Unterschriebene Verschwiegenheitsvereinbarung (NDA)", required: true },
+      { id: "dsgvo", label: "DSGVO-Vereinbarung", description: "Datenschutz-Grundverordnung Einwilligung und Auftragsverarbeitung", required: true },
+    ];
+  }
+  // All other internal roles (Admin, Inhaber, VL, Backoffice, Marketing, Buchhaltung, HR)
+  return [
+    { id: "personalausweis", label: "Personalausweiskopie", description: "Vorder- und Rückseite deines gültigen Personalausweises oder Reisepasses", required: true },
+    { id: "vertrag", label: "Vertrag", description: "Unterschriebener Arbeits- / Dienstvertrag mit Imondu", required: true },
+    { id: "agb", label: "AGB", description: "Bestätigung der Allgemeinen Geschäftsbedingungen", required: true },
+    { id: "verschwiegenheit", label: "Verschwiegenheitsvereinbarung", description: "Unterschriebene Verschwiegenheitsvereinbarung (NDA)", required: true },
+    { id: "dsgvo", label: "DSGVO-Vereinbarung", description: "Datenschutz-Grundverordnung Einwilligung und Auftragsverarbeitung", required: true },
+  ];
+}
+
 const REQUIRED_DOCUMENTS: RequiredDoc[] = [
   { id: "personalausweis", label: "Personalausweiskopie", description: "Vorder- und Rückseite deines gültigen Personalausweises oder Reisepasses", required: true },
   { id: "gewerbeanmeldung", label: "Gewerbeanmeldung", description: "Aktuelle Gewerbeanmeldung deines Unternehmens", required: true },
@@ -88,6 +111,27 @@ interface OnboardingStep {
   label: string;
   description: string;
   tab: string;
+}
+
+// Role-specific onboarding steps
+function getOnboardingSteps(roleId: string): OnboardingStep[] {
+  const base: OnboardingStep[] = [
+    { id: "passwort", label: "Passwort ändern", description: "Ändere dein initiales Passwort", tab: "email" },
+    { id: "profil", label: "Profil ausfüllen", description: "Vervollständige deine persönlichen Daten", tab: "profil" },
+    { id: "email_setup", label: "E-Mail einrichten", description: "Richte deine geschäftliche E-Mail ein", tab: "email" },
+    { id: "kalender", label: "Kalender verbinden", description: "Verbinde deinen Kalender", tab: "kalender" },
+  ];
+  // Gewerbedaten only for Vertriebspartner
+  if (roleId === "vertriebspartner") {
+    base.push({ id: "gewerbe", label: "Gewerbedaten hinterlegen", description: "Trage deine Unternehmensdaten ein", tab: "gewerbe" });
+  }
+  base.push({ id: "finanzen", label: "Steuer & Bankdaten", description: "Hinterlege deine Steuer- und Bankdaten", tab: "finanzen" });
+  base.push({ id: "unterlagen", label: "Unterlagen hochladen", description: "Lade alle Pflichtdokumente hoch", tab: "unterlagen" });
+  // Academy course: NOT for Admin/Inhaber
+  if (roleId !== "admin" && roleId !== "inhaber") {
+    base.push({ id: "academy", label: "Academy – Onboarding-Kurs", description: "Schließe den Backoffice-Kurs ab & erhalte dein Zertifikat", tab: "academy" });
+  }
+  return base;
 }
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
@@ -181,8 +225,13 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
     );
   }
 
-  const onboardingProgress = Math.round((completedSteps.length / ONBOARDING_STEPS.length) * 100);
-  const allOnboardingDone = completedSteps.length === ONBOARDING_STEPS.length;
+  // Use role-specific onboarding and documents
+  const roleOnboardingSteps = getOnboardingSteps(currentRoleId);
+  const roleRequiredDocs = getRequiredDocuments(currentRoleId);
+  const showGewerbedaten = currentRoleId === "vertriebspartner";
+
+  const onboardingProgress = Math.round((completedSteps.length / roleOnboardingSteps.length) * 100);
+  const allOnboardingDone = completedSteps.length === roleOnboardingSteps.length;
 
   const ionosEmail = `${profile.vorname.trim()[0]?.toLowerCase() || "x"}.${profile.nachname.trim().toLowerCase().replace(/\s+/g, "-").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")}@imondu.de`;
 
@@ -233,8 +282,8 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
     toast({ title: "Dokument entfernt", description: "Das Dokument wurde entfernt." });
   };
 
-  const uploadedCount = REQUIRED_DOCUMENTS.filter((d) => uploadedDocs[d.id]).length;
-  const allDocsUploaded = uploadedCount === REQUIRED_DOCUMENTS.length;
+  const uploadedCount = roleRequiredDocs.filter((d) => uploadedDocs[d.id]).length;
+  const allDocsUploaded = uploadedCount === roleRequiredDocs.length;
 
   // HR: Schlanke Einstellungen (Profil, Passwort, Benachrichtigungen)
   if (currentRoleId === "hr") {
@@ -550,11 +599,11 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
 
               <div className="flex items-center gap-3 mb-4">
                 <Progress value={onboardingProgress} className="h-2 flex-1" />
-                <span className="text-xs font-semibold text-primary whitespace-nowrap">{completedSteps.length} / {ONBOARDING_STEPS.length}</span>
+                <span className="text-xs font-semibold text-primary whitespace-nowrap">{completedSteps.length} / {roleOnboardingSteps.length}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {ONBOARDING_STEPS.map((step) => {
+                {roleOnboardingSteps.map((step) => {
                   const done = completedSteps.includes(step.id);
                   return (
                     <button
@@ -611,7 +660,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
               { value: "profil", label: "Profil" },
               { value: "email", label: "E-Mail" },
               { value: "kalender", label: "Kalender" },
-              { value: "gewerbe", label: "Gewerbedaten" },
+              ...(showGewerbedaten ? [{ value: "gewerbe", label: "Gewerbedaten" }] : []),
               { value: "finanzen", label: "Steuer & Bank" },
               { value: "unterlagen", label: "Unterlagen" },
               { value: "benachrichtigungen", label: "Benachrichtigungen" },
@@ -946,10 +995,10 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-foreground">Pflichtdokumente</p>
                 <Badge variant={allDocsUploaded ? "default" : "outline"} className={allDocsUploaded ? "bg-[hsl(var(--success))] text-white border-0" : ""}>
-                  {uploadedCount} / {REQUIRED_DOCUMENTS.length} hochgeladen
+                  {uploadedCount} / {roleRequiredDocs.length} hochgeladen
                 </Badge>
               </div>
-              <Progress value={(uploadedCount / REQUIRED_DOCUMENTS.length) * 100} className="h-2" />
+              <Progress value={(uploadedCount / roleRequiredDocs.length) * 100} className="h-2" />
               {!allDocsUploaded && (
                 <p className="text-[10px] text-muted-foreground mt-2">
                   <AlertCircle className="h-3 w-3 inline mr-1 text-[hsl(var(--warning))]" />
@@ -960,7 +1009,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
 
             <SectionBlock title="Dokumente hochladen" description="Lade die folgenden Unterlagen hoch. Akzeptierte Formate: PDF, JPG, PNG (max. 10 MB).">
               <div className="space-y-3 max-w-2xl">
-                {REQUIRED_DOCUMENTS.map((doc) => {
+                {roleRequiredDocs.map((doc) => {
                   const uploaded = uploadedDocs[doc.id];
                   // Color logic: not uploaded = red, pending = orange, approved = green, rejected = red
                   const borderColor = uploaded

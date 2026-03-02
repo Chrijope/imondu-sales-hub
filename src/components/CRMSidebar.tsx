@@ -376,7 +376,7 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
-  const isAdminRole = currentRoleId === "admin";
+  const isAdminRole = currentRoleId === "admin" || currentRoleId === "inhaber";
 
   const canSee = (path: string) => {
     const menuId = PATH_TO_MENU_ID[path];
@@ -540,14 +540,33 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((r) => (
-                  <SelectItem key={r.id} value={r.id} className="text-xs">
-                    <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: r.color }} />
-                    {r.name}
-                  </SelectItem>
-                ))}
+                {roles.map((r) => {
+                  // Calculate notification count per role (simplified demo)
+                  const roleNotifs = r.menuItems.includes("chat") ? chatUnread :
+                    r.menuItems.includes("support-ki") ? supportUnread :
+                    r.menuItems.includes("helpdesk") ? helpdeskUnread : 0;
+                  return (
+                    <SelectItem key={r.id} value={r.id} className="text-xs">
+                      <span className="flex items-center gap-1.5 w-full">
+                        <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                        <span className="flex-1">{r.name}</span>
+                        {roleNotifs > 0 && (
+                          <span className="ml-auto h-4 min-w-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground flex items-center justify-center">
+                            {roleNotifs}
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
+            {/* Total notification badge next to switcher */}
+            {(chatUnread + supportUnread + helpdeskUnread) > 0 && (
+              <span className="h-5 min-w-5 px-1 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center shrink-0">
+                {chatUnread + supportUnread + helpdeskUnread}
+              </span>
+            )}
           </div>
         </div>
       )}
