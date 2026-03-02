@@ -51,10 +51,10 @@ function loadData(key: string): { goals: Record<number, MonthGoal>; karriereStuf
     const raw = localStorage.getItem(key);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektassistent" };
+      return { goals: parsed.goals || emptyGoals(), karriereStufeId: parsed.karriereStufeId || "projektleiter" };
     }
   } catch {}
-  return { goals: emptyGoals(), karriereStufeId: "projektassistent" };
+  return { goals: emptyGoals(), karriereStufeId: "projektleiter" };
 }
 
 function loadFromStorage(userId?: string): { goals: Record<number, MonthGoal>; karriereStufeId: string } {
@@ -64,14 +64,13 @@ function loadFromStorage(userId?: string): { goals: Record<number, MonthGoal>; k
 // Career-level-specific minimum B2C provision & B2B provision adjustments
 function getEffectiveB2CProvision(baseProvision: number, karriereId: string): number {
   if (karriereId === "projektleiter") return Math.max(baseProvision, 12);
-  if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 13.5);
+  if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 14);
   return baseProvision;
 }
 
 function getEffectiveB2BProvision(baseProvision: number, karriereId: string): number {
-  if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 35);
-  if (karriereId === "projektleiter") return Math.max(baseProvision, 30);
-  if (karriereId === "projektassistent") return Math.min(baseProvision, 25);
+  if (karriereId === "senior_projektleiter") return Math.max(baseProvision, 33);
+  if (karriereId === "projektleiter") return Math.max(baseProvision, 25);
   return baseProvision;
 }
 

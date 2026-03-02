@@ -29,9 +29,8 @@ function getEffectiveB2CProvision(base: number, kid: string) {
 }
 
 function getEffectiveB2BProvision(base: number, kid: string) {
-  if (kid === "senior_projektleiter") return Math.max(base, 35);
-  if (kid === "projektleiter") return Math.max(base, 30);
-  if (kid === "projektassistent") return Math.min(base, 25);
+  if (kid === "senior_projektleiter") return Math.max(base, 33);
+  if (kid === "projektleiter") return Math.max(base, 25);
   return base;
 }
 
@@ -48,7 +47,7 @@ export default function ZielplanungWidget() {
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       const goals: Record<number, MonthGoal> = parsed.goals || {};
-      const karriereStufeId: string = parsed.karriereStufeId || "projektassistent";
+      const karriereStufeId: string = parsed.karriereStufeId || "projektleiter";
       const karriere = KARRIERESTUFEN.find((k) => k.id === karriereStufeId) || KARRIERESTUFEN[0];
 
       const currentMonth = new Date().getMonth();

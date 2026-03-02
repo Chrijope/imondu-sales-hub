@@ -391,6 +391,39 @@ export default function BewerberPortal({ embedded }: { embedded?: boolean }) {
                       </label>
                     ))}
                   </RadioGroup>
+
+                  {/* Contract info based on selection */}
+                  {beschaeftigung === "freier_handelsvertreter" && (
+                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Handelsvertretervertrag (§ 84 HGB)</p>
+                          <p className="text-xs text-muted-foreground">Bitte lies Dir den Vertrag vorab durch.</p>
+                        </div>
+                      </div>
+                      <a
+                        href="/vertraege/hv-vertrag-handelsvertreter.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                      >
+                        <FileText className="h-4 w-4" /> Vertrag herunterladen (PDF)
+                      </a>
+                    </div>
+                  )}
+
+                  {beschaeftigung && beschaeftigung !== "freier_handelsvertreter" && (
+                    <div className="p-4 rounded-xl border border-border bg-secondary/30 flex items-start gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Vertrag wird separat zugesendet</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Nach Prüfung Deiner Bewerbung erhältst Du den passenden Vertrag per E-Mail zur Unterschrift.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 

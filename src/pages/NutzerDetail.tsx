@@ -183,7 +183,7 @@ export default function NutzerDetail() {
                     <GraduationCap className="h-3.5 w-3.5" /> Karrierestufe
                   </p>
                   <Select
-                    value={user.karriereStufeId || "projektassistent"}
+                    value={user.karriereStufeId || "projektleiter"}
                     onValueChange={(v) => {
                       setUser({ ...user, karriereStufeId: v });
                       const stufe = KARRIERESTUFEN.find(k => k.id === v);

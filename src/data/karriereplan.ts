@@ -8,12 +8,12 @@ export interface B2CStufe {
 export const B2C_STAFFEL: B2CStufe[] = [
   { min: 0, max: 149, provision: 10 },
   { min: 150, max: 299, provision: 12 },
-  { min: 300, max: 599, provision: 13.5 },
-  { min: 600, max: null, provision: 15 },
+  { min: 300, max: 599, provision: 14 },
+  { min: 600, max: null, provision: 16 },
 ];
 
 export const B2C_QUARTALSBONUS_SCHWELLE = 500;
-export const B2C_QUARTALSBONUS = 500;
+export const B2C_QUARTALSBONUS = 2500;
 
 // ── B2B Provisionsstaffel (monatlich) ──
 export interface B2BStufe {
@@ -23,10 +23,9 @@ export interface B2BStufe {
 }
 
 export const B2B_STAFFEL: B2BStufe[] = [
-  { min: 0, max: 5000, provision: 25 },
-  { min: 5001, max: 15000, provision: 30 },
-  { min: 15001, max: 30000, provision: 33 },
-  { min: 30001, max: null, provision: 35 },
+  { min: 0, max: 15000, provision: 25 },
+  { min: 15001, max: 30000, provision: 30 },
+  { min: 30001, max: null, provision: 33 },
 ];
 
 export const B2B_MITGLIEDSCHAFT_PREIS = 1250;
@@ -45,29 +44,17 @@ export interface Karrierestufe {
 
 export const KARRIERESTUFEN: Karrierestufe[] = [
   {
-    id: "projektassistent",
-    title: "Projektassistent",
-    icon: "🌱",
-    b2cMin: "10 € (Einstieg)",
-    b2bRange: "25 % (50/50 oder 30/70 Split)",
-    vorteile: [
-      "Einstieg in den Vertrieb",
-      "B2C gemäß Quartalsstaffel",
-      "Beteiligung an B2B gemäß 50/50 oder 30/70",
-    ],
-  },
-  {
     id: "projektleiter",
     title: "Projektleiter",
     icon: "🔥",
     b2cMin: "ab 12 € (Mindeststufe)",
-    b2bRange: "30–35 %",
+    b2bRange: "25–30 %",
     vorteile: [
       "Eigenständiges Closing",
       "Mindeststufe 12 € im B2C",
-      "30–35 % im B2B",
+      "25–30 % im B2B",
       "Zugang zu exklusiven Leads",
-      "Aufbau eigener Projektassistenten",
+      "Aufbau eigener Tippgeber",
       "Overhead-Provision auf Teamumsatz",
     ],
     voraussetzungen: [
@@ -81,10 +68,10 @@ export const KARRIERESTUFEN: Karrierestufe[] = [
     id: "senior_projektleiter",
     title: "Senior Projektleiter",
     icon: "👑",
-    b2cMin: "bis 15 € (Top-Stufe)",
-    b2bRange: "35 % + 5 % Override",
+    b2cMin: "bis 16 € (Top-Stufe)",
+    b2bRange: "33 % + 5 % Override",
     vorteile: [
-      "35 % Provision im B2B",
+      "33 % Provision im B2B",
       "5 % Override auf Teamumsatz",
       "Strategische Mitgestaltung",
       "Exklusive Leads",
