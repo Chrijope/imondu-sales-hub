@@ -390,9 +390,13 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
     return allowedMenuItems.includes(menuId);
   };
 
-  // Filter items: keep draft items visible for all roles, filter others by permission
+  // Roles that should NOT see draft/coming-soon items at all
+  const HIDE_DRAFTS_ROLES = new Set(["entwickler", "eigentuemer", "bewerber", "hr"]);
+  const showDrafts = !HIDE_DRAFTS_ROLES.has(currentRoleId);
+
+  // Filter items: keep draft items visible only for roles that should see them
   const filterItems = (items: { path: string; icon: React.ComponentType<{ className?: string }>; label: string }[]) =>
-    items.filter((item) => canSee(item.path) || isDraftPath(item.path));
+    items.filter((item) => canSee(item.path) || (isDraftPath(item.path) && showDrafts));
 
   return (
     <aside
@@ -520,7 +524,7 @@ export default function CRMSidebar({ collapsed }: CRMSidebarProps) {
         })()}
 
         {/* SHOP */}
-        {(canSeeGroup("Shop") || isDraftGroup("Shop")) && (
+        {(canSeeGroup("Shop") || (isDraftGroup("Shop") && showDrafts)) && (
           <SectionGroup label="Shop" collapsed={collapsed}>
             <CollapsibleGroup label="Shop" icon={ShoppingBag} items={shopSubItems} color="text-foreground" collapsed={collapsed}
               draft={isDraftGroup("Shop")} isAdmin={isAdminRole} />

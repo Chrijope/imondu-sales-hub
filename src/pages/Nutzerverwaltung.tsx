@@ -100,8 +100,8 @@ export default function Nutzerverwaltung() {
     };
     setUsers(prev => [...prev, newUser]);
     setShowInviteDialog(false);
-    // Academy-Pflicht: admin/vertriebsleiter entscheiden, ob der Partner die Academy durchlaufen muss
-    const needsAcademy = !["admin", "vertriebsleiter"].includes(inviteRoleId);
+    // Academy-Pflicht: ausschließlich für Vertriebspartner
+    const needsAcademy = inviteRoleId === "vertriebspartner";
     setContractUser({ name: fullName, email, karrierestufe: inviteKarrierestufe, academyPflicht: needsAcademy });
     setContractSent(false);
     setShowContractDialog(true);
