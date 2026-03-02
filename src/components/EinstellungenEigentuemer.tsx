@@ -90,7 +90,7 @@ export default function EinstellungenEigentuemer() {
           ))}
         </TabsList>
 
-        <p className="text-xs text-muted-foreground mt-3 mb-6">Diese Einstellungen gelten nur für dein Eigentümer-Konto.</p>
+        <p className="text-xs text-muted-foreground mt-3 mb-6">Diese Einstellungen gelten nur für dein Eigentümer-Konto. <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded ml-1">IMONDU-ID: IM-300000001</span></p>
 
         {/* Profil */}
         <TabsContent value="profil" className="space-y-6 mt-0">
