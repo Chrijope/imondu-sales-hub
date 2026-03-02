@@ -413,7 +413,7 @@ export default function Inserate() {
                 : "Alle Immobilien-Inserate deiner Eigentümer"}
             </p>
           </div>
-          {!isEntwickler && !isVertriebspartner && (
+          {!isEntwickler && (
             <Button onClick={() => setShowFunnel(true)} className="gap-2 gradient-brand border-0 text-primary-foreground shadow-crm-sm hover:opacity-90">
               <Plus className="h-4 w-4" /> Neues Inserat
             </Button>
