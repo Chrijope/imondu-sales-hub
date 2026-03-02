@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, ChevronDown, ChevronRight, Info, UserPlus, GitBranch, List, Shield, Mail, Phone } from "lucide-react";
+import { User, ChevronDown, ChevronRight, UserPlus, GitBranch, List, Mail, Phone, Trash2, CreditCard } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { SAMPLE_USERS, type CRMUser } from "@/data/nutzerverwaltung-data";
+import { getProjektassistenten, getProjektassistentenByCreator, removeProjektassistent, type Projektassistent } from "@/data/projektassistenten-data";
+import ProjektassistentFormular from "@/components/ProjektassistentFormular";
+import { useToast } from "@/hooks/use-toast";
 
 type TeampartnerStatus = "Aktiv" | "Inaktiv" | "Ausstehend";
 
@@ -24,28 +26,23 @@ const statusColor: Record<TeampartnerStatus, string> = {
   Ausstehend: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
-// Build tree: admin/VL are roots, other users are children based on hierarchy
-function buildTree(users: CRMUser[], roles: { id: string; name: string }[]) {
-  // Roots: admin, vertriebsleiter
-  const roots = users.filter(u => ["admin", "vertriebsleiter"].includes(u.roleId));
-  const children = users.filter(u => !["admin", "vertriebsleiter"].includes(u.roleId));
-  return { roots, children };
-}
-
 function TreeNode({
   user,
   children,
+  projektassistenten,
   roles,
   expandedIds,
   toggleExpand,
 }: {
   user: CRMUser;
   children: CRMUser[];
+  projektassistenten: Projektassistent[];
   roles: { id: string; name: string; color: string }[];
   expandedIds: Set<string>;
   toggleExpand: (id: string) => void;
 }) {
-  const hasChildren = children.length > 0;
+  const myPAs = projektassistenten.filter(pa => pa.erstelltVon === user.id);
+  const hasChildren = children.length > 0 || myPAs.length > 0;
   const isExpanded = expandedIds.has(user.id);
   const role = roles.find(r => r.id === user.roleId);
   const status = getUserStatus(user);
@@ -78,16 +75,39 @@ function TreeNode({
         <div className="flex flex-col items-center mt-1">
           <div className="w-px h-6 bg-border" />
           <div className="flex gap-8 flex-wrap justify-center">
-            {children.map((child) => (
-              <div key={child.id} className="flex flex-col items-center">
+            {/* Child users */}
+            {children.map((child) => {
+              const childPAs = projektassistenten.filter(pa => pa.erstelltVon === child.id);
+              return (
+                <div key={child.id} className="flex flex-col items-center">
+                  <div className="w-px h-4 bg-border" />
+                  <TreeNode
+                    user={child}
+                    children={[]}
+                    projektassistenten={projektassistenten}
+                    roles={roles}
+                    expandedIds={expandedIds}
+                    toggleExpand={toggleExpand}
+                  />
+                </div>
+              );
+            })}
+            {/* Projektassistenten */}
+            {myPAs.map((pa) => (
+              <div key={pa.id} className="flex flex-col items-center">
                 <div className="w-px h-4 bg-border" />
-                <TreeNode
-                  user={child}
-                  children={[]}
-                  roles={roles}
-                  expandedIds={expandedIds}
-                  toggleExpand={toggleExpand}
-                />
+                <div className="flex items-center gap-2 border border-dashed border-border bg-muted/30 rounded-lg px-3 py-2 shadow-sm">
+                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                    {pa.vorname[0]}{pa.nachname[0]}
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs font-medium text-foreground block leading-tight">{pa.vorname} {pa.nachname}</span>
+                    <span className="text-[9px] text-muted-foreground">Projektassistent · {pa.imonduId}</span>
+                  </div>
+                  <Badge variant="outline" className={`text-[9px] ml-1 ${statusColor[pa.status === "aktiv" ? "Aktiv" : pa.status === "ausstehend" ? "Ausstehend" : "Inaktiv"]}`}>
+                    {pa.status === "aktiv" ? "Aktiv" : pa.status === "ausstehend" ? "Ausstehend" : "Inaktiv"}
+                  </Badge>
+                </div>
               </div>
             ))}
           </div>
@@ -98,12 +118,22 @@ function TreeNode({
 }
 
 export default function TeampartnerPage() {
-  const { roles } = useUserRole();
+  const { roles, currentRoleId } = useUserRole();
+  const { toast } = useToast();
   const [view, setView] = useState<"tree" | "list">("list");
   const [filter, setFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(SAMPLE_USERS.map(u => u.id)));
+  const [showPAForm, setShowPAForm] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const canCreatePA = ["admin", "vertriebsleiter", "vertriebspartner"].includes(currentRoleId);
+
+  // Determine current user id based on role
+  const currentUserId = currentRoleId === "admin" ? "u1" : currentRoleId === "vertriebsleiter" ? "u2"
+    : currentRoleId === "vertriebspartner" ? "u3" : "u1";
+  const currentUserName = SAMPLE_USERS.find(u => u.id === currentUserId)?.name || "Unbekannt";
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -116,6 +146,11 @@ export default function TeampartnerPage() {
   const expandAll = () => setExpandedIds(new Set(SAMPLE_USERS.map((u) => u.id)));
   const collapseAll = () => setExpandedIds(new Set());
 
+  // Get PAs: VP sees only own, VL/admin sees all
+  const allPAs = currentRoleId === "vertriebspartner"
+    ? getProjektassistentenByCreator(currentUserId)
+    : getProjektassistenten();
+
   const filteredList = SAMPLE_USERS.filter((u) => {
     if (roleFilter !== "all" && u.roleId !== roleFilter) return false;
     const status = getUserStatus(u);
@@ -127,18 +162,47 @@ export default function TeampartnerPage() {
     return true;
   });
 
-  const { roots, children } = buildTree(SAMPLE_USERS, roles);
+  const filteredPAs = allPAs.filter((pa) => {
+    if (statusFilter !== "all") {
+      const paStatus = pa.status === "aktiv" ? "Aktiv" : pa.status === "ausstehend" ? "Ausstehend" : "Inaktiv";
+      if (paStatus !== statusFilter) return false;
+    }
+    if (filter) {
+      const q = filter.toLowerCase();
+      return `${pa.vorname} ${pa.nachname}`.toLowerCase().includes(q) || pa.email.toLowerCase().includes(q) || pa.imonduId.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const handleDeletePA = (pa: Projektassistent) => {
+    removeProjektassistent(pa.id);
+    setRefreshKey(k => k + 1);
+    toast({ title: "Projektassistent entfernt", description: `${pa.vorname} ${pa.nachname} wurde entfernt.` });
+  };
+
+  const { roots, children } = (() => {
+    const roots = SAMPLE_USERS.filter(u => ["admin", "vertriebsleiter"].includes(u.roleId));
+    const ch = SAMPLE_USERS.filter(u => !["admin", "vertriebsleiter"].includes(u.roleId));
+    return { roots, children: ch };
+  })();
 
   return (
     <CRMLayout>
-      <div className="p-6 space-y-6 min-h-screen dashboard-mesh-bg">
+      <div className="p-6 space-y-6 min-h-screen dashboard-mesh-bg" key={refreshKey}>
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-10 bg-accent rounded-full" />
-            <h1 className="text-3xl font-bold text-foreground">Teampartner</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-10 bg-accent rounded-full" />
+              <h1 className="text-3xl font-bold text-foreground">Teampartner</h1>
+            </div>
+            <Badge variant="secondary" className="text-xs">{SAMPLE_USERS.length} Nutzer · {allPAs.length} Projektassistenten</Badge>
           </div>
-          <Badge variant="secondary" className="text-xs">{SAMPLE_USERS.length} Nutzer</Badge>
+          {canCreatePA && (
+            <Button onClick={() => setShowPAForm(true)} className="gap-2 gradient-brand border-0 text-primary-foreground">
+              <UserPlus className="h-4 w-4" /> Projektassistent anlegen
+            </Button>
+          )}
         </div>
 
         {/* View Toggle */}
@@ -168,6 +232,7 @@ export default function TeampartnerPage() {
                       key={root.id}
                       user={root}
                       children={children}
+                      projektassistenten={allPAs}
                       roles={roles}
                       expandedIds={expandedIds}
                       toggleExpand={toggleExpand}
@@ -225,6 +290,7 @@ export default function TeampartnerPage() {
                     <TableHead className="font-semibold">E-Mail</TableHead>
                     <TableHead className="font-semibold">Telefon</TableHead>
                     <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -255,12 +321,68 @@ export default function TeampartnerPage() {
                         <TableCell>
                           <Badge variant="outline" className={`text-[10px] ${statusColor[status]}`}>{status}</Badge>
                         </TableCell>
+                        <TableCell />
                       </TableRow>
                     );
                   })}
-                  {filteredList.length === 0 && (
+
+                  {/* Projektassistenten Separator */}
+                  {filteredPAs.length > 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={7} className="bg-muted/30 py-2 px-4">
+                        <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                          <UserPlus className="h-3.5 w-3.5" />
+                          Projektassistenten ({filteredPAs.length})
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredPAs.map((pa) => {
+                    const paStatus = pa.status === "aktiv" ? "Aktiv" : pa.status === "ausstehend" ? "Ausstehend" : "Inaktiv";
+                    return (
+                      <TableRow key={pa.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground border border-dashed border-border shrink-0">
+                              {pa.vorname[0]}{pa.nachname[0]}
+                            </div>
+                            <div>
+                              <span className="font-medium text-foreground">{pa.vorname} {pa.nachname}</span>
+                              <span className="text-[10px] text-muted-foreground block">zugeordnet: {pa.erstelltVonName}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">{pa.imonduId}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground">
+                            Projektassistent
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{pa.email}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{pa.telefon}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-[10px] ${statusColor[paStatus as TeampartnerStatus]}`}>{paStatus}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="text-[9px] gap-1">
+                              <CreditCard className="h-3 w-3" />
+                              B2C: {pa.honorarB2C}€ · B2B: {pa.honorarB2B}{pa.honorarModell === "prozentual" ? "%" : "€"}
+                            </Badge>
+                            {(currentRoleId === "admin" || pa.erstelltVon === currentUserId) && (
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeletePA(pa)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+
+                  {filteredList.length === 0 && filteredPAs.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         Keine Teampartner gefunden
                       </TableCell>
                     </TableRow>
@@ -270,6 +392,15 @@ export default function TeampartnerPage() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Projektassistent Form Dialog */}
+        <ProjektassistentFormular
+          open={showPAForm}
+          onOpenChange={setShowPAForm}
+          erstelltVon={currentUserId}
+          erstelltVonName={currentUserName}
+          onCreated={() => setRefreshKey(k => k + 1)}
+        />
       </div>
     </CRMLayout>
   );
