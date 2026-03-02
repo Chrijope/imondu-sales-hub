@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { GEWERK_OPTIONS } from "@/data/crm-data";
 import type { Gewerk } from "@/data/crm-data";
+import { DACH_REGIONEN } from "@/utils/matching-score";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -247,6 +248,9 @@ export default function EntwicklerRegistrieren() {
     leistungsRegionen: [] as string[],
     leistungsObjekttypen: [] as string[],
     leistungsSanierungsarten: [] as string[],
+    leistungsBudgetMin: "" as string,
+    leistungsBudgetMax: "" as string,
+    leistungsVerfuegbarkeit: "" as string,
     zertifikate: "",
     // Zahlung
     iban: "", bic: "", kontoinhaber: "",
@@ -264,8 +268,8 @@ export default function EntwicklerRegistrieren() {
     profil: !!(form.vorname && form.nachname),
     info: form.berufsbezeichnungen.length > 0,
     referenz: !!(form.refTitel),
-    leistung: !!(form.leistungsTitel),
-    leistungDetail: form.leistungsObjekttypen.length > 0,
+    leistung: !!(form.leistungsTitel && form.leistungsBeschreibung && form.leistungsRegionen.length > 0),
+    leistungDetail: form.leistungsObjekttypen.length > 0 && form.leistungsSanierungsarten.length > 0,
     mitgliedschaft: !!(form.mitgliedschaft),
     zahlung: !!(form.agb && form.datenschutz && form.widerruf),
   };
@@ -566,10 +570,10 @@ export default function EntwicklerRegistrieren() {
                 {/* Leistungsbeschreibung */}
                 <AccordionSection title="Leistungsbeschreibung" done={sectionsDone.leistung} open={openSections.leistung} onToggle={() => toggleSection("leistung")}>
                   <div className="space-y-4">
-                    <Field label="Leistungstitel" required>
+                    <Field label="Leistungstitel" required hint="Fassen Sie Ihre Kernleistung in einem Satz zusammen.">
                       <Input placeholder="z.B. Komplettsanierung aus einer Hand" value={form.leistungsTitel} onChange={(e) => update("leistungsTitel", e.target.value)} />
                     </Field>
-                    <Field label="Detaillierte Leistungsbeschreibung">
+                    <Field label="Detaillierte Leistungsbeschreibung" required hint="Beschreiben Sie Ihre Stärken, Spezialisierungen und was Sie von anderen unterscheidet.">
                       <Textarea
                         placeholder="Beschreiben Sie Ihre Leistungen detailliert: Was bieten Sie an? Was unterscheidet Sie von der Konkurrenz? Welche besonderen Vorteile haben Eigentümer bei der Zusammenarbeit mit Ihnen?"
                         value={form.leistungsBeschreibung}
@@ -578,31 +582,45 @@ export default function EntwicklerRegistrieren() {
                         className="resize-none"
                       />
                     </Field>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Regionen / Einzugsgebiet</p>
-                      <div className="flex flex-wrap gap-2">
-                        {["Baden-Württemberg", "Bayern", "Berlin", "Brandenburg", "Hamburg", "Hessen", "Niedersachsen", "NRW", "Sachsen", "Deutschlandweit"].map((r) => (
-                          <button
-                            key={r}
-                            onClick={() => toggleTag("leistungsRegionen", r)}
-                            className={`px-3 py-1.5 rounded-full text-xs border transition-all ${
-                              form.leistungsRegionen.includes(r)
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-card border-border text-muted-foreground hover:border-primary/30"
-                            }`}
-                          >
-                            {r}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <Field label="Regionen / Einzugsgebiet" required hint="In welchen Regionen sind Sie tätig? Mehrfachauswahl möglich.">
+                      <Select value="__multi__" onValueChange={(v) => { if (v !== "__multi__") toggleTag("leistungsRegionen", v); }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={form.leistungsRegionen.length > 0 ? `${form.leistungsRegionen.length} Region(en) ausgewählt` : "Regionen auswählen…"} />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          <SelectItem value="__multi__" disabled className="text-muted-foreground text-xs">
+                            Klicken Sie auf Regionen, um sie hinzuzufügen
+                          </SelectItem>
+                          {DACH_REGIONEN.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {form.leistungsRegionen.includes(r) ? "✓ " : ""}{r}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {form.leistungsRegionen.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {form.leistungsRegionen.map((r) => (
+                            <Badge key={r} variant="secondary" className="text-xs gap-1 cursor-pointer hover:bg-destructive/10" onClick={() => toggleTag("leistungsRegionen", r)}>
+                              {r} ×
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </Field>
                   </div>
                 </AccordionSection>
 
-                <AccordionSection title="Leistungsdetails" done={sectionsDone.leistungDetail} open={openSections.leistungDetail} onToggle={() => toggleSection("leistungDetail")}>
+                <AccordionSection title="Leistungsdetails (für Matching)" done={sectionsDone.leistungDetail} open={openSections.leistungDetail} onToggle={() => toggleSection("leistungDetail")}>
                   <div className="space-y-5">
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                      <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <p className="text-xs text-muted-foreground">
+                        Diese strukturierten Angaben werden genutzt, um Ihnen passende Eigentümer-Inserate zuzuordnen. Je genauer Ihre Angaben, desto besser der <strong>Matching-Score</strong>.
+                      </p>
+                    </div>
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Für welche Objekttypen bieten Sie Leistungen an?</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Für welche Objekttypen bieten Sie Leistungen an? *</p>
                       <div className="flex flex-wrap gap-2">
                         {["Einfamilienhaus", "Mehrfamilienhaus", "Wohnung", "Gewerbeobjekt", "Grundstück", "Mischobjekt"].map((t) => (
                           <button
@@ -620,9 +638,9 @@ export default function EntwicklerRegistrieren() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Sanierungsarten</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Sanierungsarten / Leistungsbereiche *</p>
                       <div className="flex flex-wrap gap-2">
-                        {["Komplettsanierung", "Dachsanierung", "Fassadensanierung", "Fenstertausch", "Heizungstausch", "Elektrosanierung", "Badsanierung", "Energieberatung", "WDVS / Dämmung", "Photovoltaik"].map((s) => (
+                        {["Komplettsanierung", "Dachsanierung", "Fassadensanierung", "Fenstertausch", "Heizungstausch", "Elektrosanierung", "Badsanierung", "Energieberatung", "WDVS / Dämmung", "Photovoltaik", "Innenausbau", "Aufstockung / Anbau", "Grundstücksentwicklung", "Projektentwicklung"].map((s) => (
                           <button
                             key={s}
                             onClick={() => toggleTag("leistungsSanierungsarten", s)}
@@ -637,7 +655,51 @@ export default function EntwicklerRegistrieren() {
                         ))}
                       </div>
                     </div>
-                    <Field label="Zertifikate & Qualifikationen">
+
+                    <hr className="border-border" />
+                    <p className="text-xs font-semibold text-foreground">Kapazität & Verfügbarkeit</p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Projektbudget von" hint="Ab welcher Projektgröße nehmen Sie Aufträge an?">
+                        <Select value={form.leistungsBudgetMin} onValueChange={(v) => update("leistungsBudgetMin", v)}>
+                          <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="<50k">Bis 50.000 €</SelectItem>
+                            <SelectItem value="50-100k">50.000 €</SelectItem>
+                            <SelectItem value="100-250k">100.000 €</SelectItem>
+                            <SelectItem value="250-500k">250.000 €</SelectItem>
+                            <SelectItem value=">500k">500.000 €+</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Projektbudget bis" hint="Bis zu welcher Projektgröße?">
+                        <Select value={form.leistungsBudgetMax} onValueChange={(v) => update("leistungsBudgetMax", v)}>
+                          <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="<50k">Bis 50.000 €</SelectItem>
+                            <SelectItem value="50-100k">100.000 €</SelectItem>
+                            <SelectItem value="100-250k">250.000 €</SelectItem>
+                            <SelectItem value="250-500k">500.000 €</SelectItem>
+                            <SelectItem value=">500k">Über 500.000 €</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    </div>
+                    <Field label="Früheste Verfügbarkeit" hint="Wann können Sie mit neuen Projekten starten?">
+                      <Select value={form.leistungsVerfuegbarkeit} onValueChange={(v) => update("leistungsVerfuegbarkeit", v)}>
+                        <SelectTrigger><SelectValue placeholder="Bitte auswählen" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sofort">Sofort verfügbar</SelectItem>
+                          <SelectItem value="3-6">In 3–6 Monaten</SelectItem>
+                          <SelectItem value="6-12">In 6–12 Monaten</SelectItem>
+                          <SelectItem value="12+">In mehr als 12 Monaten</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <hr className="border-border" />
+
+                    <Field label="Zertifikate & Qualifikationen" hint="z.B. dena-zertifizierter Energieberater, Meisterbetrieb, ISO 9001…">
                       <Textarea placeholder="z.B. dena-zertifizierter Energieberater, Meisterbetrieb HWK, ISO 9001…" value={form.zertifikate} onChange={(e) => update("zertifikate", e.target.value)} rows={3} className="resize-none" />
                     </Field>
                   </div>
@@ -654,7 +716,7 @@ export default function EntwicklerRegistrieren() {
                   {/* Basis */}
                   <button
                     onClick={() => update("mitgliedschaft", "basis")}
-                    className={`text-left rounded-xl border-2 p-5 transition-all ${
+                    className={`text-left rounded-xl border-2 p-5 transition-all flex flex-col ${
                       form.mitgliedschaft === "basis"
                         ? "border-primary bg-primary/5 shadow-md"
                         : "border-border bg-card hover:border-primary/30"
@@ -671,11 +733,14 @@ export default function EntwicklerRegistrieren() {
                       </div>
                     </div>
                     <hr className="border-border my-3" />
-                    <ul className="space-y-2.5">
+                    <ul className="space-y-2.5 flex-1">
                       {[
                         "Unbegrenzte Anzahl der Kontaktanfragen von Immobilieneigentümern",
                         "Identitätsprüfung für Transparenz und Sicherheit",
                         "Support durch IMONDU für Hilfestellungen",
+                        "Profil in der Entwicklerübersicht sichtbar",
+                        "Kontaktanfragen direkt im Dashboard",
+                        "Benachrichtigungen bei neuen Inseraten in Ihrer Region",
                       ].map((t) => (
                         <li key={t} className="flex items-start gap-2 text-xs text-foreground">
                           <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -688,7 +753,7 @@ export default function EntwicklerRegistrieren() {
                   {/* Premium⁺ */}
                   <button
                     onClick={() => update("mitgliedschaft", "premium")}
-                    className={`text-left rounded-xl border-2 p-5 transition-all relative ${
+                    className={`text-left rounded-xl border-2 p-5 transition-all relative flex flex-col ${
                       form.mitgliedschaft === "premium"
                         ? "border-primary bg-primary/5 shadow-md"
                         : "border-border bg-card hover:border-primary/30"
@@ -719,7 +784,7 @@ export default function EntwicklerRegistrieren() {
                       </div>
                     </div>
                     <hr className="border-border my-3" />
-                    <ul className="space-y-2.5">
+                    <ul className="space-y-2.5 flex-1">
                       {[
                         "Alle Basis-Vorteile",
                         "Frühzeitiger Zugang zu neuen Eigentümer-Anfragen",
