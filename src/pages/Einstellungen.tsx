@@ -631,7 +631,10 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
             ))}
           </TabsList>
 
-          <p className="text-xs text-muted-foreground mt-3 mb-6">Diese Einstellungen gelten nur für dich.</p>
+          <div className="flex items-center gap-3 mt-3 mb-6">
+            <p className="text-xs text-muted-foreground">Diese Einstellungen gelten nur für dich.</p>
+            <Badge variant="outline" className="text-[10px] font-mono">IMONDU-ID: IM-100000001</Badge>
+          </div>
 
           {/* ── PROFIL ── */}
           <TabsContent value="profil" className="space-y-6 mt-0">

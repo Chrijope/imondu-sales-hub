@@ -30,6 +30,7 @@ interface Kunde {
   inserate?: number;
   umsatz?: number;
   notizen?: string;
+  imonduId: string;
   activities: KundenActivity[];
 }
 
@@ -38,6 +39,7 @@ const DEMO_KUNDEN: Kunde[] = [
     id: "1", name: "Familie Schneider", email: "schneider@email.de", phone: "+49 89 123456",
     adresse: "Maximilianstr. 22, 80539 München", typ: "B2C", status: "Aktiv",
     erstelltAm: "15.01.2025", letzterKontakt: "18.02.2026", inserate: 3,
+    imonduId: "IM-200000001",
     notizen: "Interesse an MFH München-Ost. Budget ca. 800k. Besichtigung geplant.",
     activities: [
       { id: "a1", type: "call", title: "Erstgespräch geführt", date: "18.02.2026", details: "45 Min – sehr interessiert an 3-Zi-Wohnung" },
@@ -51,6 +53,7 @@ const DEMO_KUNDEN: Kunde[] = [
     id: "2", name: "Architektur Bauer GmbH", email: "info@bauer-architekten.de", phone: "+49 89 987654",
     adresse: "Leopoldstr. 77, 80802 München", typ: "B2B", status: "Gewonnen",
     erstelltAm: "03.11.2024", letzterKontakt: "20.02.2026", umsatz: 15000,
+    imonduId: "IM-200000002",
     notizen: "Premium-Partner seit Nov 2024. Fokus auf Neubau-Projekte.",
     activities: [
       { id: "b1", type: "deal", title: "Premium-Mitgliedschaft verlängert", date: "20.02.2026" },
@@ -62,6 +65,7 @@ const DEMO_KUNDEN: Kunde[] = [
     id: "3", name: "Peter Klein", email: "p.klein@web.de", phone: "+49 171 5551234",
     adresse: "Sendlinger Str. 14, 80331 München", typ: "B2C", status: "Neu",
     erstelltAm: "10.02.2026", letzterKontakt: "12.02.2026", inserate: 1,
+    imonduId: "IM-200000003",
     activities: [
       { id: "c1", type: "call", title: "Erstkontakt – Rückruf nötig", date: "12.02.2026" },
     ],
@@ -156,7 +160,7 @@ export default function Kundenmaske() {
                     {selected.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-foreground">{selected.name}</h1>
+                    <h1 className="text-xl font-bold text-foreground">{selected.name} <span className="text-xs font-mono text-muted-foreground ml-2">{selected.imonduId}</span></h1>
                     <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {selected.email}</span>
                       <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {selected.phone}</span>
