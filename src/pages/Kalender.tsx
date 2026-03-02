@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SAMPLE_LEADS } from "@/data/crm-data";
 
 interface CalendarProvider {
   id: string;
@@ -40,6 +41,8 @@ interface CalendarEvent {
   description?: string;
   location?: string;
   contact?: string;
+  leadId?: string;
+  assignee?: string;
 }
 
 const CATEGORY_CONFIG: Record<EventCategory, { label: string; color: string; bgColor: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -491,6 +494,18 @@ export default function Kalender() {
                   {selectedEvent.description && (
                     <div className="bg-muted/30 rounded-lg p-3 text-sm text-muted-foreground">{selectedEvent.description}</div>
                   )}
+                  {selectedEvent.leadId && (() => {
+                    const linkedLead = SAMPLE_LEADS.find(l => l.id === selectedEvent.leadId);
+                    if (!linkedLead) return null;
+                    const lName = linkedLead.type === "b2b" ? linkedLead.companyName : `${linkedLead.firstName} ${linkedLead.lastName}`;
+                    return (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${linkedLead.type === "b2c" ? "bg-b2c/10 text-b2c" : "bg-b2b/10 text-b2b"}`}>{linkedLead.type === "b2c" ? "B2C" : "B2B"}</span>
+                        <span className="font-medium text-foreground">{lName}</span>
+                      </div>
+                    );
+                  })()}
                   <Badge className={`${cfg.bgColor} ${cfg.color} border text-[10px]`}>{cfg.label}</Badge>
                 </div>
                 <DialogFooter className="mt-4">
@@ -544,6 +559,27 @@ export default function Kalender() {
                 <Label className="text-xs">Ende</Label>
                 <Input type="time" value={newEvent.endTime || ""} onChange={e => setNewEvent(p => ({ ...p, endTime: e.target.value }))} />
               </div>
+            </div>
+            {/* Lead-Zuordnung */}
+            <div className="space-y-1">
+              <Label className="text-xs">Lead zuordnen (optional)</Label>
+              <Select value={newEvent.leadId || "none"} onValueChange={v => setNewEvent(p => ({ ...p, leadId: v === "none" ? undefined : v }))}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Kein Lead" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Kein Lead</SelectItem>
+                  {SAMPLE_LEADS.map(l => {
+                    const lname = l.type === "b2b" ? l.companyName : `${l.firstName} ${l.lastName}`;
+                    return (
+                      <SelectItem key={l.id} value={l.id}>
+                        <span className="flex items-center gap-1.5">
+                          <span className={`text-[9px] font-bold uppercase px-1 py-0.5 rounded ${l.type === "b2c" ? "bg-b2c/10 text-b2c" : "bg-b2b/10 text-b2b"}`}>{l.type === "b2c" ? "B2C" : "B2B"}</span>
+                          {lname}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Kontakt / Teilnehmer</Label>

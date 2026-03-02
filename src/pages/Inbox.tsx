@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   Inbox as InboxIcon,
   CheckCircle2,
@@ -19,6 +21,7 @@ import {
   ListTodo,
   Sun,
   LayoutList,
+  Users,
 } from "lucide-react";
 
 type TaskPriority = "high" | "medium" | "low";
@@ -33,27 +36,28 @@ interface InboxTask {
   time?: string;
   contact?: string;
   done: boolean;
-  day?: "mo" | "di" | "mi" | "do" | "fr"; // for weekly view
-  leadId?: string; // link to lead detail
+  day?: "mo" | "di" | "mi" | "do" | "fr";
+  leadId?: string;
+  assignee?: string;
+  fromCalendar?: boolean;
 }
 
 const INITIAL_TASKS: InboxTask[] = [
-  { id: "1", title: "Rückruf: Hr. Bauer (Architektur Bauer GmbH)", description: "B2B Partner – Interesse an Premium-Paket", type: "call", priority: "high", time: "09:30", contact: "Hr. Bauer", done: false, day: "mo", leadId: "2" },
-  { id: "2", title: "Online-Meeting: Fam. Schneider", description: "Inserat besprechen – MFH München", type: "meeting", priority: "high", time: "10:00", contact: "Fam. Schneider", done: false, day: "mo" },
-  { id: "3", title: "Follow-Up E-Mail an Peter Klein", description: "Sanierungsanfrage nachfassen", type: "follow-up", priority: "medium", time: "11:00", contact: "Peter Klein", done: false, day: "mo", leadId: "3" },
-  { id: "4", title: "Neue B2C Leads qualifizieren", description: "5 neue Eigentümer-Anfragen prüfen", type: "todo", priority: "medium", time: "14:00", done: false, day: "di" },
-  { id: "5", title: "Vertrag an Malermeister Schulz senden", description: "B2B Partnervertrag vorbereiten", type: "deadline", priority: "high", time: "15:00", contact: "Schulz GmbH", done: false, day: "di", leadId: "8" },
-  { id: "6", title: "Teammeeting Wochenplanung", description: "Weekly mit Vertriebsteam", type: "meeting", priority: "medium", time: "16:00", done: false, day: "mi" },
-  { id: "7", title: "Provision Februar prüfen", description: "Gutschrift kontrollieren", type: "todo", priority: "low", done: false, day: "do" },
-  { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "09:00", contact: "Fr. Müller", done: false, day: "fr", leadId: "1" },
-  { id: "9", title: "Kaltakquise-Block: 10 Anrufe", description: "Neue Eigentümer aus Lead-Liste kontaktieren", type: "call", priority: "medium", time: "10:00", done: false, day: "mi" },
-  { id: "10", title: "Exposé für MFH Stuttgart erstellen", description: "Fotos + Daten aufbereiten", type: "todo", priority: "medium", time: "13:00", done: false, day: "do", leadId: "11" },
-  // HR / Bewerbermanagement Aufgaben
-  { id: "11", title: "Screening: Tim Hoffmann", description: "Lebenslauf und Bewerbungsunterlagen prüfen", type: "todo", priority: "high", time: "09:00", contact: "Tim Hoffmann", done: false, day: "mo" },
-  { id: "12", title: "Interview mit Lukas Weber vorbereiten", description: "Gesprächsleitfaden und Unterlagen zusammenstellen", type: "todo", priority: "medium", time: "11:00", contact: "Lukas Weber", done: false, day: "di" },
-  { id: "13", title: "Onboarding-Termin: Markus Braun", description: "Onboarding am 03.03. – Unterlagen und Raum vorbereiten", type: "deadline", priority: "high", time: "09:00", contact: "Markus Braun", done: false, day: "mi" },
-  { id: "14", title: "Absage an Anna Meier versenden", description: "Ablehnungs-E-Mail formulieren und senden", type: "follow-up", priority: "low", time: "14:00", contact: "Anna Meier", done: false, day: "do" },
-  { id: "15", title: "Neue Bewerbung sichten: Julia Richter", description: "Eingegangene Bewerbung im Portal prüfen", type: "todo", priority: "medium", time: "10:00", contact: "Julia Richter", done: false, day: "fr" },
+  { id: "1", title: "Rückruf: Hr. Bauer (Architektur Bauer GmbH)", description: "B2B Partner – Interesse an Premium-Paket", type: "call", priority: "high", time: "09:30", contact: "Hr. Bauer", done: false, day: "mo", leadId: "2", assignee: "Lisa Weber" },
+  { id: "2", title: "Online-Meeting: Fam. Schneider", description: "Inserat besprechen – MFH München", type: "meeting", priority: "high", time: "10:00", contact: "Fam. Schneider", done: false, day: "mo", assignee: "Lisa Weber" },
+  { id: "3", title: "Follow-Up E-Mail an Peter Klein", description: "Sanierungsanfrage nachfassen", type: "follow-up", priority: "medium", time: "11:00", contact: "Peter Klein", done: false, day: "mo", leadId: "3", assignee: "Max Müller" },
+  { id: "4", title: "Neue B2C Leads qualifizieren", description: "5 neue Eigentümer-Anfragen prüfen", type: "todo", priority: "medium", time: "14:00", done: false, day: "di", assignee: "Lisa Weber" },
+  { id: "5", title: "Vertrag an Malermeister Schulz senden", description: "B2B Partnervertrag vorbereiten", type: "deadline", priority: "high", time: "15:00", contact: "Schulz GmbH", done: false, day: "di", leadId: "8", assignee: "Lisa Weber" },
+  { id: "6", title: "Teammeeting Wochenplanung", description: "Weekly mit Vertriebsteam", type: "meeting", priority: "medium", time: "16:00", done: false, day: "mi", assignee: "Max Müller" },
+  { id: "7", title: "Provision Februar prüfen", description: "Gutschrift kontrollieren", type: "todo", priority: "low", done: false, day: "do", assignee: "Lisa Weber" },
+  { id: "8", title: "Eigentümer Müller – Inserat online prüfen", description: "Inserat-Check vor Freischaltung", type: "todo", priority: "low", time: "09:00", contact: "Fr. Müller", done: false, day: "fr", leadId: "1", assignee: "Max Müller" },
+  { id: "9", title: "Kaltakquise-Block: 10 Anrufe", description: "Neue Eigentümer aus Lead-Liste kontaktieren", type: "call", priority: "medium", time: "10:00", done: false, day: "mi", assignee: "Lisa Weber" },
+  { id: "10", title: "Exposé für MFH Stuttgart erstellen", description: "Fotos + Daten aufbereiten", type: "todo", priority: "medium", time: "13:00", done: false, day: "do", leadId: "11", assignee: "Jan Fischer" },
+  { id: "11", title: "Screening: Tim Hoffmann", description: "Lebenslauf und Bewerbungsunterlagen prüfen", type: "todo", priority: "high", time: "09:00", contact: "Tim Hoffmann", done: false, day: "mo", assignee: "Lisa Weber" },
+  { id: "12", title: "Interview mit Lukas Weber vorbereiten", description: "Gesprächsleitfaden und Unterlagen zusammenstellen", type: "todo", priority: "medium", time: "11:00", contact: "Lukas Weber", done: false, day: "di", assignee: "Jan Fischer" },
+  { id: "13", title: "Onboarding-Termin: Markus Braun", description: "Onboarding am 03.03. – Unterlagen und Raum vorbereiten", type: "deadline", priority: "high", time: "09:00", contact: "Markus Braun", done: false, day: "mi", assignee: "Lisa Weber" },
+  { id: "14", title: "Absage an Anna Meier versenden", description: "Ablehnungs-E-Mail formulieren und senden", type: "follow-up", priority: "low", time: "14:00", contact: "Anna Meier", done: false, day: "do", assignee: "Max Müller" },
+  { id: "15", title: "Neue Bewerbung sichten: Julia Richter", description: "Eingegangene Bewerbung im Portal prüfen", type: "todo", priority: "medium", time: "10:00", contact: "Julia Richter", done: false, day: "fr", assignee: "Jan Fischer" },
 ];
 
 const typeIcons: Record<TaskType, React.ComponentType<{ className?: string }>> = {
@@ -78,6 +82,8 @@ const DAYS = [
 
 type FilterType = "alle" | TaskType;
 
+const PARTNER_LIST = ["Lisa Weber", "Max Müller", "Jan Fischer", "Anna Klein"];
+
 function TaskRow({ task, onToggle, onNavigate }: { task: InboxTask; onToggle: () => void; onNavigate?: () => void }) {
   const Icon = typeIcons[task.type];
   return (
@@ -97,9 +103,11 @@ function TaskRow({ task, onToggle, onNavigate }: { task: InboxTask; onToggle: ()
           <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityStyles[task.priority]}`}>
             {task.priority === "high" ? "Dringend" : task.priority === "medium" ? "Mittel" : "Niedrig"}
           </Badge>
+          {task.fromCalendar && <Badge variant="secondary" className="text-[9px] px-1 py-0 gap-0.5"><Calendar className="h-2.5 w-2.5" /> Kalender</Badge>}
           {task.leadId && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
         </div>
         {task.description && <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>}
+        {task.assignee && <p className="text-[10px] text-primary/70 mt-0.5">👤 {task.assignee}</p>}
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Badge variant="secondary" className="gap-1 text-[11px]">
@@ -115,26 +123,96 @@ function TaskRow({ task, onToggle, onNavigate }: { task: InboxTask; onToggle: ()
   );
 }
 
+// Map calendar category to inbox task type
+function calCategoryToTaskType(cat: string): TaskType {
+  switch (cat) {
+    case "anruf": return "call";
+    case "meeting": return "meeting";
+    case "followup": return "follow-up";
+    case "termin": return "meeting";
+    case "onboarding": return "meeting";
+    case "aufgabe": return "todo";
+    default: return "todo";
+  }
+}
+
+function calCategoryToPriority(cat: string): TaskPriority {
+  if (cat === "onboarding" || cat === "termin") return "high";
+  if (cat === "followup" || cat === "anruf") return "medium";
+  return "low";
+}
+
+function getDayKey(dateStr: string): "mo" | "di" | "mi" | "do" | "fr" | undefined {
+  const d = new Date(dateStr + "T00:00:00");
+  const day = d.getDay();
+  const map: Record<number, "mo" | "di" | "mi" | "do" | "fr"> = { 1: "mo", 2: "di", 3: "mi", 4: "do", 5: "fr" };
+  return map[day];
+}
+
 export default function Inbox() {
   const navigate = useNavigate();
+  const { currentRoleId } = useUserRole();
+  const isAdmin = ["admin", "inhaber", "vertriebsleiter"].includes(currentRoleId);
+
   const [tasks, setTasks] = useState<InboxTask[]>(() => {
     try {
-      const saved = localStorage.getItem("inbox-tasks-v2");
+      const saved = localStorage.getItem("inbox-tasks-v3");
       if (saved) return JSON.parse(saved);
     } catch {}
     return INITIAL_TASKS;
   });
   const [filter, setFilter] = useState<FilterType>("alle");
+  const [partnerFilter, setPartnerFilter] = useState<string>("alle");
+
+  // Sync calendar events into inbox
+  useEffect(() => {
+    const syncCalendar = () => {
+      try {
+        const calSaved = localStorage.getItem("kalender-events");
+        if (!calSaved) return;
+        const calEvents: any[] = JSON.parse(calSaved);
+        
+        setTasks(prev => {
+          const manual = prev.filter(t => !t.fromCalendar);
+          const calTasks: InboxTask[] = calEvents.map(ev => ({
+            id: `cal-${ev.id}`,
+            title: ev.title,
+            description: ev.description || (ev.location ? `📍 ${ev.location}` : undefined),
+            type: calCategoryToTaskType(ev.category),
+            priority: calCategoryToPriority(ev.category),
+            time: ev.time,
+            contact: ev.contact,
+            done: false,
+            day: getDayKey(ev.date),
+            leadId: ev.leadId,
+            assignee: ev.assignee || "Lisa Weber",
+            fromCalendar: true,
+          }));
+          return [...manual, ...calTasks];
+        });
+      } catch {}
+    };
+    syncCalendar();
+    window.addEventListener("storage", syncCalendar);
+    window.addEventListener("focus", syncCalendar);
+    return () => { window.removeEventListener("storage", syncCalendar); window.removeEventListener("focus", syncCalendar); };
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("inbox-tasks-v2", JSON.stringify(tasks));
+    localStorage.setItem("inbox-tasks-v3", JSON.stringify(tasks));
   }, [tasks]);
 
   const toggleDone = (id: string) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
 
-  const filtered = filter === "alle" ? tasks : tasks.filter((t) => t.type === filter);
-  const todayTasks = filtered.filter((t) => t.day === "mo"); // simulate "today" = Monday
+  const filtered = useMemo(() => {
+    let list = tasks;
+    if (filter !== "alle") list = list.filter((t) => t.type === filter);
+    if (partnerFilter !== "alle") list = list.filter((t) => t.assignee === partnerFilter);
+    return list;
+  }, [tasks, filter, partnerFilter]);
+
+  const todayTasks = filtered.filter((t) => t.day === "mo");
   const pendingToday = todayTasks.filter((t) => !t.done);
   const completedToday = todayTasks.filter((t) => t.done);
 
@@ -199,7 +277,34 @@ export default function Inbox() {
               {f.label}
             </Button>
           ))}
+
+          {/* Partner filter – only for Admin / VL / Inhaber */}
+          {isAdmin && (
+            <div className="ml-auto flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+                <SelectTrigger className="w-[180px] h-8 text-xs">
+                  <SelectValue placeholder="Alle Partner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alle">Alle Partner</SelectItem>
+                  {PARTNER_LIST.map(p => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
+
+        {/* Partner info banner */}
+        {isAdmin && partnerFilter !== "alle" && (
+          <div className="bg-primary/5 border border-primary/15 rounded-lg px-4 py-2 flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-xs text-foreground font-medium">Zeige Aufgaben von: <strong>{partnerFilter}</strong></span>
+            <button onClick={() => setPartnerFilter("alle")} className="ml-auto text-xs text-primary hover:underline">Filter zurücksetzen</button>
+          </div>
+        )}
 
         {/* Tabs: Heute / Woche */}
         <Tabs defaultValue="heute">
