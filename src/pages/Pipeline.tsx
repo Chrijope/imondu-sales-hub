@@ -211,13 +211,6 @@ export default function Pipeline() {
               value={String(kpis.leads)}
               accent="bg-secondary text-foreground"
             />
-            <KpiCard
-              icon={TrendingUp}
-              label="Provisionspotenzial"
-              value={fmt(kpis.potenzial)}
-              sub={kpis.potenzialLabel}
-              accent="bg-primary/10 text-primary"
-            />
           </div>
         </div>
 
