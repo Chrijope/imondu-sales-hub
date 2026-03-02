@@ -4,7 +4,7 @@ import {
   Users,
   Building2,
   Briefcase,
-  UserPlus,
+  GraduationCap,
   Newspaper,
   ArrowRight,
   TrendingUp,
@@ -533,7 +533,7 @@ export default function Dashboard() {
           {/* Quick Actions */}
           <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-3 gap-4 content-start">
             <Link
-              to="/b2c/neue-leads"
+              to="/b2c/neue-leads?openForm=true"
               className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
@@ -543,23 +543,23 @@ export default function Dashboard() {
             </Link>
 
             <Link
-              to="/b2b/neue-leads"
+              to="/entwickler-registrieren"
               className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
                 <Briefcase className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">B2B neuer Lead</span>
+              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">B2B Entwickler registrieren</span>
             </Link>
 
             <Link
-              to="/teampartner"
+              to="/academy"
               className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"
             >
               <div className="h-12 w-12 rounded-full gradient-brand flex items-center justify-center">
-                <UserPlus className="h-6 w-6 text-primary-foreground" />
+                <GraduationCap className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">Teampartner anlegen</span>
+              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">Academy aufrufen</span>
             </Link>
           </div>
         </div>
