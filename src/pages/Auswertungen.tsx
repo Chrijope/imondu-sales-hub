@@ -24,6 +24,7 @@ import {
 } from "@/data/karriereplan";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { addChatNotification } from "@/utils/chat-notifications";
+import { getVPAttribution } from "@/utils/rabattcode-attribution";
 
 import { TIME_RANGE_OPTIONS, TimeRangeKey } from "@/utils/date-filters";
 
@@ -212,7 +213,12 @@ function RankingTable({ title, data, valueLabel = "Anzahl", formatValue }: {
 export default function Auswertungen() {
   const { toast } = useToast();
   const { currentRoleId } = useUserRole();
-  const isAdmin = currentRoleId === "admin" || currentRoleId === "vertriebsleiter";
+  const isAdmin = currentRoleId === "admin" || currentRoleId === "inhaber" || currentRoleId === "vertriebsleiter";
+  
+  // VP attribution from Rabattcodes
+  const currentUserId = currentRoleId === "inhaber" ? "u1" : currentRoleId === "admin" ? "u1" : currentRoleId === "vertriebsleiter" ? "u2"
+    : currentRoleId === "vertriebspartner" ? "u3" : "u1";
+  const vpAttribution = getVPAttribution(currentUserId);
   const [timeFilter, setTimeFilter] = useState<TimeRangeKey>("Seit Anfang");
   const [tab, setTab] = useState<"b2c" | "b2b">("b2c");
 
@@ -371,6 +377,41 @@ export default function Auswertungen() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* ── Deine Rabattcode-Vermittlungen → XP ── */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Award className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Deine Rabattcode-Vermittlungen</h2>
+            <Badge variant="secondary" className="text-[10px]">Automatisch erfasst</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-muted/30 rounded-lg p-3 border border-border text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Kunden-Inserate</p>
+              <p className="text-xl font-display font-bold text-foreground mt-1">{vpAttribution.totalCustomerZahlend}</p>
+              <p className="text-[10px] text-primary font-semibold">+{vpAttribution.totalCustomerZahlend * 50} XP</p>
+            </div>
+            <div className="bg-muted/30 rounded-lg p-3 border border-border text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Entwickler-Reg.</p>
+              <p className="text-xl font-display font-bold text-foreground mt-1">{vpAttribution.totalDevZahlend}</p>
+              <p className="text-[10px] text-primary font-semibold">+{vpAttribution.totalDevZahlend * 200} XP</p>
+            </div>
+            <div className="bg-muted/30 rounded-lg p-3 border border-border text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Codes aktiv</p>
+              <p className="text-xl font-display font-bold text-foreground mt-1">{vpAttribution.customerCodes.length + vpAttribution.developerCodes.length}</p>
+              <p className="text-[10px] text-muted-foreground">Kunden + Entwickler</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg p-3 border border-primary/20 text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Code-XP gesamt</p>
+              <p className="text-xl font-display font-bold text-primary mt-1">+{vpAttribution.codeXP}</p>
+              <p className="text-[10px] text-muted-foreground">fließt in Level ein</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1.5">
+            <Info className="h-3 w-3 text-primary shrink-0" />
+            Vermittlungen über deine Rabattcode-Links werden automatisch erfasst und in XP, Provisionen und Rankings berücksichtigt.
+          </p>
         </div>
 
         {/* ── Karriereplan ── */}
