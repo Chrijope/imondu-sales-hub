@@ -217,15 +217,11 @@ export default function LeadDetail() {
 
   // Read inbox tasks for this lead
   const [inboxTasks, setInboxTasks] = useState<{ id: string; title: string; type: string; priority: string; done: boolean; time?: string; day?: string }[]>([]);
+  // Read calendar events linked to this lead
+  const [calendarEvents, setCalendarEvents] = useState<{ id: string; title: string; date: string; time: string; endTime?: string; category: string; location?: string; contact?: string; description?: string }[]>([]);
+
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("inbox-tasks-v2");
-      if (saved) {
-        const all = JSON.parse(saved);
-        setInboxTasks(all.filter((t: any) => t.leadId === id));
-      }
-    } catch {}
-    const onStorage = () => {
+    const loadData = () => {
       try {
         const saved = localStorage.getItem("inbox-tasks-v2");
         if (saved) {
@@ -233,10 +229,18 @@ export default function LeadDetail() {
           setInboxTasks(all.filter((t: any) => t.leadId === id));
         }
       } catch {}
+      try {
+        const calSaved = localStorage.getItem("kalender-events");
+        if (calSaved) {
+          const allEvents = JSON.parse(calSaved);
+          setCalendarEvents(allEvents.filter((e: any) => e.leadId === id));
+        }
+      } catch {}
     };
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("focus", onStorage);
-    return () => { window.removeEventListener("storage", onStorage); window.removeEventListener("focus", onStorage); };
+    loadData();
+    window.addEventListener("storage", loadData);
+    window.addEventListener("focus", loadData);
+    return () => { window.removeEventListener("storage", loadData); window.removeEventListener("focus", loadData); };
   }, [id]);
 
   if (!lead || !baseLead) {
@@ -631,6 +635,24 @@ export default function LeadDetail() {
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Aktivitäten-Timeline</h2>
             </div>
+            {/* Calendar events for this lead */}
+            {calendarEvents.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Kalender-Termine</h3>
+                <div className="space-y-2">
+                  {calendarEvents.map((ev) => (
+                    <div key={ev.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-primary/5 border-primary/20 text-sm">
+                      <CalendarDays className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span className="flex-1 text-foreground">{ev.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(ev.date + "T00:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })} · {ev.time}
+                      </span>
+                      {ev.location && <span className="text-[10px] text-muted-foreground">📍 {ev.location}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Inbox tasks for this lead */}
             {inboxTasks.length > 0 && (
               <div className="mb-4">
