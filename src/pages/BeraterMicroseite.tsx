@@ -67,8 +67,8 @@ function formatPreis(n: number) {
    EIGENTÜMER LANDING PAGE
    Verkaufspsychologie: Problem → Emotion → Lösung → Proof → CTA
    ═══════════════════════════════════════════════════════════ */
-function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse }: {
-  beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string;
+function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse, rabattCode }: {
+  beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string; rabattCode?: string;
 }) {
   return (
     <div className="space-y-0 bg-background">
@@ -520,6 +520,9 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         <Button size="lg" className="mt-8 bg-white text-foreground hover:bg-white/90 text-base px-10 py-6 shadow-xl font-bold">
           Jetzt kostenlos inserieren <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
+        {rabattCode && (
+          <p className="text-white/70 text-xs mt-3">Dein Aktionscode: <span className="font-bold text-white">{rabattCode}</span></p>
+        )}
         <p className="text-white/60 text-sm mt-4 italic">Jede Immobilie hat Potenzial. Die Frage ist nur, ob Du es kennst.</p>
       </section>
 
@@ -1263,7 +1266,7 @@ export default function BeraterMicroseite() {
               </div>
             </div>
             <div className="px-6 py-3"><code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded block">{getLandingUrl(activeTab as any, activeTab === "customer" ? previewCusCode : previewDevCode)}</code></div>
-            <TabsContent value="customer" className="mt-0"><CustomerLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} /></TabsContent>
+            <TabsContent value="customer" className="mt-0"><CustomerLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} rabattCode={previewCusCode} /></TabsContent>
             <TabsContent value="developer" className="mt-0"><DeveloperLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} rabattCode={previewDevCode} /></TabsContent>
           </Tabs>
         </div>
