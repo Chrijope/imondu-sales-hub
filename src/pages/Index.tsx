@@ -26,6 +26,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 import EigentuemerDashboard from "@/components/EigentuemerDashboard";
 import EntwicklerDashboard from "@/components/EntwicklerDashboard";
 import BewerberPortal from "@/pages/BewerberPortal";
+import BuchhaltungDashboard from "@/components/BuchhaltungDashboard";
 import ZielplanungWidget from "@/components/ZielplanungWidget";
 import {
   BarChart,
@@ -126,6 +127,15 @@ export default function Dashboard() {
     return (
       <CRMLayout>
         <BewerberPortal embedded />
+      </CRMLayout>
+    );
+  }
+
+  // Buchhaltung gets accounting dashboard
+  if (currentRoleId === "buchhaltung") {
+    return (
+      <CRMLayout>
+        <BuchhaltungDashboard />
       </CRMLayout>
     );
   }
