@@ -62,7 +62,7 @@ export default function Nutzerverwaltung() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteVorname, setInviteVorname] = useState("");
   const [inviteNachname, setInviteNachname] = useState("");
-  const [inviteRoleId, setInviteRoleId] = useState("vertriebspartner");
+  const [inviteRoleIds, setInviteRoleIds] = useState<string[]>(["vertriebspartner"]);
   const [inviteTelefon, setInviteTelefon] = useState("");
   const [inviteKarrierestufe, setInviteKarrierestufe] = useState("projektleiter");
   const [showContractDialog, setShowContractDialog] = useState(false);
@@ -87,12 +87,14 @@ export default function Nutzerverwaltung() {
     const avatar = `${inviteVorname[0].toUpperCase()}${inviteNachname[0].toUpperCase()}`;
     const fullName = `${inviteVorname.trim()} ${inviteNachname.trim()}`;
     const newId = `u-${Date.now()}`;
+    const primaryRoleId = inviteRoleIds[0] || "vertriebspartner";
     const newUser: CRMUser = {
       id: newId,
       name: fullName,
       email,
       phone: inviteTelefon || "–",
-      roleId: inviteRoleId,
+      roleId: primaryRoleId,
+      roleIds: [...inviteRoleIds],
       active: false,
       lastLogin: "–",
       avatar,
@@ -103,7 +105,7 @@ export default function Nutzerverwaltung() {
     setUsers(prev => [...prev, newUser]);
     setShowInviteDialog(false);
     // Academy-Pflicht: ausschließlich für Vertriebspartner
-    const needsAcademy = inviteRoleId === "vertriebspartner";
+    const needsAcademy = inviteRoleIds.includes("vertriebspartner");
     setContractUser({ name: fullName, email, karrierestufe: inviteKarrierestufe, academyPflicht: needsAcademy });
     setContractSent(false);
     setShowContractDialog(true);
@@ -114,7 +116,7 @@ export default function Nutzerverwaltung() {
     setInviteVorname("");
     setInviteNachname("");
     setInviteTelefon("");
-    setInviteRoleId("vertriebspartner");
+    setInviteRoleIds(["vertriebspartner"]);
     setInviteKarrierestufe("projektleiter");
   };
 
@@ -133,7 +135,10 @@ export default function Nutzerverwaltung() {
   };
 
   const filtered = users.filter((u) => {
-    if (roleFilter !== "alle" && u.roleId !== roleFilter) return false;
+    if (roleFilter !== "alle") {
+      const userRoles = u.roleIds || [u.roleId];
+      if (!userRoles.includes(roleFilter)) return false;
+    }
     if (search) {
       const s = search.toLowerCase();
       return u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s);
@@ -262,7 +267,8 @@ export default function Nutzerverwaltung() {
             </thead>
             <tbody>
               {filtered.map((user) => {
-                const role = getRole(user.roleId);
+                const userRoles = (user.roleIds || [user.roleId]).map(rid => getRole(rid));
+                const primaryRole = userRoles[0];
                 const inviteInfo = INVITE_STATUS_MAP[user.inviteStatus];
                 const InviteIcon = inviteInfo.icon;
                 return (
@@ -271,7 +277,7 @@ export default function Nutzerverwaltung() {
                       <div className="flex items-center gap-3">
                         <div
                           className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-primary-foreground"
-                          style={{ background: role.color }}
+                          style={{ background: primaryRole.color }}
                         >
                           {user.avatar}
                         </div>
@@ -282,7 +288,13 @@ export default function Nutzerverwaltung() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-sm text-foreground font-medium">{role.name}</span>
+                      <div className="flex flex-wrap gap-1">
+                        {userRoles.map((r) => (
+                          <span key={r.id} className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-primary-foreground" style={{ backgroundColor: r.color }}>
+                            {r.name}
+                          </span>
+                        ))}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       {user.active ? (
@@ -589,7 +601,7 @@ export default function Nutzerverwaltung() {
       </Dialog>
 
       {/* ── Invite User Dialog ── */}
-      <Dialog open={showInviteDialog} onOpenChange={(open) => { setShowInviteDialog(open); if (!open) { setInviteVorname(""); setInviteNachname(""); setInviteTelefon(""); setInviteRoleId("vertriebspartner"); } }}>
+      <Dialog open={showInviteDialog} onOpenChange={(open) => { setShowInviteDialog(open); if (!open) { setInviteVorname(""); setInviteNachname(""); setInviteTelefon(""); setInviteRoleIds(["vertriebspartner"]); } }}>
         <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -671,59 +683,73 @@ export default function Nutzerverwaltung() {
               })()}
             </div>
 
-            {/* Role selection */}
+            {/* Role selection – multi-select */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Rolle zuweisen *</label>
-              <Select value={inviteRoleId} onValueChange={setInviteRoleId}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: r.color }} />
-                        {r.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="text-xs font-medium text-muted-foreground">Rollen zuweisen * (Mehrfachauswahl möglich)</label>
+              <div className="border border-border rounded-lg p-3 space-y-1.5 max-h-[200px] overflow-y-auto bg-card">
+                {roles.map((r) => {
+                  const isChecked = inviteRoleIds.includes(r.id);
+                  return (
+                    <label
+                      key={r.id}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-secondary/50 transition-colors ${isChecked ? "bg-primary/5 border border-primary/15" : "border border-transparent"}`}
+                    >
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() => {
+                          setInviteRoleIds(prev => {
+                            if (prev.includes(r.id)) {
+                              const next = prev.filter(id => id !== r.id);
+                              return next.length === 0 ? prev : next; // min 1 role
+                            }
+                            return [...prev, r.id];
+                          });
+                        }}
+                      />
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                      <span className="text-foreground">{r.name}</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto">{r.menuItems.length} Menüpunkte</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                {inviteRoleIds.length} Rolle{inviteRoleIds.length !== 1 ? "n" : ""} ausgewählt. Die erste Rolle wird als Hauptrolle verwendet.
+              </p>
             </div>
 
-            {/* Show permissions of selected role */}
-            {(() => {
-              const selectedRole = getRole(inviteRoleId);
-              return (
-                <div className="border border-border rounded-lg p-4 bg-secondary/20">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Shield className="h-4 w-4" style={{ color: selectedRole.color }} />
-                    <span className="text-sm font-semibold text-foreground">
-                      Berechtigungen der Rolle „{selectedRole.name}"
+            {/* Show permissions of selected roles */}
+            <div className="border border-border rounded-lg p-4 bg-secondary/20">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">
+                  Kombinierte Berechtigungen ({inviteRoleIds.length} Rolle{inviteRoleIds.length !== 1 ? "n" : ""})
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {inviteRoleIds.map(rid => {
+                  const r = getRole(rid);
+                  return (
+                    <span key={rid} className="text-[10px] px-2 py-0.5 rounded-full font-medium text-primary-foreground" style={{ backgroundColor: r.color }}>
+                      {r.name}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground ml-auto">
-                      {selectedRole.menuItems.length} Menüpunkte
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedRole.menuItems.map((menuId) => {
-                      const item = ALL_MENU_ITEMS.find((m) => m.id === menuId);
-                      return item ? (
-                        <span
-                          key={menuId}
-                          className="text-[10px] px-2 py-1 rounded-full border border-border bg-card text-foreground"
-                        >
-                          {item.label}
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                  {inviteRoleId === "individuell" && (
-                    <p className="text-[10px] text-muted-foreground mt-2">
-                      Bei „Individuell" können Menüpunkte nach der Einladung pro Nutzer angepasst werden.
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {(() => {
+                  const allMenuIds = [...new Set(inviteRoleIds.flatMap(rid => getRole(rid).menuItems))];
+                  return allMenuIds.map((menuId) => {
+                    const item = ALL_MENU_ITEMS.find((m) => m.id === menuId);
+                    return item ? (
+                      <span key={menuId} className="text-[10px] px-2 py-1 rounded-full border border-border bg-card text-foreground">
+                        {item.label}
+                      </span>
+                    ) : null;
+                  });
+                })()}
+              </div>
+            </div>
 
             {/* Info box */}
             <div className="p-3 rounded-lg bg-secondary/30 border border-border">
