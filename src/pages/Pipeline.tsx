@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, Euro, TrendingUp, CheckCircle2, Users } from "lucide-react";
 
 import CRMLayout from "@/components/CRMLayout";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES, Lead, PipelineStage } from "@/data/crm-data";
+import { getB2CStufe, getB2BStufe, B2B_MITGLIEDSCHAFT_PREIS } from "@/data/karriereplan";
 
 function LeadCard({ lead }: { lead: Lead }) {
   const navigate = useNavigate();
@@ -55,12 +56,13 @@ function LeadCard({ lead }: { lead: Lead }) {
   );
 }
 
-function PipelineBoard({ stages, leads }: { stages: PipelineStage[]; leads: Lead[] }) {
+function PipelineBoard({ stages, leads, provisionPerLead }: { stages: PipelineStage[]; leads: Lead[]; provisionPerLead: number }) {
   return (
     <div className="overflow-x-auto pb-4">
       <div className="flex gap-4 min-w-max">
         {stages.map((stage) => {
           const stageLeads = leads.filter((l) => l.status === stage.id);
+          const stageSum = stageLeads.reduce((s, l) => s + l.value, 0);
           return (
             <div key={stage.id} className="w-[250px] shrink-0">
               <div className="flex items-center justify-between mb-3 px-1">
@@ -82,6 +84,13 @@ function PipelineBoard({ stages, leads }: { stages: PipelineStage[]; leads: Lead
                   </div>
                 )}
               </div>
+              {/* Stage total */}
+              <div className="mt-2 px-2 flex items-center justify-between">
+                <span className="text-[11px] text-muted-foreground">{stageLeads.length} Leads</span>
+                <span className="text-[11px] font-semibold text-foreground">
+                  {(stageLeads.length * provisionPerLead).toLocaleString("de-DE")} €
+                </span>
+              </div>
             </div>
           );
         })}
@@ -89,6 +98,24 @@ function PipelineBoard({ stages, leads }: { stages: PipelineStage[]; leads: Lead
     </div>
   );
 }
+
+function KpiCard({ icon: Icon, label, value, sub, accent }: { icon: React.ElementType; label: string; value: string; sub?: string; accent?: string }) {
+  return (
+    <div className="glass-card rounded-xl p-3 flex items-center gap-3 min-w-[180px]">
+      <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${accent || "bg-primary/10 text-primary"}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <p className="text-[11px] text-muted-foreground">{label}</p>
+        <p className="text-sm font-bold text-foreground">{value}</p>
+        {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+const MY_B2C_INSERATE_QUARTAL = 45;
+const MY_B2B_MONATSUMSATZ = 3750;
 
 export default function Pipeline() {
   const navigate = useNavigate();
@@ -111,11 +138,55 @@ export default function Pipeline() {
   const stages = activeTab === "b2c" ? B2C_PIPELINE_STAGES : B2B_PIPELINE_STAGES;
   const totalLeads = filteredLeads.length;
 
+  const currentB2CStufe = getB2CStufe(MY_B2C_INSERATE_QUARTAL);
+  const currentB2BStufe = getB2BStufe(MY_B2B_MONATSUMSATZ);
+
+  const kpis = useMemo(() => {
+    const fmt = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2 }) + " €";
+
+    if (activeTab === "b2c") {
+      const allB2C = filteredLeads;
+      const inseratLeads = allB2C.filter(l => l.status === "b2c_inserat").length;
+      const provPro = currentB2CStufe.provision;
+      const anspruch = inseratLeads * provPro;
+      const potenzial = allB2C.length * provPro;
+      return {
+        leads: allB2C.length,
+        provisionPerLead: provPro,
+        anspruch,
+        anspruchLabel: `${inseratLeads} Inserate × ${provPro} €`,
+        potenzial,
+        potenzialLabel: `${allB2C.length} Leads × ${provPro} €`,
+        wonLabel: "Inserat erstellt",
+        wonCount: inseratLeads,
+      };
+    } else {
+      const allB2B = filteredLeads;
+      const wonLeads = allB2B.filter(l => l.status === "b2b_won").length;
+      const provPct = currentB2BStufe.provision;
+      const provPerLead = B2B_MITGLIEDSCHAFT_PREIS * (provPct / 100);
+      const anspruch = wonLeads * provPerLead;
+      const potenzial = allB2B.length * provPerLead;
+      return {
+        leads: allB2B.length,
+        provisionPerLead: provPerLead,
+        anspruch,
+        anspruchLabel: `${wonLeads} Partner × ${provPerLead.toFixed(0)} €`,
+        potenzial,
+        potenzialLabel: `${allB2B.length} Leads × ${provPerLead.toFixed(0)} €`,
+        wonLabel: "Gewonnen",
+        wonCount: wonLeads,
+      };
+    }
+  }, [activeTab, filteredLeads, currentB2CStufe, currentB2BStufe]);
+
+  const fmt = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2 }) + " €";
+
   return (
     <CRMLayout>
       <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <div className="w-10 h-1 rounded-full gradient-brand" />
@@ -124,6 +195,30 @@ export default function Pipeline() {
             <p className="text-sm text-muted-foreground mt-1">
               {totalLeads} {activeTab === "b2c" ? "Eigentümer" : "Partner"} in der Pipeline
             </p>
+          </div>
+
+          {/* KPI Overview top-right */}
+          <div className="flex flex-wrap gap-2">
+            <KpiCard
+              icon={Users}
+              label="Leads gesamt"
+              value={String(kpis.leads)}
+              accent="bg-secondary text-foreground"
+            />
+            <KpiCard
+              icon={TrendingUp}
+              label="Provisionspotenzial"
+              value={fmt(kpis.potenzial)}
+              sub={kpis.potenzialLabel}
+              accent="bg-primary/10 text-primary"
+            />
+            <KpiCard
+              icon={CheckCircle2}
+              label={kpis.wonLabel}
+              value={fmt(kpis.anspruch)}
+              sub={kpis.anspruchLabel}
+              accent="bg-emerald-500/10 text-emerald-600"
+            />
           </div>
         </div>
 
@@ -168,17 +263,17 @@ export default function Pipeline() {
         <div className="mb-4 px-1">
           {activeTab === "b2c" ? (
             <p className="text-xs text-muted-foreground">
-              Ziel: Eigentümer anrufen → zur kostenlosen Registrierung bewegen → Immobilie inserieren lassen (10 € Provision/Inserat)
+              Ziel: Eigentümer anrufen → zur kostenlosen Registrierung bewegen → Immobilie inserieren lassen ({currentB2CStufe.provision} € Provision/Inserat)
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Ziel: Entwicklungspartner kontaktieren → Imondu-Plattform vorstellen → 12-Monats-Mitgliedschaft verkaufen (1.250 € / 312,50 € Provision)
+              Ziel: Entwicklungspartner kontaktieren → Imondu-Plattform vorstellen → 12-Monats-Mitgliedschaft verkaufen (1.250 € / {(B2B_MITGLIEDSCHAFT_PREIS * currentB2BStufe.provision / 100).toFixed(2)} € Provision)
             </p>
           )}
         </div>
 
         {/* Kanban Board */}
-        <PipelineBoard stages={stages} leads={filteredLeads} />
+        <PipelineBoard stages={stages} leads={filteredLeads} provisionPerLead={kpis.provisionPerLead} />
       </div>
     </CRMLayout>
   );
