@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUserRole, ALL_MENU_ITEMS, type RoleDef } from "@/contexts/UserRoleContext";
 import {
-  SAMPLE_USERS, INVITE_STATUS_MAP, timeAgo, formatDate,
+  SAMPLE_USERS, INVITE_STATUS_MAP, timeAgo, formatDate, generateImonduId,
   type CRMUser,
 } from "@/data/nutzerverwaltung-data";
 
@@ -86,8 +86,9 @@ export default function Nutzerverwaltung() {
     if (!inviteVorname.trim() || !inviteNachname.trim()) return;
     const avatar = `${inviteVorname[0].toUpperCase()}${inviteNachname[0].toUpperCase()}`;
     const fullName = `${inviteVorname.trim()} ${inviteNachname.trim()}`;
+    const newId = `u-${Date.now()}`;
     const newUser: CRMUser = {
-      id: `u-${Date.now()}`,
+      id: newId,
       name: fullName,
       email,
       phone: inviteTelefon || "–",
@@ -97,6 +98,7 @@ export default function Nutzerverwaltung() {
       avatar,
       createdAt: new Date().toISOString().split("T")[0],
       inviteStatus: "pending",
+      imonduId: generateImonduId(newId),
     };
     setUsers(prev => [...prev, newUser]);
     setShowInviteDialog(false);
@@ -268,7 +270,7 @@ export default function Nutzerverwaltung() {
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{user.name}</p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">{user.email} · <span className="font-mono">{user.imonduId}</span></p>
                         </div>
                       </div>
                     </td>

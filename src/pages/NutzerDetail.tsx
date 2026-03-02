@@ -110,7 +110,7 @@ export default function NutzerDetail() {
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-display font-bold text-foreground">{user.name}</h1>
-                <p className="text-sm text-muted-foreground mt-0.5">{user.email} · {user.phone}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{user.email} · {user.phone} · <span className="font-mono text-xs">{user.imonduId}</span></p>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border border-border bg-secondary/50 text-foreground">
                     <Shield className="h-3 w-3" /> {role.name}
