@@ -58,13 +58,13 @@ function LeadCard({ lead }: { lead: Lead }) {
 
 function PipelineBoard({ stages, leads, provisionPerLead }: { stages: PipelineStage[]; leads: Lead[]; provisionPerLead: number }) {
   return (
-    <div className="overflow-x-auto pb-4">
-      <div className="flex gap-4 min-w-max">
+    <div className="overflow-x-auto pb-0 flex flex-col" style={{ height: "calc(100vh - 340px)", minHeight: "400px" }}>
+      {/* Scrollable card area */}
+      <div className="flex gap-4 min-w-max flex-1 overflow-y-hidden">
         {stages.map((stage) => {
           const stageLeads = leads.filter((l) => l.status === stage.id);
-          const stageSum = stageLeads.reduce((s, l) => s + l.value, 0);
           return (
-            <div key={stage.id} className="w-[250px] shrink-0">
+            <div key={stage.id} className="w-[250px] shrink-0 flex flex-col">
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">
                   <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
@@ -74,7 +74,7 @@ function PipelineBoard({ stages, leads, provisionPerLead }: { stages: PipelineSt
                   </span>
                 </div>
               </div>
-              <div className="space-y-2 min-h-[200px] bg-secondary/30 rounded-lg p-2">
+              <div className="space-y-2 flex-1 overflow-y-auto bg-secondary/30 rounded-lg p-2">
                 {stageLeads.map((lead) => (
                   <LeadCard key={lead.id} lead={lead} />
                 ))}
@@ -84,13 +84,19 @@ function PipelineBoard({ stages, leads, provisionPerLead }: { stages: PipelineSt
                   </div>
                 )}
               </div>
-              {/* Stage total */}
-              <div className="mt-2 px-2 flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground">{stageLeads.length} Leads</span>
-                <span className="text-[11px] font-semibold text-foreground">
-                  {(stageLeads.length * provisionPerLead).toLocaleString("de-DE")} €
-                </span>
-              </div>
+            </div>
+          );
+        })}
+      </div>
+      {/* Fixed bottom totals bar */}
+      <div className="flex gap-4 min-w-max border-t border-border bg-card/80 backdrop-blur-sm pt-2 pb-1 mt-2 sticky bottom-0">
+        {stages.map((stage) => {
+          const stageLeads = leads.filter((l) => l.status === stage.id);
+          const stageProvision = stageLeads.length * provisionPerLead;
+          return (
+            <div key={stage.id} className="w-[250px] shrink-0 px-2 flex items-center justify-between">
+              <span className="text-[11px] text-muted-foreground font-medium">{stageLeads.length} Leads</span>
+              <span className="text-[11px] font-bold text-foreground">{stageProvision.toLocaleString("de-DE")} €</span>
             </div>
           );
         })}
