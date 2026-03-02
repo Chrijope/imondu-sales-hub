@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { GEWERK_OPTIONS } from "@/data/crm-data";
 import type { Gewerk } from "@/data/crm-data";
-import { DACH_REGIONEN } from "@/utils/matching-score";
+import { DACH_LAENDER } from "@/utils/matching-score";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -582,24 +582,50 @@ export default function EntwicklerRegistrieren() {
                         className="resize-none"
                       />
                     </Field>
-                    <Field label="Regionen / Einzugsgebiet" required hint="In welchen Regionen sind Sie tätig? Mehrfachauswahl möglich.">
-                      <Select value="__multi__" onValueChange={(v) => { if (v !== "__multi__") toggleTag("leistungsRegionen", v); }}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={form.leistungsRegionen.length > 0 ? `${form.leistungsRegionen.length} Region(en) ausgewählt` : "Regionen auswählen…"} />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          <SelectItem value="__multi__" disabled className="text-muted-foreground text-xs">
-                            Klicken Sie auf Regionen, um sie hinzuzufügen
-                          </SelectItem>
-                          {DACH_REGIONEN.map((r) => (
-                            <SelectItem key={r} value={r}>
-                              {form.leistungsRegionen.includes(r) ? "✓ " : ""}{r}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <Field label="Regionen / Einzugsgebiet" required hint="Wählen Sie zuerst das Land, dann das Bundesland. Mehrfachauswahl möglich.">
+                      <div className="space-y-3">
+                        {DACH_LAENDER.map((land) => (
+                          <div key={land.land} className="space-y-1.5">
+                            <p className="text-xs font-semibold text-foreground">{land.land}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {land.regionen.map((r) => {
+                                const selected = form.leistungsRegionen.includes(r);
+                                return (
+                                  <button
+                                    key={r}
+                                    type="button"
+                                    onClick={() => toggleTag("leistungsRegionen", r)}
+                                    className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
+                                      selected
+                                        ? "border-primary bg-primary/10 text-foreground font-medium"
+                                        : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                                    }`}
+                                  >
+                                    {selected && "✓ "}{r}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-semibold text-foreground">Übergreifend</p>
+                          <button
+                            type="button"
+                            onClick={() => toggleTag("leistungsRegionen", "DACH-weit")}
+                            className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
+                              form.leistungsRegionen.includes("DACH-weit")
+                                ? "border-primary bg-primary/10 text-foreground font-medium"
+                                : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            {form.leistungsRegionen.includes("DACH-weit") && "✓ "}DACH-weit
+                          </button>
+                        </div>
+                      </div>
                       {form.leistungsRegionen.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
+                        <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide mr-1 self-center">Ausgewählt:</span>
                           {form.leistungsRegionen.map((r) => (
                             <Badge key={r} variant="secondary" className="text-xs gap-1 cursor-pointer hover:bg-destructive/10" onClick={() => toggleTag("leistungsRegionen", r)}>
                               {r} ×
