@@ -5,7 +5,8 @@ import { SAMPLE_LEADS, Lead, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search, Gift, Award, Upload, FileText } from "lucide-react";
+import { Euro, TrendingUp, Building2, Briefcase, FileCheck, Info, Download, Settings, ExternalLink, GraduationCap, ArrowUpRight, CheckCircle2, X, Users, Eye, Search, Gift, Award, Upload, FileText, Link2 } from "lucide-react";
+import { getVPAttribution, getCodeBasedProvision, getAllVPAttributions } from "@/utils/rabattcode-attribution";
 import { BONUSES } from "@/pages/Auswertungen";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -86,7 +87,12 @@ export default function Abrechnungen() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentRoleId } = useUserRole();
-  const isAdmin = ["admin", "vertriebsleiter", "buchhaltung"].includes(currentRoleId);
+  const isAdmin = ["admin", "inhaber", "vertriebsleiter", "buchhaltung"].includes(currentRoleId);
+  
+  // VP attribution from Rabattcodes
+  const currentUserId = currentRoleId === "inhaber" ? "u1" : currentRoleId === "admin" ? "u1" : currentRoleId === "vertriebsleiter" ? "u2"
+    : currentRoleId === "vertriebspartner" ? "u3" : "u1";
+  const vpAttribution = getVPAttribution(currentUserId);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState<{ title: string; leads: Lead[]; type: "b2c" | "b2b" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -190,10 +196,10 @@ export default function Abrechnungen() {
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Partner</th>
                     <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Karrierestufe</th>
                     <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Status</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">B2C Prov.</th>
+                     <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">B2C Prov.</th>
                     <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">B2B Prov.</th>
+                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Code-Verm.</th>
                     <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">Gesamt</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">Potenzial</th>
                     <th className="px-4 py-2.5 text-center text-xs font-semibold text-muted-foreground">Aktion</th>
                   </tr>
                 </thead>
@@ -205,7 +211,8 @@ export default function Abrechnungen() {
                     const demoB2C = [80, 120, 50, 60][i % 4];
                     const demoB2B = [937.5, 625, 312.5, 1250][i % 4];
                     const total = demoB2C + demoB2B;
-                    const potenzial = total * 1.8;
+                    const vpAttr = getVPAttribution(vp.id);
+                    const codeVermittlungen = vpAttr.totalCustomerZahlend + vpAttr.totalDevZahlend;
                     return (
                       <tr key={vp.id} className="border-b border-border/40 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3">
@@ -227,8 +234,16 @@ export default function Abrechnungen() {
                         </td>
                         <td className="px-4 py-3 text-right font-medium text-foreground">{demoB2C.toLocaleString("de-DE")} €</td>
                         <td className="px-4 py-3 text-right font-medium text-foreground">{demoB2B.toLocaleString("de-DE")} €</td>
+                        <td className="px-4 py-3 text-center">
+                          {codeVermittlungen > 0 ? (
+                            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                              {vpAttr.totalCustomerZahlend} B2C · {vpAttr.totalDevZahlend} B2B
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">–</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-right font-bold text-foreground">{total.toLocaleString("de-DE")} €</td>
-                        <td className="px-4 py-3 text-right text-muted-foreground">{potenzial.toLocaleString("de-DE")} €</td>
                         <td className="px-4 py-3 text-center">
                           <button
                             onClick={() => setSelectedPartner(vp.id)}
@@ -250,10 +265,15 @@ export default function Abrechnungen() {
                     <td className="px-4 py-3 text-right font-bold text-foreground">
                       {filteredPartner.reduce((s, _, i) => s + [937.5, 625, 312.5, 1250][i % 4], 0).toLocaleString("de-DE")} €
                     </td>
+                    <td className="px-4 py-3 text-center">
+                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                        {filteredPartner.reduce((s, vp) => s + getVPAttribution(vp.id).totalCustomerZahlend + getVPAttribution(vp.id).totalDevZahlend, 0)} Verm.
+                      </Badge>
+                    </td>
                     <td className="px-4 py-3 text-right font-bold text-lg text-foreground">
                       {filteredPartner.reduce((s, _, i) => s + [80, 120, 50, 60][i % 4] + [937.5, 625, 312.5, 1250][i % 4], 0).toLocaleString("de-DE")} €
                     </td>
-                    <td className="px-4 py-3" colSpan={2}></td>
+                    <td className="px-4 py-3"></td>
                   </tr>
                 </tfoot>
               </table>
@@ -662,6 +682,90 @@ export default function Abrechnungen() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Rabattcode-Vermittlungen ── */}
+        <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Link2 className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-display font-semibold text-foreground">Vermittlungen über Rabattcodes</h2>
+            <Badge variant="secondary" className="text-[10px]">Automatisch zugeordnet</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Eigentümer-Inserate und Entwickler-Registrierungen, die über deine persönlichen Rabattcode-Links generiert wurden, werden dir automatisch gutgeschrieben.
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* B2C via Codes */}
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">B2C – Inserate über Code</h3>
+              </div>
+              <div className="space-y-2">
+                {vpAttribution.customerCodes.length > 0 ? vpAttribution.customerCodes.map(cc => (
+                  <div key={cc.id} className="flex items-center justify-between text-xs py-1.5 border-b border-border/40">
+                    <span className="font-mono font-bold text-primary">{cc.code}</span>
+                    <span className="text-muted-foreground">{cc.nutzungen} Nutzungen · <strong className="text-foreground">{cc.zahlend} abrechenbar</strong> · {cc.promo} Promo</span>
+                  </div>
+                )) : (
+                  <p className="text-xs text-muted-foreground">Keine Kunden-Codes zugewiesen</p>
+                )}
+              </div>
+              <div className="mt-3 flex justify-between items-center bg-primary/5 rounded-lg p-2.5 border border-primary/10">
+                <span className="text-xs font-medium text-foreground">Gesamt abrechenbar</span>
+                <span className="text-sm font-bold text-primary">{vpAttribution.totalCustomerZahlend} Inserate → {(vpAttribution.totalCustomerZahlend * currentB2CStufe.provision).toLocaleString("de-DE")} €</span>
+              </div>
+            </div>
+
+            {/* B2B via Codes */}
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Briefcase className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">B2B – Entwickler über Code</h3>
+              </div>
+              <div className="space-y-2">
+                {vpAttribution.developerCodes.length > 0 ? vpAttribution.developerCodes.map(dc => (
+                  <div key={dc.id} className="flex items-center justify-between text-xs py-1.5 border-b border-border/40">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-primary">{dc.code}</span>
+                      <Badge variant="secondary" className="text-[8px]">-{dc.rabattProzent}%</Badge>
+                    </div>
+                    <span className="text-muted-foreground">{dc.nutzungen} Reg. · <strong className="text-foreground">{dc.zahlend} zahlend</strong></span>
+                  </div>
+                )) : (
+                  <p className="text-xs text-muted-foreground">Keine Entwickler-Codes zugewiesen</p>
+                )}
+              </div>
+              {(() => {
+                const b2bCodeProv = getCodeBasedProvision(vpAttribution, currentB2CStufe.provision, currentB2BStufe.provision);
+                return (
+                  <div className="mt-3 flex justify-between items-center bg-primary/5 rounded-lg p-2.5 border border-primary/10">
+                    <span className="text-xs font-medium text-foreground">Gesamt zahlend</span>
+                    <span className="text-sm font-bold text-primary">{vpAttribution.totalDevZahlend} Mitgl. → {b2bCodeProv.b2bCodeProvision.toLocaleString("de-DE")} €</span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+          
+          {/* Total Code-Based Provision */}
+          {(() => {
+            const codeProv = getCodeBasedProvision(vpAttribution, currentB2CStufe.provision, currentB2BStufe.provision);
+            return (
+              <div className="mt-4 flex items-center justify-between bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-4 border border-primary/20">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Gesamtprovision über Rabattcodes</p>
+                  <p className="text-[10px] text-muted-foreground">B2C: {codeProv.b2cCodeProvision.toLocaleString("de-DE")} € + B2B: {codeProv.b2bCodeProvision.toLocaleString("de-DE")} €</p>
+                </div>
+                <p className="text-xl font-display font-bold text-primary">{codeProv.totalCodeProvision.toLocaleString("de-DE")} €</p>
+              </div>
+            );
+          })()}
+          
+          <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1.5">
+            <Info className="h-3 w-3 text-primary shrink-0" />
+            Diese Vermittlungen fließen automatisch in deine Abrechnungen, XP-Punkte und Rankings ein.
+          </p>
         </div>
 
         {/* ── Inserat-Bonus Meilensteine in Abrechnung ── */}
