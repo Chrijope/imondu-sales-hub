@@ -4,6 +4,7 @@ import {
   Euro, Receipt, TrendingUp, Users, ArrowRight, Filter,
   FileText, BarChart3, CheckCircle2, Clock, AlertTriangle,
 } from "lucide-react";
+import { KARRIERESTUFEN } from "@/data/karriereplan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,18 @@ export default function BuchhaltungDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Produktionsmonat-Banner */}
+      <div className="bg-primary/5 border border-primary/15 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Clock className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-sm font-semibold text-foreground">Produktionsmonat: 20. des Monats – 20. des Folgemonats</p>
+            <p className="text-xs text-muted-foreground">Auszahlung immer am Ende des Folgemonats</p>
+          </div>
+        </div>
+        <Badge variant="outline" className="text-xs border-primary/30 text-primary">Aktueller Zeitraum aktiv</Badge>
+      </div>
+
       {/* Header with Filters */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

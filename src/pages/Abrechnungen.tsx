@@ -19,12 +19,48 @@ import {
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { SAMPLE_USERS } from "@/data/nutzerverwaltung-data";
 
+// ── Produktionsmonat-Logik: 20. des Monats bis 20. des Folgemonats ──
+// Auszahlung: Ende des Folgemonats
+function getProduktionsmonat(date: Date = new Date()): { label: string; start: string; end: string; auszahlung: string } {
+  const day = date.getDate();
+  const month = date.getMonth(); // 0-indexed
+  const year = date.getFullYear();
+  
+  let pmMonth: number, pmYear: number;
+  if (day >= 20) {
+    pmMonth = month;
+    pmYear = year;
+  } else {
+    pmMonth = month - 1;
+    pmYear = year;
+    if (pmMonth < 0) { pmMonth = 11; pmYear--; }
+  }
+  
+  const mNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+  const nextMonth = (pmMonth + 1) % 12;
+  const nextYear = pmMonth === 11 ? pmYear + 1 : pmYear;
+  const auszahlungsMonat = (nextMonth + 1) % 12;
+  const auszahlungsJahr = nextMonth === 11 ? nextYear + 1 : nextYear;
+  
+  // Last day of the auszahlungs-month
+  const lastDay = new Date(nextYear, nextMonth + 1, 0).getDate();
+  
+  return {
+    label: `${mNames[pmMonth]} ${pmYear} – ${mNames[nextMonth]} ${nextYear}`,
+    start: `20.${String(pmMonth + 1).padStart(2, "0")}.${pmYear}`,
+    end: `20.${String(nextMonth + 1).padStart(2, "0")}.${nextYear}`,
+    auszahlung: `${lastDay}.${String(nextMonth + 1).padStart(2, "0")}.${nextYear}`,
+  };
+}
+
+const AKTUELLER_PM = getProduktionsmonat();
+
 const abrechnungsHistorie = [
-  { monat: "Februar 2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 80, b2bProv: 937.5, status: "ausstehend", gutschriftNr: "GS-2026-02-0041", auszahlungsDatum: null },
-  { monat: "Januar 2026", b2cAnzahl: 6, b2bAnzahl: 4, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 60, b2bProv: 1250, status: "ausgezahlt", gutschriftNr: "GS-2026-01-0041", auszahlungsDatum: "15.01.2026" },
-  { monat: "Dezember 2025", b2cAnzahl: 7, b2bAnzahl: 2, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 70, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-12-0041", auszahlungsDatum: "15.12.2025" },
-  { monat: "November 2025", b2cAnzahl: 4, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 40, b2bProv: 937.5, status: "ausgezahlt", gutschriftNr: "GS-2025-11-0041", auszahlungsDatum: "15.11.2025" },
-  { monat: "Oktober 2025", b2cAnzahl: 5, b2bAnzahl: 2, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 50, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-10-0041", auszahlungsDatum: "15.10.2025" },
+  { monat: "Feb 2026 – Mär 2026", produktionszeitraum: "20.02. – 20.03.2026", b2cAnzahl: 8, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 80, b2bProv: 937.5, status: "ausstehend", gutschriftNr: "GS-2026-03-0041", auszahlungsDatum: null, auszahlungGeplant: "31.03.2026" },
+  { monat: "Jan 2026 – Feb 2026", produktionszeitraum: "20.01. – 20.02.2026", b2cAnzahl: 6, b2bAnzahl: 4, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 60, b2bProv: 1250, status: "ausgezahlt", gutschriftNr: "GS-2026-02-0041", auszahlungsDatum: "28.02.2026", auszahlungGeplant: "28.02.2026" },
+  { monat: "Dez 2025 – Jan 2026", produktionszeitraum: "20.12. – 20.01.2026", b2cAnzahl: 7, b2bAnzahl: 2, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 70, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2026-01-0041", auszahlungsDatum: "31.01.2026", auszahlungGeplant: "31.01.2026" },
+  { monat: "Nov 2025 – Dez 2025", produktionszeitraum: "20.11. – 20.12.2025", b2cAnzahl: 4, b2bAnzahl: 3, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 40, b2bProv: 937.5, status: "ausgezahlt", gutschriftNr: "GS-2025-12-0041", auszahlungsDatum: "31.12.2025", auszahlungGeplant: "31.12.2025" },
+  { monat: "Okt 2025 – Nov 2025", produktionszeitraum: "20.10. – 20.11.2025", b2cAnzahl: 5, b2bAnzahl: 2, b2cProvRate: 10, b2bProvRate: 25, b2cProv: 50, b2bProv: 625, status: "ausgezahlt", gutschriftNr: "GS-2025-11-0041", auszahlungsDatum: "30.11.2025", auszahlungGeplant: "30.11.2025" },
 ];
 
 const monthlyChartData = [
@@ -109,19 +145,23 @@ export default function Abrechnungen() {
             <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ausstehende Gutschriften</span>
               <p className="text-2xl font-display font-bold text-foreground mt-2">{vertriebspartner.length}</p>
-              <p className="text-xs text-muted-foreground mt-1">Februar 2026</p>
+              <p className="text-xs text-muted-foreground mt-1">Produktionsmonat {AKTUELLER_PM.start} – {AKTUELLER_PM.end}</p>
+              <p className="text-[10px] text-primary mt-0.5">Auszahlung: {AKTUELLER_PM.auszahlung}</p>
             </div>
           </div>
 
           {/* Partner Table */}
-          <div className="bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
+           <div className="bg-card rounded-xl border border-border shadow-crm-sm overflow-hidden">
             <div className="px-5 py-3 border-b border-border flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" />
                 <h2 className="text-sm font-semibold text-foreground">Vertriebspartner Übersicht</h2>
                 <Badge variant="secondary" className="text-[10px]">{filteredPartner.length} von {vertriebspartner.length}</Badge>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-[10px] text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-md border border-border">
+                  Produktionsmonat: <strong className="text-foreground">{AKTUELLER_PM.start} – {AKTUELLER_PM.end}</strong> · Auszahlung: <strong className="text-primary">{AKTUELLER_PM.auszahlung}</strong>
+                </div>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -280,17 +320,31 @@ export default function Abrechnungen() {
           )}
         </div>
 
-        {/* Gutschrift-Hinweis */}
+        {/* Gutschrift-Hinweis + Produktionsmonat */}
         <div className="gradient-brand-subtle border border-primary/15 rounded-xl p-5 flex items-start gap-4">
           <div className="h-10 w-10 rounded-lg gradient-brand flex items-center justify-center shrink-0">
             <FileCheck className="h-5 w-5 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-sm font-display font-semibold text-foreground mb-1">Auszahlung per Gutschrift</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Deine Provisionen werden von Imondu als <strong className="text-foreground">Gutschriften</strong> ausgestellt und direkt an dich ausgezahlt.
               Du musst <strong className="text-foreground">keine eigene Rechnung</strong> schreiben – die Gutschrift ersetzt die Rechnung und wird dir automatisch als PDF bereitgestellt.
             </p>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-card/60 rounded-lg p-3 border border-border">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Aktueller Produktionsmonat</p>
+                <p className="text-sm font-semibold text-foreground">{AKTUELLER_PM.start} – {AKTUELLER_PM.end}</p>
+              </div>
+              <div className="bg-card/60 rounded-lg p-3 border border-border">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Abrechnungszeitraum</p>
+                <p className="text-sm font-semibold text-foreground">20. bis 20. des Folgemonats</p>
+              </div>
+              <div className="bg-card/60 rounded-lg p-3 border border-border">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Nächste Auszahlung</p>
+                <p className="text-sm font-semibold text-primary">{AKTUELLER_PM.auszahlung}</p>
+              </div>
+            </div>
             <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
               <Info className="h-3.5 w-3.5 text-primary" />
               <span>Stelle sicher, dass deine Stammdaten und Steuernummer in den <strong className="text-foreground">Einstellungen</strong> hinterlegt sind.</span>
@@ -680,7 +734,8 @@ export default function Abrechnungen() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Monat</th>
+                  <th className="text-left py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Produktionsmonat</th>
+                  <th className="text-left py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Zeitraum</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Ins.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2C Prov.</th>
                   <th className="text-right py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">B2B Mitgl.</th>
@@ -694,7 +749,8 @@ export default function Abrechnungen() {
               <tbody>
                 {abrechnungsHistorie.map((row) => (
                   <tr key={row.monat} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                    <td className="py-3 font-medium text-foreground">{row.monat}</td>
+                    <td className="py-3 font-medium text-foreground text-xs">{row.monat}</td>
+                    <td className="py-3 text-xs text-muted-foreground">{row.produktionszeitraum}</td>
                     <td className="text-right py-3 text-muted-foreground">{row.b2cAnzahl}</td>
                     <td className="text-right py-3 text-b2c font-medium">{row.b2cProv.toLocaleString("de-DE")} €</td>
                     <td className="text-right py-3 text-muted-foreground">{row.b2bAnzahl}</td>
@@ -709,7 +765,7 @@ export default function Abrechnungen() {
                       {row.auszahlungsDatum ? (
                         <span className="text-xs text-muted-foreground">Ausgezahlt am <span className="font-medium text-foreground">{row.auszahlungsDatum}</span></span>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Ausstehend</span>
+                        <span className="text-xs text-muted-foreground">Geplant: <span className="font-medium text-primary">{row.auszahlungGeplant}</span></span>
                       )}
                     </td>
                     <td className="text-center py-3">
