@@ -427,7 +427,7 @@ export default function Dashboard() {
                 <Gift className="h-3.5 w-3.5 text-primary shrink-0" />
                 <span>75 € Inserat-Boni verdient · Level 4</span>
               </div>
-              {(currentRoleId === "admin" || currentRoleId === "vertriebsleiter" || currentRoleId === "buchhaltung") && (
+              {(currentRoleId === "admin" || currentRoleId === "inhaber" || currentRoleId === "vertriebsleiter" || currentRoleId === "buchhaltung") && (
                 <div className="border-t border-border pt-2 mt-1">
                   <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">Admin-Übersicht</p>
                   <div className="grid grid-cols-2 gap-2">

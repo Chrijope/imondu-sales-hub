@@ -120,6 +120,13 @@ export default function Nutzerverwaltung() {
 
   const handleDeleteUser = (userId: string) => {
     const user = users.find(u => u.id === userId);
+    // Inhaber cannot be deleted by Admins
+    const userRoles = user?.roleIds || [user?.roleId || ""];
+    if (userRoles.includes("inhaber")) {
+      toast({ title: "Nicht erlaubt", description: "Inhaber können nicht aus dem System entfernt werden.", variant: "destructive" });
+      setDeleteUserId(null);
+      return;
+    }
     setUsers(prev => prev.filter(u => u.id !== userId));
     setDeleteUserId(null);
     toast({ title: "Nutzer gelöscht", description: `${user?.name} wurde entfernt.` });

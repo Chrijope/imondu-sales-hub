@@ -140,10 +140,10 @@ export default function TeampartnerPage() {
   const [showPAForm, setShowPAForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const canCreatePA = ["admin", "vertriebsleiter", "vertriebspartner"].includes(currentRoleId);
+  const canCreatePA = ["admin", "inhaber", "vertriebsleiter", "vertriebspartner"].includes(currentRoleId);
 
   // Determine current user id based on role
-  const currentUserId = currentRoleId === "admin" ? "u1" : currentRoleId === "vertriebsleiter" ? "u2"
+  const currentUserId = currentRoleId === "inhaber" ? "u1" : currentRoleId === "admin" ? "u1" : currentRoleId === "vertriebsleiter" ? "u2"
     : currentRoleId === "vertriebspartner" ? "u3" : "u1";
   const currentUserName = SAMPLE_USERS.find(u => u.id === currentUserId)?.name || "Unbekannt";
 
@@ -165,7 +165,7 @@ export default function TeampartnerPage() {
   // Get PAs: VP sees only own, VL/admin sees all
   const allPAs = currentRoleId === "vertriebspartner"
     ? getProjektassistentenByCreator(currentUserId)
-    : getProjektassistenten();
+    : getProjektassistenten(); // inhaber, admin, VL see all
 
   const filteredList = SAMPLE_USERS.filter((u) => {
     if (roleFilter !== "all" && u.roleId !== roleFilter) return false;

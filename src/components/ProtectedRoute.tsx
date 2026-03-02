@@ -71,7 +71,7 @@ export default function ProtectedRoute({ path, children }: ProtectedRouteProps) 
   if (!menuId) return <>{children}</>;
 
   // Draft pages: only admin can access
-  if (DRAFT_MENU_IDS.has(menuId) && currentRoleId !== "admin") {
+  if (DRAFT_MENU_IDS.has(menuId) && currentRoleId !== "admin" && currentRoleId !== "inhaber") {
     return <Navigate to="/" replace />;
   }
 

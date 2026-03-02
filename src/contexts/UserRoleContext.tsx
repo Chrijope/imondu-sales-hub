@@ -58,6 +58,13 @@ export interface RoleDef {
 
 export const DEFAULT_ROLES: RoleDef[] = [
   {
+    id: "inhaber",
+    name: "Inhaber",
+    color: "hsl(45, 93%, 47%)",
+    fixed: true,
+    menuItems: ALL_MENU_IDS,
+  },
+  {
     id: "admin",
     name: "Admin",
     color: "hsl(0, 72%, 51%)",
