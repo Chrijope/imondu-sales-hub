@@ -66,14 +66,13 @@ export const DEFAULT_ROLES: RoleDef[] = [
   },
   {
     id: "vertriebsleiter",
-
     name: "Vertriebsleiter",
     color: "hsl(250, 60%, 52%)",
     fixed: true,
     menuItems: [
       "dashboard", "inbox", "anrufe", "email", "kalender", "news",
       "kontakte", "kundenmaske", "b2c", "b2b", "pipeline", "automations", "dialer",
-      "inserate", "entwickler", "bewerbungsmanagement",
+      "inserate", "entwickler", "entwickler-registrieren", "bewerbungsmanagement",
       "auswertungen", "statistik", "analysetool", "abrechnungen", "wettbewerb",
       "immorechner", "rechner", "marketing",
       "zielplanung", "teampartner", "nutzerverwaltung", "ansprechpartner",
@@ -93,7 +92,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
       "immorechner", "rechner",
       "zielplanung", "academy", "lexikon", "presentation", "unterlagen", "chat", "support-ki",
       "teampartner", "berater-microseite", "ansprechpartner",
-      "shop", "einstellungen",
+      "shop", "einstellungen", "webinar",
     ],
   },
   {
@@ -103,8 +102,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     fixed: true,
     menuItems: [
       "dashboard", "inbox", "email", "kalender", "news",
-      "kontakte", "marketing",
-      "auswertungen", "statistik", "analysetool",
+      "marketing", "analysetool",
       "academy", "ansprechpartner",
     ],
   },
@@ -116,7 +114,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     menuItems: [
       "dashboard", "inbox", "email", "kalender",
       "kontakte", "inserate", "entwickler", "entwickler-registrieren",
-      "abrechnungen", "ansprechpartner", "unterlagen",
+      "ansprechpartner", "unterlagen", "presentation",
       "nutzerverwaltung",
     ],
   },
@@ -126,8 +124,8 @@ export const DEFAULT_ROLES: RoleDef[] = [
     color: "hsl(38, 92%, 50%)",
     fixed: true,
     menuItems: [
-      "dashboard", "inbox", "kalender",
-      "abrechnungen", "auswertungen", "statistik", "ansprechpartner",
+      "dashboard", "inbox", "kalender", "email",
+      "auswertungen", "abrechnungen", "wettbewerb",
     ],
   },
   {
