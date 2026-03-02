@@ -218,13 +218,6 @@ export default function Pipeline() {
               sub={kpis.potenzialLabel}
               accent="bg-primary/10 text-primary"
             />
-            <KpiCard
-              icon={CheckCircle2}
-              label={kpis.wonLabel}
-              value={fmt(kpis.anspruch)}
-              sub={kpis.anspruchLabel}
-              accent="bg-emerald-500/10 text-emerald-600"
-            />
           </div>
         </div>
 
