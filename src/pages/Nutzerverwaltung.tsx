@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Users, Search, Shield, Clock, ChevronRight, ChevronDown, CheckCircle2,
   XCircle, UserPlus, Mail, Phone, MoreHorizontal, Eye, EyeOff, Plus, Pencil, Trash2,
-  Key, AtSign, FileText, Send, CheckCheck, Download, CalendarDays, MailCheck, MailX, AlertCircle,
+  Key, AtSign, FileText, Send, CheckCheck, Download, CalendarDays, MailCheck, MailX, AlertCircle, GraduationCap,
 } from "lucide-react";
 import { KARRIERESTUFEN, B2C_STAFFEL, B2B_STAFFEL, B2B_MITGLIEDSCHAFT_PREIS } from "@/data/karriereplan";
 import {
@@ -64,9 +64,9 @@ export default function Nutzerverwaltung() {
   const [inviteNachname, setInviteNachname] = useState("");
   const [inviteRoleId, setInviteRoleId] = useState("vertriebspartner");
   const [inviteTelefon, setInviteTelefon] = useState("");
-  const [inviteKarrierestufe, setInviteKarrierestufe] = useState("projektassistent");
+  const [inviteKarrierestufe, setInviteKarrierestufe] = useState("projektleiter");
   const [showContractDialog, setShowContractDialog] = useState(false);
-  const [contractUser, setContractUser] = useState<{ name: string; email: string; karrierestufe: string } | null>(null);
+  const [contractUser, setContractUser] = useState<{ name: string; email: string; karrierestufe: string; academyPflicht: boolean } | null>(null);
   const [contractSent, setContractSent] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [kpiListDialog, setKpiListDialog] = useState<{ title: string; users: CRMUser[] } | null>(null);
@@ -100,7 +100,9 @@ export default function Nutzerverwaltung() {
     };
     setUsers(prev => [...prev, newUser]);
     setShowInviteDialog(false);
-    setContractUser({ name: fullName, email, karrierestufe: inviteKarrierestufe });
+    // Academy-Pflicht: admin/vertriebsleiter entscheiden, ob der Partner die Academy durchlaufen muss
+    const needsAcademy = !["admin", "vertriebsleiter"].includes(inviteRoleId);
+    setContractUser({ name: fullName, email, karrierestufe: inviteKarrierestufe, academyPflicht: needsAcademy });
     setContractSent(false);
     setShowContractDialog(true);
     toast({
@@ -111,7 +113,7 @@ export default function Nutzerverwaltung() {
     setInviteNachname("");
     setInviteTelefon("");
     setInviteRoleId("vertriebspartner");
-    setInviteKarrierestufe("projektassistent");
+    setInviteKarrierestufe("projektleiter");
   };
 
   const handleDeleteUser = (userId: string) => {
@@ -724,7 +726,10 @@ export default function Nutzerverwaltung() {
                     <li>IONOS-E-Mail-Adresse wird automatisch erstellt</li>
                     <li>Nutzer erhält ein automatisch generiertes Erstpasswort</li>
                     <li>Beim ersten Login muss das Passwort zwingend geändert werden</li>
-                    <li>Die E-Mail-Adresse wird in den Einstellungen hinterlegt</li>
+                    <li>Nutzer lädt Pflichtdokumente in den Einstellungen hoch</li>
+                    <li>Admin prüft und gibt Dokumente frei</li>
+                    <li>Nach Freigabe: Academy wird freigeschaltet (Pflicht für Vertriebspartner)</li>
+                    <li>Nach Academy-Abschluss: Voller CRM-Zugang</li>
                   </ol>
                 </div>
               </div>
@@ -888,10 +893,44 @@ export default function Nutzerverwaltung() {
                   </div>
                 </div>
 
+                {/* Academy-Pflicht Info */}
+                {contractUser.academyPflicht && (
+                  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 flex items-start gap-3">
+                    <GraduationCap className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Academy-Pflicht aktiv</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Der Nutzer muss nach Dokumentenfreigabe die Academy absolvieren, bevor das vollständige Backoffice freigeschaltet wird.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* HV-Vertrag PDF Download */}
+                <div className="p-4 rounded-lg border border-border bg-secondary/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Handelsvertretervertrag (Original-PDF)</p>
+                      <p className="text-xs text-muted-foreground">Offizieller HV-Vertrag gemäß § 84 HGB mit Anlage 1 (Provision) und Anlage 2 (NDA)</p>
+                    </div>
+                  </div>
+                  <a
+                    href="/vertraege/hv-vertrag-handelsvertreter.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0"
+                  >
+                    <Button variant="outline" size="sm">
+                      <Download className="h-3.5 w-3.5 mr-1.5" /> PDF öffnen
+                    </Button>
+                  </a>
+                </div>
+
                 {/* Actions */}
                 <div className="flex items-center gap-3 pt-2">
                   <Button variant="outline" size="sm" onClick={() => toast({ title: "PDF-Download", description: "Vertragsdokumente werden als PDF heruntergeladen… (Simulation)" })}>
-                    <Download className="h-4 w-4 mr-1.5" /> PDFs herunterladen
+                    <Download className="h-4 w-4 mr-1.5" /> Alle PDFs herunterladen
                   </Button>
                   <div className="flex-1" />
                   {contractSent ? (
@@ -905,7 +944,7 @@ export default function Nutzerverwaltung() {
                         setContractSent(true);
                         toast({
                           title: "Dokumente versendet ✓",
-                          description: `Vertriebspartnervertrag und NDA/DSGVO wurden zur digitalen Unterschrift an ${contractUser.email} gesendet.`,
+                          description: `HV-Vertrag, NDA und DSGVO wurden zur digitalen Unterschrift an ${contractUser.email} gesendet.`,
                         });
                       }}
                     >
