@@ -216,10 +216,10 @@ export default function Inbox() {
   const pendingToday = todayTasks.filter((t) => !t.done);
   const completedToday = todayTasks.filter((t) => t.done);
 
-  const todayCount = tasks.filter((t) => !t.done && t.day === "mo").length;
-  const weekCount = tasks.filter((t) => !t.done).length;
-  const meetingCount = tasks.filter((t) => !t.done && t.type === "meeting").length;
-  const highCount = tasks.filter((t) => !t.done && t.priority === "high").length;
+  const todayCount = filtered.filter((t) => !t.done && t.day === "mo").length;
+  const weekCount = filtered.filter((t) => !t.done).length;
+  const meetingCount = filtered.filter((t) => !t.done && t.type === "meeting").length;
+  const highCount = filtered.filter((t) => !t.done && t.priority === "high").length;
 
   const filters: { key: FilterType; label: string }[] = [
     { key: "alle", label: "Alle" },
