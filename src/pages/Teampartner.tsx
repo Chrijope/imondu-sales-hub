@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, ChevronDown, ChevronRight, UserPlus, GitBranch, List, Mail, Phone, Trash2, CreditCard } from "lucide-react";
+import { User, ChevronDown, ChevronRight, UserPlus, GitBranch, List, Mail, Phone, Trash2, CreditCard, Users } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { SAMPLE_USERS, type CRMUser } from "@/data/nutzerverwaltung-data";
 import { getProjektassistenten, getProjektassistentenByCreator, removeProjektassistent, type Projektassistent } from "@/data/projektassistenten-data";
@@ -30,19 +30,25 @@ function TreeNode({
   user,
   children,
   projektassistenten,
+  allUsers,
   roles,
   expandedIds,
   toggleExpand,
+  depth = 0,
 }: {
   user: CRMUser;
   children: CRMUser[];
   projektassistenten: Projektassistent[];
+  allUsers: CRMUser[];
   roles: { id: string; name: string; color: string }[];
   expandedIds: Set<string>;
   toggleExpand: (id: string) => void;
+  depth?: number;
 }) {
   const myPAs = projektassistenten.filter(pa => pa.erstelltVon === user.id);
-  const hasChildren = children.length > 0 || myPAs.length > 0;
+  // For this user, find direct subordinates (children passed in) 
+  const subordinateCount = children.length + myPAs.length;
+  const hasChildren = subordinateCount > 0;
   const isExpanded = expandedIds.has(user.id);
   const role = roles.find(r => r.id === user.roleId);
   const status = getUserStatus(user);
@@ -64,6 +70,11 @@ function TreeNode({
           <span className="text-[10px] text-muted-foreground">{role?.name} · {user.imonduId}</span>
         </div>
         <Badge variant="outline" className={`text-[9px] ml-1 ${statusColor[status]}`}>{status}</Badge>
+        {subordinateCount > 0 && (
+          <Badge variant="secondary" className="text-[9px] ml-0.5 gap-0.5">
+            <Users className="h-2.5 w-2.5" />{subordinateCount}
+          </Badge>
+        )}
         {hasChildren && (
           isExpanded
             ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -75,24 +86,25 @@ function TreeNode({
         <div className="flex flex-col items-center mt-1">
           <div className="w-px h-6 bg-border" />
           <div className="flex gap-8 flex-wrap justify-center">
-            {/* Child users */}
             {children.map((child) => {
+              const childChildren: CRMUser[] = [];
               const childPAs = projektassistenten.filter(pa => pa.erstelltVon === child.id);
               return (
                 <div key={child.id} className="flex flex-col items-center">
                   <div className="w-px h-4 bg-border" />
                   <TreeNode
                     user={child}
-                    children={[]}
+                    children={childChildren}
                     projektassistenten={projektassistenten}
+                    allUsers={allUsers}
                     roles={roles}
                     expandedIds={expandedIds}
                     toggleExpand={toggleExpand}
+                    depth={depth + 1}
                   />
                 </div>
               );
             })}
-            {/* Projektassistenten */}
             {myPAs.map((pa) => (
               <div key={pa.id} className="flex flex-col items-center">
                 <div className="w-px h-4 bg-border" />
@@ -134,6 +146,10 @@ export default function TeampartnerPage() {
   const currentUserId = currentRoleId === "admin" ? "u1" : currentRoleId === "vertriebsleiter" ? "u2"
     : currentRoleId === "vertriebspartner" ? "u3" : "u1";
   const currentUserName = SAMPLE_USERS.find(u => u.id === currentUserId)?.name || "Unbekannt";
+
+  // Tree root selection: which person's structure to view
+  const treeRootOptions = SAMPLE_USERS.filter(u => ["admin", "vertriebsleiter", "vertriebspartner"].includes(u.roleId));
+  const [selectedTreeRoot, setSelectedTreeRoot] = useState<string>(currentUserId);
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -180,11 +196,11 @@ export default function TeampartnerPage() {
     toast({ title: "Projektassistent entfernt", description: `${pa.vorname} ${pa.nachname} wurde entfernt.` });
   };
 
-  const { roots, children } = (() => {
-    const roots = SAMPLE_USERS.filter(u => ["admin", "vertriebsleiter"].includes(u.roleId));
-    const ch = SAMPLE_USERS.filter(u => !["admin", "vertriebsleiter"].includes(u.roleId));
-    return { roots, children: ch };
-  })();
+  // Build tree: selected root + subordinates
+  const selectedRootUser = SAMPLE_USERS.find(u => u.id === selectedTreeRoot);
+  const treeChildren = selectedRootUser
+    ? SAMPLE_USERS.filter(u => u.id !== selectedTreeRoot && !["admin", "vertriebsleiter"].includes(u.roleId))
+    : [];
 
   return (
     <CRMLayout>
@@ -221,24 +237,41 @@ export default function TeampartnerPage() {
           {/* Tree View */}
           <TabsContent value="tree">
             <div className="bg-card border border-border rounded-xl shadow-sm">
-              <div className="flex items-center gap-4 px-6 py-3 border-b border-border text-sm">
-                <button onClick={expandAll} className="text-muted-foreground hover:text-foreground transition-colors">Alle öffnen</button>
-                <button onClick={collapseAll} className="text-muted-foreground hover:text-foreground transition-colors">Alle schließen</button>
+              <div className="flex items-center gap-4 px-6 py-3 border-b border-border text-sm flex-wrap">
+                <span className="text-xs text-muted-foreground font-medium">Struktur von:</span>
+                <Select value={selectedTreeRoot} onValueChange={setSelectedTreeRoot}>
+                  <SelectTrigger className="w-[240px] h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {treeRootOptions.map((u) => {
+                      const r = roles.find(r => r.id === u.roleId);
+                      const subCount = SAMPLE_USERS.filter(s => s.id !== u.id && !["admin", "vertriebsleiter"].includes(s.roleId)).length
+                        + allPAs.filter(pa => pa.erstelltVon === u.id).length;
+                      return (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.name} ({r?.name}) · {subCount} Untergeordnete
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <div className="flex-1" />
+                <button onClick={expandAll} className="text-muted-foreground hover:text-foreground transition-colors text-xs">Alle öffnen</button>
+                <button onClick={collapseAll} className="text-muted-foreground hover:text-foreground transition-colors text-xs">Alle schließen</button>
               </div>
               <div className="p-10 min-h-[400px] bg-muted/30 flex justify-center pt-16 overflow-auto">
-                <div className="flex gap-12">
-                  {roots.map((root) => (
-                    <TreeNode
-                      key={root.id}
-                      user={root}
-                      children={children}
-                      projektassistenten={allPAs}
-                      roles={roles}
-                      expandedIds={expandedIds}
-                      toggleExpand={toggleExpand}
-                    />
-                  ))}
-                </div>
+                {selectedRootUser && (
+                  <TreeNode
+                    user={selectedRootUser}
+                    children={treeChildren}
+                    projektassistenten={allPAs}
+                    allUsers={SAMPLE_USERS}
+                    roles={roles}
+                    expandedIds={expandedIds}
+                    toggleExpand={toggleExpand}
+                  />
+                )}
               </div>
             </div>
           </TabsContent>
