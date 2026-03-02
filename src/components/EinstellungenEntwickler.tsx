@@ -95,7 +95,7 @@ export default function EinstellungenEntwickler() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Mein Account</h1>
-            <p className="text-sm text-muted-foreground mt-1">Verwalte dein Profil und deine Firmendaten.</p>
+            <p className="text-sm text-muted-foreground mt-1">Verwalte dein Profil und deine Firmendaten. <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded ml-1">IMONDU-ID: IM-829273853</span></p>
           </div>
           <Badge variant="default" className="text-xs">Premium</Badge>
         </div>

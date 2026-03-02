@@ -95,7 +95,7 @@ export default function EntwicklerDashboard() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">{profil.firma}</p>
-                <p className="text-xs text-muted-foreground">{profil.gewerk} · {profil.inhaber}</p>
+                <p className="text-xs text-muted-foreground">{profil.gewerk} · {profil.inhaber} · <span className="font-mono">IM-829273853</span></p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">

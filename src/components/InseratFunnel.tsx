@@ -30,14 +30,30 @@ import {
 } from "lucide-react";
 
 const STEPS = [
-  { id: 1, label: "Objekt" },
-  { id: 2, label: "Entwicklung" },
-  { id: 3, label: "Bilder" },
-  { id: 4, label: "Dokumente" },
-  { id: 5, label: "Übersicht" },
+  { id: 1, label: "Eigentümer" },
+  { id: 2, label: "Objekt" },
+  { id: 3, label: "Entwicklung" },
+  { id: 4, label: "Bilder" },
+  { id: 5, label: "Dokumente" },
+  { id: 6, label: "Übersicht" },
+];
+
+type InserierendeRolle = "eigentuemer" | "teil-eigentuemer" | "angehoeriger" | "makler" | "imondu-auftrag";
+
+const INSERIERENDE_ROLLEN: { id: InserierendeRolle; label: string; desc: string }[] = [
+  { id: "eigentuemer", label: "Ich bin Eigentümer", desc: "Ich inseriere meine eigene Immobilie" },
+  { id: "teil-eigentuemer", label: "Ich bin Teil-Eigentümer", desc: "Ich bin Miteigentümer der Immobilie" },
+  { id: "angehoeriger", label: "Ich bin Angehöriger", desc: "Ich inseriere im Auftrag eines Familienmitglieds" },
+  { id: "makler", label: "Makler / Vermittler", desc: "Ich inseriere als beauftragter Makler" },
+  { id: "imondu-auftrag", label: "IMONDU im Auftrag", desc: "IMONDU inseriert im Auftrag des Eigentümers" },
 ];
 
 interface FunnelForm {
+  // Step 0 – Eigentümer-Rolle
+  inserierendeRolle: InserierendeRolle | "";
+  eigentuemerEmail: string;
+  eigentuemerTelefon: string;
+  registerEigentuemer: boolean;
   // Step 1
   objekttyp: Objekttyp;
   titel: string;
@@ -148,6 +164,10 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const [form, setForm] = useState<FunnelForm>({
+    inserierendeRolle: "",
+    eigentuemerEmail: "",
+    eigentuemerTelefon: "",
+    registerEigentuemer: false,
     objekttyp: "Einfamilienhaus",
     titel: "",
     beschreibung: "",
@@ -205,11 +225,15 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   const goNext = () => {
-    if (step === 1 && (!form.titel || !form.adresse || !form.eigentuemerName)) {
+    if (step === 1 && !form.inserierendeRolle) {
+      toast({ title: "Bitte auswählen", description: "Bitte gib an, in welcher Rolle du inserierst.", variant: "destructive" });
+      return;
+    }
+    if (step === 2 && (!form.titel || !form.adresse || !form.eigentuemerName)) {
       toast({ title: "Pflichtfelder fehlen", description: "Bitte Titel, Adresse und Eigentümer ausfüllen.", variant: "destructive" });
       return;
     }
-    if (step < 5) setStep(step + 1);
+    if (step < 6) setStep(step + 1);
   };
 
   const goBack = () => {
@@ -217,7 +241,11 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   const handleSubmit = () => {
-    toast({ title: "Inserat erstellt ✓", description: `"${form.titel}" wurde als Entwurf gespeichert.` });
+    if (form.registerEigentuemer && (form.inserierendeRolle === "eigentuemer" || form.inserierendeRolle === "teil-eigentuemer")) {
+      toast({ title: "Inserat erstellt & Eigentümer-Account angelegt ✓", description: `"${form.titel}" wurde gespeichert. Login-Daten werden an ${form.eigentuemerEmail || form.eigentuemerName} gesendet.` });
+    } else {
+      toast({ title: "Inserat erstellt ✓", description: `"${form.titel}" wurde als Entwurf gespeichert.` });
+    }
     onClose();
   };
 
@@ -266,6 +294,78 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
           <div className="space-y-4">
             {step === 1 && (
+              <div className="rounded-xl border border-border overflow-hidden">
+                <div className="w-full px-5 py-3.5 bg-primary/5 border-b border-border">
+                  <span className="text-sm font-semibold text-foreground">Bist du Eigentümer der Immobilie?</span>
+                </div>
+                <div className="p-5 bg-card space-y-4">
+                  <div className="flex flex-wrap gap-3">
+                    {INSERIERENDE_ROLLEN.map((r) => (
+                      <button
+                        key={r.id}
+                        onClick={() => update({ inserierendeRolle: r.id })}
+                        className={`px-5 py-3 rounded-lg border text-sm transition-all text-left ${
+                          form.inserierendeRolle === r.id
+                            ? "border-primary bg-primary/5 text-foreground font-medium shadow-sm"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                        }`}
+                      >
+                        <span className="block font-medium">{r.label}</span>
+                        <span className="block text-[11px] text-muted-foreground mt-0.5">{r.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Eigentümer-Registrierung */}
+                  {(form.inserierendeRolle === "eigentuemer" || form.inserierendeRolle === "teil-eigentuemer") && (
+                    <div className="mt-4 p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                      <p className="text-sm font-semibold text-foreground">Eigentümer-Account erstellen</p>
+                      <p className="text-xs text-muted-foreground">Der Eigentümer erhält nach der Inserierung Zugang zu seinem eigenen Dashboard, um Inserate zu verwalten und Entwickler zu finden.</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-muted-foreground">E-Mail des Eigentümers *</Label>
+                          <Input placeholder="email@beispiel.de" value={form.eigentuemerEmail} onChange={(e) => update({ eigentuemerEmail: e.target.value })} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-muted-foreground">Telefon</Label>
+                          <Input placeholder="+49 170 ..." value={form.eigentuemerTelefon} onChange={(e) => update({ eigentuemerTelefon: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="register-eigentuemer"
+                          checked={form.registerEigentuemer}
+                          onChange={(e) => update({ registerEigentuemer: e.target.checked })}
+                          className="h-4 w-4 rounded border-border text-primary"
+                        />
+                        <label htmlFor="register-eigentuemer" className="text-xs text-muted-foreground cursor-pointer">
+                          Eigentümer-Login nach Inserierung erstellen (Zugangsdaten werden per E-Mail versendet)
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Makler / Angehöriger / IMONDU */}
+                  {(form.inserierendeRolle === "makler" || form.inserierendeRolle === "angehoeriger" || form.inserierendeRolle === "imondu-auftrag") && (
+                    <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30 space-y-2">
+                      <p className="text-sm font-medium text-foreground">Inserierung im Auftrag</p>
+                      <p className="text-xs text-muted-foreground">
+                        {form.inserierendeRolle === "makler" && "Du inserierst als Makler/Vermittler. Der Eigentümer kann optional nachträglich einen eigenen Zugang erhalten."}
+                        {form.inserierendeRolle === "angehoeriger" && "Du inserierst im Auftrag eines Angehörigen. Der Eigentümer kann optional nachträglich einen eigenen Zugang erhalten."}
+                        {form.inserierendeRolle === "imondu-auftrag" && "IMONDU inseriert im Auftrag des Eigentümers. Der Eigentümer kann optional nachträglich einen eigenen Zugang erhalten."}
+                      </p>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-muted-foreground">E-Mail des Eigentümers (optional)</Label>
+                        <Input placeholder="email@beispiel.de" value={form.eigentuemerEmail} onChange={(e) => update({ eigentuemerEmail: e.target.value })} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
               <>
                 <AccordionSection title="Objektbeschreibung" done={sectionsDone.objekt} open={openSections.objekt} onToggle={() => toggleSection("objekt")}>
                   <Step1 form={form} update={update} />
@@ -276,25 +376,25 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
               </>
             )}
 
-            {step === 2 && (
+            {step === 3 && (
               <AccordionSection title="Entwicklungsplanung" done={sectionsDone.entwicklung} open={openSections.entwicklung || true} onToggle={() => toggleSection("entwicklung")}>
                 <Step3Entwicklung form={form} update={update} toggleEntwicklung={toggleEntwicklung} />
               </AccordionSection>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <AccordionSection title="Bilder hochladen" done={sectionsDone.bilder} open={openSections.bilder || true} onToggle={() => toggleSection("bilder")}>
                 <StepBilder form={form} onUpload={simulateImageUpload} />
               </AccordionSection>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <AccordionSection title="Dokumente hochladen" done={sectionsDone.dokumente} open={openSections.dokumente || true} onToggle={() => toggleSection("dokumente")}>
                 <StepDokumente form={form} onUpload={simulateDocUpload} />
               </AccordionSection>
             )}
 
-            {step === 5 && (
+            {step === 6 && (
               <div className="rounded-xl border border-border overflow-hidden">
                 <div className="w-full px-5 py-3.5 bg-primary/5 border-b border-border">
                   <span className="text-sm font-semibold text-foreground">Zusammenfassung</span>
@@ -302,13 +402,21 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
                 <div className="p-5 bg-card space-y-3">
                   <p className="text-sm text-muted-foreground">Bitte überprüfen Sie Ihre Angaben und klicken Sie auf <strong>"Inserat erstellen"</strong>.</p>
                   <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Inseriert als:</span><span className="font-medium">{INSERIERENDE_ROLLEN.find(r => r.id === form.inserierendeRolle)?.label || "–"}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Titel:</span><span className="font-medium">{form.titel || "–"}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Objekttyp:</span><span className="font-medium">{form.objekttyp}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Adresse:</span><span className="font-medium">{form.adresse || "–"}, {form.plz} {form.ort}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Eigentümer:</span><span className="font-medium">{form.eigentuemerName || "–"}</span></div>
+                    {form.eigentuemerEmail && <div className="flex justify-between"><span className="text-muted-foreground">Eigentümer E-Mail:</span><span className="font-medium">{form.eigentuemerEmail}</span></div>}
                     {form.immobilienwert && <div className="flex justify-between"><span className="text-muted-foreground">Immobilienwert:</span><span className="font-medium">{form.immobilienwert} €</span></div>}
                     <div className="flex justify-between"><span className="text-muted-foreground">Bilder:</span><span className="font-medium">{form.bilder.length}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Dokumente:</span><span className="font-medium">{form.dokumente.length}</span></div>
+                    {form.registerEigentuemer && (
+                      <div className="mt-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                        <p className="text-xs font-semibold text-primary">✓ Eigentümer-Account wird erstellt</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Login-Daten werden an {form.eigentuemerEmail} gesendet.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -322,7 +430,7 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
           <Button variant="outline" onClick={step === 1 ? onClose : goBack} className="gap-2">
             <ChevronLeft className="h-4 w-4" /> {step === 1 ? "Abbrechen" : "Zurück"}
           </Button>
-          {step < 5 ? (
+          {step < 6 ? (
             <Button onClick={goNext} className="gap-2 gradient-brand border-0 text-primary-foreground">
               Speichern und weiter <ChevronRight className="h-4 w-4" />
             </Button>

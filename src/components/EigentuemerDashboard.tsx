@@ -180,7 +180,7 @@ export default function EigentuemerDashboard() {
           <div className="w-10 h-1 rounded-full gradient-brand" />
         </div>
         <h1 className="text-2xl font-display font-bold text-foreground">Mein Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Willkommen zurück! Hier sehen Sie alles rund um Ihre Immobilien.</p>
+        <p className="text-sm text-muted-foreground mt-1">Willkommen zurück! Hier sehen Sie alles rund um Ihre Immobilien. <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded ml-1">IMONDU-ID: IM-300000001</span></p>
       </div>
 
       {/* Inserat Selector */}
