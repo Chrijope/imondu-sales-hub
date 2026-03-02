@@ -101,21 +101,34 @@ export function calculateMatchingScore(
 }
 
 // All DACH regions for dropdown
-export const DACH_REGIONEN = [
-  // Deutschland
-  "Baden-Württemberg", "Bayern", "Berlin", "Brandenburg", "Bremen",
-  "Hamburg", "Hessen", "Mecklenburg-Vorpommern", "Niedersachsen",
-  "Nordrhein-Westfalen", "Rheinland-Pfalz", "Saarland", "Sachsen",
-  "Sachsen-Anhalt", "Schleswig-Holstein", "Thüringen", "Deutschlandweit",
-  // Österreich
-  "Burgenland", "Kärnten", "Niederösterreich", "Oberösterreich",
-  "Salzburg", "Steiermark", "Tirol", "Vorarlberg", "Wien", "Österreichweit",
-  // Schweiz
-  "Aargau", "Appenzell Ausserrhoden", "Appenzell Innerrhoden", "Basel-Landschaft",
-  "Basel-Stadt", "Bern", "Freiburg", "Genf", "Glarus", "Graubünden",
-  "Jura", "Luzern", "Neuenburg", "Nidwalden", "Obwalden", "Schaffhausen",
-  "Schwyz", "Solothurn", "St. Gallen", "Tessin", "Thurgau", "Uri",
-  "Waadt", "Wallis", "Zug", "Zürich", "Schweizweit",
-  // DACH
-  "DACH-weit",
+export const DACH_LAENDER: { land: string; regionen: string[] }[] = [
+  {
+    land: "Deutschland",
+    regionen: [
+      "Deutschlandweit", "Baden-Württemberg", "Bayern", "Berlin", "Brandenburg", "Bremen",
+      "Hamburg", "Hessen", "Mecklenburg-Vorpommern", "Niedersachsen",
+      "Nordrhein-Westfalen", "Rheinland-Pfalz", "Saarland", "Sachsen",
+      "Sachsen-Anhalt", "Schleswig-Holstein", "Thüringen",
+    ],
+  },
+  {
+    land: "Österreich",
+    regionen: [
+      "Österreichweit", "Burgenland", "Kärnten", "Niederösterreich", "Oberösterreich",
+      "Salzburg", "Steiermark", "Tirol", "Vorarlberg", "Wien",
+    ],
+  },
+  {
+    land: "Schweiz",
+    regionen: [
+      "Schweizweit", "Aargau", "Appenzell Ausserrhoden", "Appenzell Innerrhoden", "Basel-Landschaft",
+      "Basel-Stadt", "Bern", "Freiburg", "Genf", "Glarus", "Graubünden",
+      "Jura", "Luzern", "Neuenburg", "Nidwalden", "Obwalden", "Schaffhausen",
+      "Schwyz", "Solothurn", "St. Gallen", "Tessin", "Thurgau", "Uri",
+      "Waadt", "Wallis", "Zug", "Zürich",
+    ],
+  },
 ];
+
+// Flat list for backward compat
+export const DACH_REGIONEN = [...DACH_LAENDER.flatMap(l => l.regionen), "DACH-weit"];
