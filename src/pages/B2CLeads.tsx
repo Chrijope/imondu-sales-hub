@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Search, Phone, Upload, Download, SlidersHorizontal, Filter, X, Home, Sparkles, Plus, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
@@ -120,6 +120,14 @@ export default function B2CLeads() {
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showNewLead, setShowNewLead] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // Auto-open form if linked from dashboard
+  useEffect(() => {
+    if (searchParams.get("openForm") === "true") {
+      setShowNewLead(true);
+    }
+  }, [searchParams]);
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
   const showSidebar = subPage === "gewonnen" || subPage === "bestand";
