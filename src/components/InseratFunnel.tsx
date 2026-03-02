@@ -229,6 +229,10 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
       toast({ title: "Bitte auswählen", description: "Bitte gib an, in welcher Rolle du inserierst.", variant: "destructive" });
       return;
     }
+    if (step === 1 && !form.eigentuemerEmail) {
+      toast({ title: "E-Mail erforderlich", description: "Bitte gib die E-Mail des Eigentümers an – der Eigentümer erhält automatisch Zugang zum Dashboard.", variant: "destructive" });
+      return;
+    }
     if (step === 2 && (!form.titel || !form.adresse || !form.eigentuemerName)) {
       toast({ title: "Pflichtfelder fehlen", description: "Bitte Titel, Adresse und Eigentümer ausfüllen.", variant: "destructive" });
       return;
@@ -241,11 +245,14 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   };
 
   const handleSubmit = () => {
-    if (form.registerEigentuemer && (form.inserierendeRolle === "eigentuemer" || form.inserierendeRolle === "teil-eigentuemer")) {
-      toast({ title: "Inserat erstellt & Eigentümer-Account angelegt ✓", description: `"${form.titel}" wurde gespeichert. Login-Daten werden an ${form.eigentuemerEmail || form.eigentuemerName} gesendet.` });
-    } else {
-      toast({ title: "Inserat erstellt ✓", description: `"${form.titel}" wurde als Entwurf gespeichert.` });
-    }
+    const rolleLabel = INSERIERENDE_ROLLEN.find(r => r.id === form.inserierendeRolle)?.label || "";
+    const isFremdInseriert = form.inserierendeRolle === "makler" || form.inserierendeRolle === "angehoeriger" || form.inserierendeRolle === "imondu-auftrag";
+    toast({
+      title: "Inserat erstellt & Eigentümer-Zugang angelegt ✓",
+      description: isFremdInseriert
+        ? `"${form.titel}" wurde gespeichert (inseriert als ${rolleLabel}). Dashboard-Zugangsdaten werden per E-Mail an ${form.eigentuemerEmail} gesendet.`
+        : `"${form.titel}" wurde gespeichert. Dashboard-Zugangsdaten werden an ${form.eigentuemerEmail} gesendet.`,
+    });
     onClose();
   };
 
@@ -316,11 +323,14 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
                     ))}
                   </div>
 
-                  {/* Eigentümer-Registrierung */}
+                  {/* Eigentümer-Registrierung – immer bei Eigentümer/Teil-Eigentümer */}
                   {(form.inserierendeRolle === "eigentuemer" || form.inserierendeRolle === "teil-eigentuemer") && (
                     <div className="mt-4 p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
-                      <p className="text-sm font-semibold text-foreground">Eigentümer-Account erstellen</p>
-                      <p className="text-xs text-muted-foreground">Der Eigentümer erhält nach der Inserierung Zugang zu seinem eigenen Dashboard, um Inserate zu verwalten und Entwickler zu finden.</p>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-foreground">Eigentümer-Dashboard-Zugang</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Der Eigentümer erhält automatisch Zugang zum Dashboard, um Inserate zu verwalten, Entwickler zu finden und den Status zu verfolgen. Die Zugangsdaten werden per E-Mail versendet.</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium text-muted-foreground">E-Mail des Eigentümers *</Label>
@@ -331,33 +341,38 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
                           <Input placeholder="+49 170 ..." value={form.eigentuemerTelefon} onChange={(e) => update({ eigentuemerTelefon: e.target.value })} />
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="register-eigentuemer"
-                          checked={form.registerEigentuemer}
-                          onChange={(e) => update({ registerEigentuemer: e.target.checked })}
-                          className="h-4 w-4 rounded border-border text-primary"
-                        />
-                        <label htmlFor="register-eigentuemer" className="text-xs text-muted-foreground cursor-pointer">
-                          Eigentümer-Login nach Inserierung erstellen (Zugangsdaten werden per E-Mail versendet)
-                        </label>
+                      <div className="flex items-center gap-2 text-xs text-primary bg-primary/10 rounded-lg px-3 py-2">
+                        <Info className="h-3.5 w-3.5 shrink-0" />
+                        <span>Login-Daten werden automatisch per E-Mail an den Eigentümer versendet.</span>
                       </div>
                     </div>
                   )}
 
-                  {/* Makler / Angehöriger / IMONDU */}
+                  {/* Makler / Angehöriger / IMONDU – Eigentümer bekommt trotzdem Zugang */}
                   {(form.inserierendeRolle === "makler" || form.inserierendeRolle === "angehoeriger" || form.inserierendeRolle === "imondu-auftrag") && (
-                    <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30 space-y-2">
-                      <p className="text-sm font-medium text-foreground">Inserierung im Auftrag</p>
+                    <div className="mt-4 p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-foreground">Eigentümer-Dashboard-Zugang</p>
+                      </div>
                       <p className="text-xs text-muted-foreground">
-                        {form.inserierendeRolle === "makler" && "Du inserierst als Makler/Vermittler. Der Eigentümer kann optional nachträglich einen eigenen Zugang erhalten."}
-                        {form.inserierendeRolle === "angehoeriger" && "Du inserierst im Auftrag eines Angehörigen. Der Eigentümer kann optional nachträglich einen eigenen Zugang erhalten."}
-                        {form.inserierendeRolle === "imondu-auftrag" && "IMONDU inseriert im Auftrag des Eigentümers. Der Eigentümer kann optional nachträglich einen eigenen Zugang erhalten."}
+                        {form.inserierendeRolle === "makler" && "Du inserierst als Makler/Vermittler. Der Eigentümer erhält automatisch Zugang zu seinem Dashboard und wird per E-Mail informiert."}
+                        {form.inserierendeRolle === "angehoeriger" && "Du inserierst im Auftrag eines Angehörigen. Der Eigentümer erhält automatisch Zugang zu seinem Dashboard und wird per E-Mail informiert."}
+                        {form.inserierendeRolle === "imondu-auftrag" && "IMONDU inseriert im Auftrag des Eigentümers. Der Eigentümer erhält automatisch Zugang zu seinem Dashboard und wird per E-Mail informiert."}
                       </p>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-muted-foreground">E-Mail des Eigentümers (optional)</Label>
-                        <Input placeholder="email@beispiel.de" value={form.eigentuemerEmail} onChange={(e) => update({ eigentuemerEmail: e.target.value })} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-muted-foreground">E-Mail des Eigentümers *</Label>
+                          <Input placeholder="email@beispiel.de" value={form.eigentuemerEmail} onChange={(e) => update({ eigentuemerEmail: e.target.value })} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-muted-foreground">Telefon des Eigentümers</Label>
+                          <Input placeholder="+49 170 ..." value={form.eigentuemerTelefon} onChange={(e) => update({ eigentuemerTelefon: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-primary bg-primary/10 rounded-lg px-3 py-2">
+                        <Info className="h-3.5 w-3.5 shrink-0" />
+                        <span>Login-Daten werden automatisch per E-Mail an den Eigentümer versendet – unabhängig davon, wer das Inserat erstellt.</span>
                       </div>
                     </div>
                   )}
@@ -411,12 +426,13 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
                     {form.immobilienwert && <div className="flex justify-between"><span className="text-muted-foreground">Immobilienwert:</span><span className="font-medium">{form.immobilienwert} €</span></div>}
                     <div className="flex justify-between"><span className="text-muted-foreground">Bilder:</span><span className="font-medium">{form.bilder.length}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Dokumente:</span><span className="font-medium">{form.dokumente.length}</span></div>
-                    {form.registerEigentuemer && (
-                      <div className="mt-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
-                        <p className="text-xs font-semibold text-primary">✓ Eigentümer-Account wird erstellt</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Login-Daten werden an {form.eigentuemerEmail} gesendet.</p>
-                      </div>
-                    )}
+                    <div className="mt-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                      <p className="text-xs font-semibold text-primary">✓ Eigentümer-Dashboard-Zugang wird erstellt</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Login-Daten werden automatisch an {form.eigentuemerEmail} gesendet.</p>
+                      {(form.inserierendeRolle === "makler" || form.inserierendeRolle === "angehoeriger" || form.inserierendeRolle === "imondu-auftrag") && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Inseriert durch: {INSERIERENDE_ROLLEN.find(r => r.id === form.inserierendeRolle)?.label}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
