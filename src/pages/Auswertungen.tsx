@@ -93,10 +93,10 @@ export interface LevelDef {
 const DEFAULT_LEVELS: LevelDef[] = [
   { level: 1, title: "Rookie", minXP: 0, icon: "🌱", reward: null, rewardLabel: null },
   { level: 2, title: "Aufsteiger", minXP: 500, icon: "⚡", reward: null, rewardLabel: null },
-  { level: 3, title: "Profi", minXP: 1500, icon: "🔥", reward: "🖊️", rewardLabel: "Montblanc Kugelschreiber" },
-  { level: 4, title: "Experte", minXP: 3500, icon: "💎", reward: "📱", rewardLabel: "Apple iPhone 16 Pro" },
-  { level: 5, title: "Elite", minXP: 7000, icon: "👑", reward: "💻", rewardLabel: "Apple MacBook Pro" },
-  { level: 6, title: "Legende", minXP: 12000, icon: "🏆", reward: "🏖️", rewardLabel: "Luxus-Incentive-Reise" },
+  { level: 3, title: "Profi", minXP: 2000, icon: "🔥", reward: "🖊️", rewardLabel: "Montblanc Kugelschreiber" },
+  { level: 4, title: "Experte", minXP: 5000, icon: "💎", reward: "📱", rewardLabel: "Apple iPhone 16 Pro" },
+  { level: 5, title: "Elite", minXP: 12000, icon: "👑", reward: "💻", rewardLabel: "Apple MacBook Pro" },
+  { level: 6, title: "Legende", minXP: 25000, icon: "🏆", reward: "🏖️", rewardLabel: "Luxus-Incentive-Reise" },
 ];
 
 const MY_XP = 4200;
@@ -775,10 +775,10 @@ export default function Auswertungen() {
                 key={a.id}
                 className={`rounded-xl p-4 border transition-all relative ${
                   a.draft
-                    ? "bg-muted/10 border-dashed border-border opacity-50"
+                    ? "bg-muted/10 border-dashed border-border opacity-40"
                     : a.unlocked
                     ? "bg-primary/5 border-primary/20 shadow-crm-sm"
-                    : "bg-muted/30 border-border opacity-50 grayscale"
+                    : "bg-muted/30 border-border"
                 }`}
               >
                 {a.draft && isAdmin && (
@@ -806,7 +806,7 @@ export default function Auswertungen() {
                   </div>
                 )}
                 <div className="flex items-start gap-3">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.draft ? "bg-muted text-muted-foreground" : a.unlocked ? "gradient-brand text-white" : "bg-muted text-muted-foreground"}`}>
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.draft ? "bg-muted text-muted-foreground" : a.unlocked ? "gradient-brand text-white" : "bg-secondary text-secondary-foreground"}`}>
                     {ICON_MAP[a.iconName] || <Award className="h-5 w-5" />}
                   </div>
                   <div className="min-w-0">
