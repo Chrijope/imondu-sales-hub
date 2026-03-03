@@ -4,8 +4,10 @@ import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES } from "@/data/c
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
-import { Search, Building2, Briefcase, Phone, Mail, Filter } from "lucide-react";
+import { useUserRole } from "@/contexts/UserRoleContext";
+import { Search, Building2, Briefcase, Phone, Mail, Filter, MessageSquare } from "lucide-react";
 
 const ALL_STAGES = [...B2C_PIPELINE_STAGES, ...B2B_PIPELINE_STAGES];
 const stageLabel = (id: string) => ALL_STAGES.find(s => s.id === id)?.name ?? id;
@@ -15,6 +17,8 @@ type TypeFilter = "alle" | "b2c" | "b2b";
 
 export default function Kontakte() {
   const navigate = useNavigate();
+  const { currentRoleId } = useUserRole();
+  const isVertriebspartner = currentRoleId === "vertriebspartner";
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("alle");
 
@@ -155,7 +159,32 @@ export default function Kontakte() {
                       <td className="py-3 px-4 text-muted-foreground text-xs">
                         {new Date(lead.createdAt).toLocaleDateString("de-DE")}
                       </td>
-                      <td className="py-3 px-4" />
+                      <td className="py-3 px-4">
+                        {isVertriebspartner && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const name = isB2C ? `${lead.firstName} ${lead.lastName}` : (lead.companyName || "");
+                                  const params = new URLSearchParams({
+                                    newChat: `Backoffice – ${name}`,
+                                    category: "intern",
+                                    leadId: lead.id,
+                                    leadName: name,
+                                    leadType: lead.type,
+                                  });
+                                  navigate(`/chat?${params.toString()}`);
+                                }}
+                                className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                              >
+                                <MessageSquare className="h-3.5 w-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="text-xs">Chat mit Backoffice</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}

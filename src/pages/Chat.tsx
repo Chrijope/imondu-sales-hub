@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { setChatUnreadCount } from "@/utils/support-notifications";
 import { getChatNotifications, type ChatNotification } from "@/utils/chat-notifications";
@@ -37,6 +37,7 @@ import {
   Trash2,
   MoreVertical,
   Filter,
+  ExternalLink,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -83,6 +84,10 @@ interface ChatThread {
   category: "intern" | "entwickler" | "eigentuemer";
   members: { name: string; initials: string; role: string; firma?: string }[];
   messages: ChatMessage[];
+  // Lead-Kontext: Wenn Chat über ein Kundenprofil gestartet wurde
+  linkedLeadId?: string;
+  linkedLeadName?: string;
+  linkedLeadType?: "b2c" | "b2b";
 }
 
 const initialChats: ChatThread[] = [
@@ -152,6 +157,33 @@ const initialChats: ChatThread[] = [
       { id: "m1", sender: "Oliver Gjorgijev", initials: "OG", text: "Gibt es Neuigkeiten zu dem Projekt in München?", time: "14:10", isOwn: false },
       { id: "m2", sender: "Christian Peetz", initials: "CP", text: "Ja, der Kunde hat sich zurückgemeldet. Termin steht für nächste Woche.", time: "14:15", isOwn: true },
       { id: "m3", sender: "Oliver Gjorgijev", initials: "OG", text: "Perfekt, danke euch allen", time: "14:22", isOwn: false },
+    ],
+  },
+  // ── Beispiel: VP-Backoffice Chat mit Lead-Kontext ──
+  {
+    id: "bo-lead-1",
+    name: "Backoffice – Anna Schmidt",
+    initials: "BO",
+    lastMessage: "Bitte die Unterlagen für Frau Schmidt prüfen.",
+    time: "10:15",
+    unread: 1,
+    pinned: false,
+    archived: false,
+    muted: false,
+    category: "intern",
+    linkedLeadId: "1",
+    linkedLeadName: "Anna Schmidt",
+    linkedLeadType: "b2c",
+    members: [
+      { name: "Lisa Weber", initials: "LW", role: "Vertriebspartner" },
+      { name: "Julia Fischer", initials: "JF", role: "Backoffice" },
+      { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
+    ],
+    messages: [
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "03.03.2026", isOwn: false, isSystem: true },
+      { id: "s2", sender: "", initials: "", text: "Manuel Schilling (Vertriebsleiter) wurde automatisch eingeladen", time: "", isOwn: false, isSystem: true },
+      { id: "m1", sender: "Lisa Weber", initials: "LW", text: "Hallo, ich habe eine Frage zu Frau Schmidt (Einfamilienhaus, Berlin). Wann ist der nächste Besichtigungstermin möglich?", time: "10:10", isOwn: false },
+      { id: "m2", sender: "Julia Fischer", initials: "JF", text: "Bitte die Unterlagen für Frau Schmidt prüfen.", time: "10:15", isOwn: false },
     ],
   },
   // ── Entwickler ──
@@ -315,11 +347,14 @@ const CHAT_CATEGORIES = [
 
 export default function Chat() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { currentRoleId } = useUserRole();
   const isEigentuemer = currentRoleId === "eigentuemer";
   const isEntwickler = currentRoleId === "entwickler";
   const isBewerber = currentRoleId === "bewerber";
-  const isRoleRestricted = isEigentuemer || isEntwickler || isBewerber;
+  const isVertriebspartner = currentRoleId === "vertriebspartner";
+  const isAdmin = ["inhaber", "admin", "vertriebsleiter", "backoffice"].includes(currentRoleId);
+  const isRoleRestricted = isEigentuemer || isEntwickler || isBewerber || isVertriebspartner;
 
   // Bewerber-specific chat with Admin
   const bewerberChats: ChatThread[] = [
@@ -346,13 +381,16 @@ export default function Chat() {
     },
   ];
 
-  // For Eigentümer: only show Entwickler chats; for Entwickler: only Eigentümer chats; for Bewerber: only admin chats
+  // Role-based chat filtering
   const roleFilteredInitialChats = isBewerber
     ? bewerberChats
     : isEigentuemer
     ? initialChats.filter(c => c.category === "entwickler")
     : isEntwickler
     ? initialChats.filter(c => c.category === "eigentuemer")
+    : isVertriebspartner
+    // VP: nur interne Chats (inkl. Backoffice-Chats mit Lead-Kontext), KEINE Entwickler/Eigentümer-Chats
+    ? initialChats.filter(c => c.category === "intern")
     : initialChats;
 
   const [chats, setChats] = useState<ChatThread[]>(roleFilteredInitialChats);
@@ -371,13 +409,12 @@ export default function Chat() {
     setChatUnreadCount(totalUnread);
   }, [chats]);
 
-  // Poll for chat notifications from other pages (onboarding invites, document approvals)
+  // Poll for chat notifications from other pages
   useEffect(() => {
     const poll = () => {
       const notifications = getChatNotifications();
       if (notifications.length === 0) return;
 
-      // Consume all and inject into chats
       import("@/utils/chat-notifications").then(({ consumeChatNotifications }) => {
         const consumed = consumeChatNotifications(
           isBewerber ? "bew-admin-1" : undefined,
@@ -388,12 +425,8 @@ export default function Chat() {
         setChats((prev) => {
           const updated = [...prev];
           consumed.forEach((notif) => {
-            // Find matching chat or use first chat
             let chatIdx = updated.findIndex((c) => c.id === notif.targetChatId);
-            if (chatIdx === -1) {
-              // For role-based notifications, inject into first available chat
-              chatIdx = 0;
-            }
+            if (chatIdx === -1) chatIdx = 0;
             if (chatIdx >= 0) {
               const newMsg: ChatMessage = {
                 id: `notif-${notif.id}`,
@@ -431,23 +464,57 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeChatId, chats]);
 
-  // Handle deep-link from LeadDetail
+  // Handle deep-link from LeadDetail / B2C / B2B pages
   useEffect(() => {
     const newChatName = searchParams.get("newChat");
     const category = searchParams.get("category") as "intern" | "entwickler" | "eigentuemer" | null;
+    const leadId = searchParams.get("leadId");
+    const leadName = searchParams.get("leadName");
+    const leadType = searchParams.get("leadType") as "b2c" | "b2b" | null;
     if (!newChatName) return;
 
-    const existing = chats.find((c) => c.name === newChatName);
+    // Check if a chat with same lead context already exists
+    const existingByLead = leadId ? chats.find(c => c.linkedLeadId === leadId) : null;
+    const existing = existingByLead || chats.find((c) => c.name === newChatName);
+
     if (existing) {
       setActiveChatId(existing.id);
       setActiveCategory(existing.category);
     } else {
       const initials = newChatName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-      const role = category === "entwickler" ? "Entwickler" : category === "eigentuemer" ? "Eigentümer" : "Teampartner";
+      const isBackofficeChat = leadId && leadName;
+
+      let chatName = newChatName;
+      let chatMembers: ChatThread["members"] = [];
+      let chatMessages: ChatMessage[] = [
+        { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: new Date().toLocaleDateString("de-DE"), isOwn: false, isSystem: true },
+      ];
+
+      if (isBackofficeChat) {
+        // VP → Backoffice Chat mit Lead-Kontext
+        chatName = `Backoffice – ${leadName}`;
+        const typeLabel = leadType === "b2c" ? "Eigentümer" : "Partner";
+        chatMembers = [
+          { name: "Lisa Weber", initials: "LW", role: "Vertriebspartner" },
+          { name: "Julia Fischer", initials: "JF", role: "Backoffice" },
+          { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
+        ];
+        chatMessages.push(
+          { id: "s2", sender: "", initials: "", text: "Manuel Schilling (Vertriebsleiter) wurde automatisch eingeladen", time: "", isOwn: false, isSystem: true },
+          { id: "s3", sender: "", initials: "", text: `Betreff: ${leadName} (${typeLabel})`, time: "", isOwn: false, isSystem: true },
+        );
+      } else {
+        const role = category === "entwickler" ? "Entwickler" : category === "eigentuemer" ? "Eigentümer" : "Teampartner";
+        chatMembers = [
+          { name: newChatName, initials, role },
+          { name: isEigentuemer ? "Anna Schmidt" : isEntwickler ? "Thomas Huber" : "Christian Peetz", initials: isEigentuemer ? "AS" : isEntwickler ? "TH" : "CP", role: isEigentuemer ? "Eigentümer" : isEntwickler ? "Entwickler" : "Admin" },
+        ];
+      }
+
       const newChat: ChatThread = {
         id: `new-${Date.now()}`,
-        name: newChatName,
-        initials,
+        name: chatName,
+        initials: isBackofficeChat ? "BO" : initials,
         lastMessage: "Chat gestartet",
         time: new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
         unread: 0,
@@ -455,13 +522,11 @@ export default function Chat() {
         archived: false,
         muted: false,
         category: category || "intern",
-        members: [
-          { name: newChatName, initials, role },
-          { name: isEigentuemer ? "Anna Schmidt" : isEntwickler ? "Thomas Huber" : "Christian Peetz", initials: isEigentuemer ? "AS" : isEntwickler ? "TH" : "CP", role: isEigentuemer ? "Eigentümer" : isEntwickler ? "Entwickler" : "Admin" },
-        ],
-        messages: [
-          { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: new Date().toLocaleDateString("de-DE"), isOwn: false, isSystem: true },
-        ],
+        members: chatMembers,
+        messages: chatMessages,
+        linkedLeadId: leadId || undefined,
+        linkedLeadName: leadName || undefined,
+        linkedLeadType: leadType || undefined,
       };
       setChats((prev) => [newChat, ...prev]);
       setActiveChatId(newChat.id);
@@ -487,10 +552,12 @@ export default function Chat() {
     const senderName = currentRoleId === "bewerber" ? "Bewerber"
       : currentRoleId === "eigentuemer" ? "Anna Schmidt"
       : currentRoleId === "entwickler" ? "Thomas Huber"
+      : currentRoleId === "vertriebspartner" ? "Lisa Weber"
       : "Christian Peetz";
     const senderInitials = currentRoleId === "bewerber" ? "BW"
       : currentRoleId === "eigentuemer" ? "AS"
       : currentRoleId === "entwickler" ? "TH"
+      : currentRoleId === "vertriebspartner" ? "LW"
       : "CP";
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
@@ -584,6 +651,11 @@ export default function Chat() {
     return chats.filter(c => c.category === catId && c.unread > 0 && !c.archived).length;
   };
 
+  // VP: hide category filter for entwickler/eigentuemer
+  const visibleCategories = isVertriebspartner
+    ? CHAT_CATEGORIES.filter(c => c.id === "alle" || c.id === "intern")
+    : CHAT_CATEGORIES;
+
   return (
     <CRMLayout>
       <div className="flex h-[calc(100vh-2rem)] m-4 glass-card-static rounded-xl overflow-hidden dashboard-mesh-bg">
@@ -599,7 +671,7 @@ export default function Chat() {
                 className="pl-9 h-9 text-sm bg-background"
               />
             </div>
-            {/* Category Filter - hidden for role-restricted users */}
+            {/* Category Filter - hidden for role-restricted users (except VP who sees intern only) */}
             {!isRoleRestricted && (
             <div className="flex items-center gap-2">
               <Select value={activeCategory} onValueChange={(v) => setActiveCategory(v as typeof activeCategory)}>
@@ -610,7 +682,7 @@ export default function Chat() {
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  {CHAT_CATEGORIES.map(cat => (
+                  {visibleCategories.map(cat => (
                     <SelectItem key={cat.id} value={cat.id}>
                       <div className="flex items-center gap-2">
                         <cat.icon className="h-3.5 w-3.5" />
@@ -673,6 +745,14 @@ export default function Chat() {
                     </span>
                     <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{chat.time}</span>
                   </div>
+                  {/* Show linked lead badge in sidebar */}
+                  {chat.linkedLeadName && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Badge variant="outline" className={`text-[9px] py-0 px-1.5 ${chat.linkedLeadType === "b2c" ? "border-b2c/30 text-b2c" : "border-b2b/30 text-b2b"}`}>
+                        {chat.linkedLeadType === "b2c" ? "Eigentümer" : "Partner"}: {chat.linkedLeadName}
+                      </Badge>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mt-0.5">
                     <p className={`text-xs truncate ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                       {chat.lastMessage}
@@ -716,6 +796,12 @@ export default function Chat() {
                       <Archive className="h-4 w-4 mr-2" />
                       {chat.archived ? "Aus Archiv holen" : "Archivieren"}
                     </DropdownMenuItem>
+                    {chat.linkedLeadId && (
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/lead/${chat.linkedLeadId}`); }}>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Kundenprofil öffnen
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={(e) => { e.stopPropagation(); leaveChat(chat.id); }}
@@ -740,7 +826,23 @@ export default function Chat() {
                 {activeChat.initials}
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-sm font-display font-bold text-foreground truncate">{activeChat.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-display font-bold text-foreground truncate">{activeChat.name}</h2>
+                  {/* Lead-Kontext Badge – klickbar zum Kundenprofil */}
+                  {activeChat.linkedLeadId && activeChat.linkedLeadName && (
+                    <button
+                      onClick={() => navigate(`/lead/${activeChat.linkedLeadId}`)}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors hover:opacity-80 ${
+                        activeChat.linkedLeadType === "b2c"
+                          ? "bg-b2c/10 text-b2c border border-b2c/20"
+                          : "bg-b2b/10 text-b2b border border-b2b/20"
+                      }`}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      {activeChat.linkedLeadType === "b2c" ? "Eigentümer" : "Partner"}: {activeChat.linkedLeadName}
+                    </button>
+                  )}
+                </div>
                 <p className="text-[11px] text-muted-foreground">
                   {activeChat.members.length} Teilnehmer · {activeChat.category === "intern" ? "Interner Chat" : activeChat.category === "entwickler" ? "Entwickler-Chat" : "Eigentümer-Chat"}
                 </p>
@@ -751,7 +853,15 @@ export default function Chat() {
                 {activeChat.members.slice(0, 5).map((m) => (
                   <Tooltip key={m.name}>
                     <TooltipTrigger asChild>
-                      <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-[10px] font-bold text-primary-foreground border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform">
+                      <div
+                        className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-[10px] font-bold text-primary-foreground border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform"
+                        onClick={() => {
+                          // Wenn Lead verknüpft, öffne Profil bei Klick auf Avatar
+                          if (activeChat.linkedLeadId) {
+                            navigate(`/lead/${activeChat.linkedLeadId}`);
+                          }
+                        }}
+                      >
                         {m.initials}
                       </div>
                     </TooltipTrigger>
@@ -770,7 +880,8 @@ export default function Chat() {
               </div>
 
               <div className="flex items-center gap-1">
-                {!isRoleRestricted && (
+                {/* Invite button: only for admin roles, not for VP or restricted */}
+                {isAdmin && (
                 <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setInviteType("teampartner")}>
@@ -810,113 +921,60 @@ export default function Chat() {
                   </DialogContent>
                 </Dialog>
                 )}
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => togglePin(activeChatId)}>
-                      {activeChat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
-                      {activeChat.pinned ? "Chat lösen" : "Chat anpinnen"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleMute(activeChatId)}>
-                      <BellOff className="h-4 w-4 mr-2" />
-                      {activeChat.muted ? "Benachrichtigungen an" : "Stummschalten"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleUnread(activeChatId)}>
-                      {activeChat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
-                      {activeChat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleArchive(activeChatId)}>
-                      <Archive className="h-4 w-4 mr-2" />
-                      Archivieren
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => leaveChat(activeChatId)} className="text-destructive focus:text-destructive">
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Chat verlassen
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             </div>
 
             {/* Messages */}
             <ScrollArea className="flex-1 px-6 py-4">
-              <div className="max-w-3xl mx-auto space-y-4">
-                {activeChat.messages.map((msg) => {
-                  if (msg.isSystem) {
-                    return (
-                      <div key={msg.id} className="flex items-center gap-3 justify-center my-4">
-                        <div className="h-px flex-1 bg-border" />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {msg.time ? `${msg.time} — ` : ""}{msg.text}
-                        </span>
-                        <div className="h-px flex-1 bg-border" />
+              <div className="space-y-4 max-w-3xl">
+                {activeChat.messages.map((msg) =>
+                  msg.isSystem ? (
+                    <div key={msg.id} className="flex justify-center">
+                      <p className="text-[11px] text-muted-foreground bg-muted/40 px-3 py-1 rounded-full">
+                        {msg.text}
+                        {msg.time && <span className="ml-2 text-[10px]">{msg.time}</span>}
+                      </p>
+                    </div>
+                  ) : (
+                    <div
+                      key={msg.id}
+                      className={`flex gap-3 ${msg.isOwn ? "flex-row-reverse" : ""}`}
+                    >
+                      <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${msg.isOwn ? "bg-primary text-primary-foreground" : "gradient-brand text-primary-foreground"}`}>
+                        {msg.initials}
                       </div>
-                    );
-                  }
-
-                  return (
-                    <div key={msg.id} className={`flex gap-3 ${msg.isOwn ? "justify-end" : "justify-start"}`}>
-                      {!msg.isOwn && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 mt-1 cursor-pointer">
-                              {msg.initials}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="left" className="text-xs">
-                            <p className="font-semibold">{msg.sender}</p>
-                            {activeChat.members.find(m => m.name === msg.sender)?.firma && (
-                              <p className="text-muted-foreground">{activeChat.members.find(m => m.name === msg.sender)?.firma}</p>
-                            )}
-                            <p className="text-muted-foreground">{activeChat.members.find(m => m.name === msg.sender)?.role}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-3 ${
-                          msg.isOwn
-                            ? "bg-accent/10 border-2 border-accent rounded-br-sm"
-                            : "bg-muted border border-border rounded-bl-sm"
-                        }`}
-                      >
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{msg.text}</p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <span className="text-[11px] text-muted-foreground font-medium">{msg.sender}</span>
-                          <span className="text-[11px] text-muted-foreground">— {msg.time}</span>
-                          {msg.isOwn && <CheckCheck className="h-3.5 w-3.5 text-accent ml-auto" />}
+                      <div className={`max-w-[70%] ${msg.isOwn ? "items-end" : "items-start"}`}>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          {!msg.isOwn && <span className="text-xs font-semibold text-foreground">{msg.sender}</span>}
+                          <span className="text-[10px] text-muted-foreground">{msg.time}</span>
+                          {msg.isOwn && (
+                            <CheckCheck className="h-3 w-3 text-primary" />
+                          )}
+                        </div>
+                        <div
+                          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                            msg.isOwn
+                              ? "bg-primary text-primary-foreground rounded-tr-sm"
+                              : "bg-card border border-border text-foreground rounded-tl-sm"
+                          }`}
+                        >
+                          {msg.text}
                         </div>
                       </div>
-                      {msg.isOwn && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="h-9 w-9 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 mt-1 cursor-pointer">
-                              {msg.initials}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="text-xs">
-                            <p className="font-semibold">{currentRoleId === "eigentuemer" ? "Anna Schmidt" : currentRoleId === "entwickler" ? "Thomas Huber" : "Christian Peetz"}</p>
-                            <p className="text-muted-foreground">{isEigentuemer ? "Eigentümer" : isEntwickler ? "Entwickler" : "Admin"}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
                     </div>
-                  );
-                })}
+                  )
+                )}
                 <div ref={bottomRef} />
               </div>
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="px-6 py-4 border-t border-border">
-              <div className="flex items-end gap-3">
-                <Textarea
-                  placeholder="Nachricht eingeben ..."
+            <div className="px-6 py-3 border-t border-border">
+              <div className="flex items-center gap-2 max-w-3xl">
+                <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground h-9 w-9">
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+                <Input
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -925,26 +983,26 @@ export default function Chat() {
                       handleSendMessage();
                     }
                   }}
-                  className="min-h-[44px] max-h-[120px] resize-none text-sm"
-                  rows={1}
+                  placeholder="Nachricht schreiben…"
+                  className="flex-1 h-9 text-sm"
                 />
-                <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-foreground">
-                  <Paperclip className="h-5 w-5" />
-                </Button>
                 <Button
-                  size="icon"
-                  className="shrink-0 gradient-brand text-primary-foreground hover:opacity-90"
                   onClick={handleSendMessage}
                   disabled={!messageInput.trim()}
+                  size="icon"
+                  className="shrink-0 h-9 w-9 gradient-brand border-0 text-primary-foreground"
                 >
-                  <Send className="h-5 w-5" />
+                  <Send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <p>Wähle einen Chat aus der Liste</p>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">Wähle einen Chat aus</p>
+            </div>
           </div>
         )}
       </div>
