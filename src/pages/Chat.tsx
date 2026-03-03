@@ -84,6 +84,7 @@ interface ChatThread {
   category: "intern" | "entwickler" | "eigentuemer";
   members: { name: string; initials: string; role: string; firma?: string }[];
   messages: ChatMessage[];
+  createdBy?: string;
   // Lead-Kontext: Wenn Chat über ein Kundenprofil gestartet wurde
   linkedLeadId?: string;
   linkedLeadName?: string;
@@ -103,13 +104,14 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "intern",
+    createdBy: "Christian Peetz",
     members: [
       { name: "Andreas Hub", initials: "AH", role: "Admin" },
       { name: "Christian Peetz", initials: "CP", role: "Teampartner" },
       { name: "Tobias Fritz", initials: "TF", role: "Teampartner" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "01.09.2025", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "01.09.2025", isOwn: false, isSystem: true },
       { id: "s2", sender: "", initials: "", text: "Tobias Fritz (Finanzierungs- & Abwicklungsmanager) wurde zum Chat eingeladen", time: "", isOwn: false, isSystem: true },
       { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo zusammen, @Nico Greifendorf, ich habe den Chat einmal manuell erstellt bis der Bug durch die Technik gefixt wurde.", time: "17:39", isOwn: false },
     ],
@@ -125,13 +127,14 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "intern",
+    createdBy: "Manuel Schilling",
     members: [
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
       { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
       { name: "Lisa Weber", initials: "LW", role: "Vertriebspartner" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "15.01.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Manuel Schilling", time: "15.01.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Manuel Schilling", initials: "MS", text: "Guten Morgen Team! Wir haben 12 neue Leads aus der Kampagne.", time: "09:30", isOwn: false },
       { id: "m2", sender: "Lisa Weber", initials: "LW", text: "Super, ich schaue mir die B2B Leads an.", time: "09:38", isOwn: false },
       { id: "m3", sender: "Manuel Schilling", initials: "MS", text: "Neue Leads sind da, bitte prüfen", time: "09:45", isOwn: false },
@@ -148,12 +151,13 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "intern",
+    createdBy: "Christian Peetz",
     members: [
       { name: "Oliver Gjorgijev", initials: "OG", role: "Marketing" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "28.01.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "28.01.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Oliver Gjorgijev", initials: "OG", text: "Gibt es Neuigkeiten zu dem Projekt in München?", time: "14:10", isOwn: false },
       { id: "m2", sender: "Christian Peetz", initials: "CP", text: "Ja, der Kunde hat sich zurückgemeldet. Termin steht für nächste Woche.", time: "14:15", isOwn: true },
       { id: "m3", sender: "Oliver Gjorgijev", initials: "OG", text: "Perfekt, danke euch allen", time: "14:22", isOwn: false },
@@ -171,6 +175,7 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "intern",
+    createdBy: "Lisa Weber",
     linkedLeadId: "1",
     linkedLeadName: "Anna Schmidt",
     linkedLeadType: "b2c",
@@ -180,7 +185,7 @@ const initialChats: ChatThread[] = [
       { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "03.03.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Lisa Weber", time: "03.03.2026", isOwn: false, isSystem: true },
       { id: "s2", sender: "", initials: "", text: "Manuel Schilling (Vertriebsleiter) wurde automatisch eingeladen", time: "", isOwn: false, isSystem: true },
       { id: "m1", sender: "Lisa Weber", initials: "LW", text: "Hallo, ich habe eine Frage zu Frau Schmidt (Einfamilienhaus, Berlin). Wann ist der nächste Besichtigungstermin möglich?", time: "10:10", isOwn: false },
       { id: "m2", sender: "Julia Fischer", initials: "JF", text: "Bitte die Unterlagen für Frau Schmidt prüfen.", time: "10:15", isOwn: false },
@@ -198,12 +203,16 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "entwickler",
+    createdBy: "Christian Peetz",
+    linkedLeadId: "dev-1",
+    linkedLeadName: "Weber Bau GmbH",
+    linkedLeadType: "b2b",
     members: [
       { name: "Thomas Weber", initials: "TW", role: "Entwickler", firma: "Weber Bau GmbH" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "10.02.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "10.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo Herr Weber, ich habe ein passendes Projekt in Ihrer Region gefunden.", time: "14:30", isOwn: true },
       { id: "m2", sender: "Thomas Weber", initials: "TW", text: "Das klingt interessant! Können Sie mir mehr Details schicken?", time: "14:45", isOwn: false },
       { id: "m3", sender: "Christian Peetz", initials: "CP", text: "Natürlich, ich schicke Ihnen die Unterlagen per E-Mail.", time: "14:50", isOwn: true },
@@ -221,12 +230,16 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "entwickler",
+    createdBy: "Peter Schmitt",
+    linkedLeadId: "dev-2",
+    linkedLeadName: "Elektro Schmitt",
+    linkedLeadType: "b2b",
     members: [
       { name: "Peter Schmitt", initials: "PS", role: "Entwickler", firma: "Elektro Schmitt" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "05.02.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Peter Schmitt", time: "05.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Peter Schmitt", initials: "PS", text: "Guten Tag, ich wollte meine Referenzen für das Profil nachreichen.", time: "11:20", isOwn: false },
       { id: "m2", sender: "Peter Schmitt", initials: "PS", text: "Die Referenzbilder sind angehängt", time: "11:30", isOwn: false },
     ],
@@ -242,13 +255,17 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "entwickler",
+    createdBy: "Christian Peetz",
+    linkedLeadId: "dev-3",
+    linkedLeadName: "Dach & Fassade Krüger",
+    linkedLeadType: "b2b",
     members: [
       { name: "Hans Krüger", initials: "HK", role: "Entwickler", firma: "Dach & Fassade Krüger" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
       { name: "Manuel Schilling", initials: "MS", role: "Vertriebsleiter" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "01.02.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "01.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Hans Krüger", initials: "HK", text: "Wir sind an einer Partnerschaft interessiert, aber der Jahresbeitrag ist für uns aktuell etwas hoch.", time: "16:00", isOwn: false },
       { id: "m2", sender: "Christian Peetz", initials: "CP", text: "Verstehe ich. Lassen Sie uns gerne die verschiedenen Optionen besprechen.", time: "16:15", isOwn: true },
       { id: "m3", sender: "Hans Krüger", initials: "HK", text: "Können wir die Konditionen nochmal besprechen?", time: "16:30", isOwn: false },
@@ -266,12 +283,16 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "eigentuemer",
+    createdBy: "Christian Peetz",
+    linkedLeadId: "1",
+    linkedLeadName: "Anna Schmidt",
+    linkedLeadType: "b2c",
     members: [
       { name: "Anna Schmidt", initials: "AS", role: "Eigentümer" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "17.02.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "17.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo Frau Schmidt, vielen Dank für Ihr Interesse an einer Immobilienbewertung. Ich würde Ihnen gerne einen Vor-Ort-Termin anbieten.", time: "16:20", isOwn: true },
       { id: "m2", sender: "Anna Schmidt", initials: "AS", text: "Das wäre super! Wann hätten Sie Zeit?", time: "16:30", isOwn: false },
       { id: "m3", sender: "Christian Peetz", initials: "CP", text: "Wie wäre es am Donnerstag um 14 Uhr?", time: "16:35", isOwn: true },
@@ -289,12 +310,16 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "eigentuemer",
+    createdBy: "Christian Peetz",
+    linkedLeadId: "2",
+    linkedLeadName: "Klaus Meier",
+    linkedLeadType: "b2c",
     members: [
       { name: "Klaus Meier", initials: "KM", role: "Eigentümer" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "12.02.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "12.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Klaus Meier", initials: "KM", text: "Hallo, ich habe bereits eine Bewertung von einem anderen Makler erhalten, aber die Zahl kommt mir niedrig vor.", time: "12:00", isOwn: false },
       { id: "m2", sender: "Klaus Meier", initials: "KM", text: "Können Sie mir eine zweite Meinung geben?", time: "12:15", isOwn: false },
     ],
@@ -310,12 +335,16 @@ const initialChats: ChatThread[] = [
     archived: false,
     muted: false,
     category: "eigentuemer",
+    createdBy: "Christian Peetz",
+    linkedLeadId: "3",
+    linkedLeadName: "Petra Schulz",
+    linkedLeadType: "b2c",
     members: [
       { name: "Petra Schulz", initials: "PS", role: "Eigentümer" },
       { name: "Christian Peetz", initials: "CP", role: "Admin" },
     ],
     messages: [
-      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt", time: "18.02.2026", isOwn: false, isSystem: true },
+      { id: "s1", sender: "", initials: "", text: "Chat wurde erstellt von Christian Peetz", time: "18.02.2026", isOwn: false, isSystem: true },
       { id: "m1", sender: "Christian Peetz", initials: "CP", text: "Hallo Frau Schulz, Sie wurden mir als neuer Lead zugewiesen. Ich helfe Ihnen gerne bei der Bewertung Ihrer Immobilie.", time: "09:45", isOwn: true },
       { id: "m2", sender: "Petra Schulz", initials: "PS", text: "Super, das freut mich! Ich möchte mein Einfamilienhaus verkaufen.", time: "09:55", isOwn: false },
       { id: "m3", sender: "Petra Schulz", initials: "PS", text: "Welche Unterlagen brauchen Sie von mir?", time: "10:00", isOwn: false },
@@ -824,12 +853,24 @@ export default function Chat() {
           <div className="flex-1 flex flex-col">
             {/* Chat Header */}
             <div className="px-6 py-3 border-b border-border flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-sm font-bold text-primary-foreground shrink-0">
+              <div
+                className={`h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-sm font-bold text-primary-foreground shrink-0 ${activeChat.linkedLeadId ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
+                onClick={() => {
+                  if (activeChat.linkedLeadId) navigate(`/lead/${activeChat.linkedLeadId}`);
+                }}
+              >
                 {activeChat.initials}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-display font-bold text-foreground truncate">{activeChat.name}</h2>
+                  <h2
+                    className={`text-sm font-display font-bold text-foreground truncate ${activeChat.linkedLeadId ? "cursor-pointer hover:underline" : ""}`}
+                    onClick={() => {
+                      if (activeChat.linkedLeadId) navigate(`/lead/${activeChat.linkedLeadId}`);
+                    }}
+                  >
+                    {activeChat.name}
+                  </h2>
                   {/* Lead-Kontext Badge – klickbar zum Kundenprofil */}
                   {activeChat.linkedLeadId && activeChat.linkedLeadName && (
                     <button
@@ -847,6 +888,7 @@ export default function Chat() {
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   {activeChat.members.length} Teilnehmer · {activeChat.category === "intern" ? "Interner Chat" : activeChat.category === "entwickler" ? "Entwickler-Chat" : "Eigentümer-Chat"}
+                  {activeChat.createdBy && <span> · Erstellt von {activeChat.createdBy}</span>}
                 </p>
               </div>
 
