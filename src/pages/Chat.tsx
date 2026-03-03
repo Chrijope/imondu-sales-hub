@@ -729,7 +729,7 @@ export default function Chat() {
                     {chat.initials}
                   </div>
                   {chat.unread > 0 && !chat.muted ? (
-                    <div className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[hsl(var(--success))] border-2 border-background" />
+                    <div className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[hsl(var(--primary))] border-2 border-background" />
                   ) : chat.muted ? (
                     <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
                       <MicOff className="h-2.5 w-2.5 text-muted-foreground" />
@@ -923,6 +923,47 @@ export default function Chat() {
                   </DialogContent>
                 </Dialog>
                 )}
+
+                {/* Three-dot menu for chat actions */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem onClick={() => togglePin(activeChat.id)}>
+                      {activeChat.pinned ? <PinOff className="h-4 w-4 mr-2" /> : <Pin className="h-4 w-4 mr-2" />}
+                      {activeChat.pinned ? "Chat lösen" : "Chat anpinnen"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleUnread(activeChat.id)}>
+                      {activeChat.unread > 0 ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                      {activeChat.unread > 0 ? "Als gelesen markieren" : "Als ungelesen markieren"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleMute(activeChat.id)}>
+                      <BellOff className="h-4 w-4 mr-2" />
+                      {activeChat.muted ? "Benachrichtigungen an" : "Stummschalten"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleArchive(activeChat.id)}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      {activeChat.archived ? "Aus Archiv holen" : "Archivieren"}
+                    </DropdownMenuItem>
+                    {activeChat.linkedLeadId && (
+                      <DropdownMenuItem onClick={() => navigate(`/lead/${activeChat.linkedLeadId}`)}>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Kundenprofil öffnen
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => leaveChat(activeChat.id)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Chat löschen
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
