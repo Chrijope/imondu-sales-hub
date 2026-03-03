@@ -3,7 +3,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 
 // Draft pages: only admin can access
 const DRAFT_MENU_IDS = new Set([
-  "automations", "auswertungen", "statistik", "abrechnungen", "wettbewerb",
+  "automations", "statistik", "abrechnungen", "wettbewerb",
   "lead-scouring", "webinar", "support-ki", "teampartner",
   "berater-microseite", "helpdesk", "shop",
 ]);

@@ -465,7 +465,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-3 gap-2 text-center mb-3">
               <div className="bg-muted/40 rounded-lg py-2">
                 <p className="text-sm font-bold text-foreground">5/9</p>
-                <p className="text-[10px] text-muted-foreground">Achievements</p>
+                <p className="text-[10px] text-muted-foreground">Meilensteine</p>
               </div>
               <div className="bg-muted/40 rounded-lg py-2">
                 <p className="text-sm font-bold text-foreground">🔥 12</p>

@@ -71,7 +71,7 @@ const b2bRankings = {
 // Entwickler-Registrierung über Rabattcode: +200 XP
 // B2B Mitgliedschaft verkauft: +300 XP
 // Tages-Streak: +10 XP/Tag
-// Achievement freigeschaltet: variabel
+// Meilenstein freigeschaltet: variabel
 // Top-3 Ranking: +100 XP
 
 const XP_RULES = [
@@ -80,7 +80,7 @@ const XP_RULES = [
   { action: "Entwickler-Registrierung (über Code)", xp: 200, icon: "🏗️" },
   { action: "B2B Mitgliedschaft verkauft", xp: 300, icon: "💼" },
   { action: "Tages-Streak (pro Tag)", xp: 10, icon: "🔥" },
-  { action: "Achievement freigeschaltet", xp: "50–1.000", icon: "🏆" },
+  { action: "Meilenstein freigeschaltet", xp: "50–1.000", icon: "🏆" },
   { action: "Top-3 Ranking-Platzierung", xp: 100, icon: "🥇" },
 ];
 
@@ -101,9 +101,9 @@ const DEFAULT_LEVELS: LevelDef[] = [
 
 const MY_XP = 4200;
 
-// ── Achievements ──
+// ── Meilensteine ──
 export interface Achievement {
-  id: string; title: string; description: string; iconName: string; unlocked: boolean; xpReward: number; bonusText?: string;
+  id: string; title: string; description: string; iconName: string; unlocked: boolean; xpReward: number; bonusText?: string; draft?: boolean;
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -295,14 +295,14 @@ export default function Auswertungen() {
   const saveAchievementEdit = () => {
     if (!editAchievementDialog) return;
     setAchievements(prev => prev.map(a => a.id === editAchievementDialog.id ? editAchievementDialog : a));
-    toast({ title: "Achievement aktualisiert" });
+    toast({ title: "Meilenstein aktualisiert" });
     setEditAchievementDialog(null);
   };
 
   // Admin: delete achievement
   const deleteAchievement = (id: string) => {
     setAchievements(prev => prev.filter(a => a.id !== id));
-    toast({ title: "Achievement gelöscht" });
+    toast({ title: "Meilenstein gelöscht" });
     setEditAchievementDialog(null);
   };
 
@@ -317,7 +317,7 @@ export default function Auswertungen() {
       id: `ach-${Date.now()}`,
     };
     setAchievements(prev => [...prev, a]);
-    toast({ title: "Achievement hinzugefügt ✓" });
+    toast({ title: "Meilenstein hinzugefügt ✓" });
     setAddAchievementDialog(false);
     setNewAchievement({ id: "", title: "", description: "", iconName: "target", unlocked: false, xpReward: 100, bonusText: "" });
   };
@@ -606,7 +606,7 @@ export default function Auswertungen() {
             <div className="md:ml-auto flex gap-4">
               <div className="bg-white/15 backdrop-blur-sm rounded-xl px-5 py-3 text-center border border-white/10">
                 <p className="text-2xl font-display font-bold">{achievements.filter(a => a.unlocked).length}/{achievements.length}</p>
-                <p className="text-[11px] text-white/70">Achievements</p>
+                <p className="text-[11px] text-white/70">Meilensteine</p>
               </div>
               <div className="bg-white/15 backdrop-blur-sm rounded-xl px-5 py-3 text-center border border-white/10">
                 <p className="text-2xl font-display font-bold">75 €</p>
@@ -628,7 +628,7 @@ export default function Auswertungen() {
             <Badge variant="secondary" className="text-[10px]">B2C + B2B kombiniert</Badge>
             {isAdmin && <Badge variant="outline" className="text-[10px] ml-auto border-primary/30 text-primary">Admin: Klicke auf ✏️ um Prämien zu bearbeiten</Badge>}
           </div>
-          <p className="text-xs text-muted-foreground mb-5">Sammle XP durch B2C-Inserate, B2B-Verkäufe, Streaks und Achievements – je höher dein Level, desto größer die Prämie!</p>
+          <p className="text-xs text-muted-foreground mb-5">Sammle XP durch B2C-Inserate, B2B-Verkäufe, Streaks und Meilensteine – je höher dein Level, desto größer die Prämie!</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {levels.map((lvl) => {
               const isCurrentLevel2 = lvl.level === currentLevel.level;
@@ -651,8 +651,8 @@ export default function Auswertungen() {
                       Aktuell
                     </Badge>
                   )}
-                  {/* Admin edit button for levels 3+ */}
-                  {isAdmin && lvl.level >= 3 && (
+                  {/* Admin edit button for all levels */}
+                  {isAdmin && (
                     <button
                       onClick={() => setEditLevelDialog({ ...lvl })}
                       className="absolute top-2 right-2 p-1 rounded-md hover:bg-muted/60 text-muted-foreground hover:text-primary transition-colors"
@@ -723,7 +723,7 @@ export default function Auswertungen() {
           <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
             <p className="text-xs text-foreground flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span><strong>So sammelst du XP:</strong> B2C Lead (+10) · Eigentümer-Inserat via Code (+50) · Entwickler-Registrierung via Code (+200) · B2B Verkauf (+300) · Streak (+10/Tag) · Achievement (variabel) · Top-3 Ranking (+100)</span>
+              <span><strong>So sammelst du XP:</strong> B2C Lead (+10) · Eigentümer-Inserat via Code (+50) · Entwickler-Registrierung via Code (+200) · B2B Verkauf (+300) · Streak (+10/Tag) · Meilenstein (variabel) · Top-3 Ranking (+100)</span>
             </p>
           </div>
         </div>
@@ -753,11 +753,11 @@ export default function Auswertungen() {
           </div>
         </div>
 
-        {/* ── Achievements Grid ── */}
+        {/* ── Meilensteine Grid ── */}
         <div className="bg-card rounded-xl p-5 shadow-crm-sm border border-border">
           <div className="flex items-center gap-2 mb-4">
             <Award className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-display font-semibold text-foreground">Achievements</h2>
+            <h2 className="text-sm font-display font-semibold text-foreground">Meilensteine</h2>
             {isAdmin && (
               <Button
                 size="sm"
@@ -765,20 +765,27 @@ export default function Auswertungen() {
                 className="ml-auto h-7 text-[10px] gap-1 border-primary/30 text-primary hover:bg-primary/5"
                 onClick={() => setAddAchievementDialog(true)}
               >
-                <Plus className="h-3 w-3" /> Achievement hinzufügen
+                <Plus className="h-3 w-3" /> Meilenstein hinzufügen
               </Button>
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {achievements.map((a) => (
+            {achievements.filter(a => !a.draft || isAdmin).map((a) => (
               <div
                 key={a.id}
                 className={`rounded-xl p-4 border transition-all relative ${
-                  a.unlocked
+                  a.draft
+                    ? "bg-muted/10 border-dashed border-border opacity-50"
+                    : a.unlocked
                     ? "bg-primary/5 border-primary/20 shadow-crm-sm"
                     : "bg-muted/30 border-border opacity-50 grayscale"
                 }`}
               >
+                {a.draft && isAdmin && (
+                  <Badge variant="outline" className="absolute -top-2 left-3 text-[8px] border-muted-foreground/30 text-muted-foreground bg-background">
+                    Entwurf
+                  </Badge>
+                )}
                 {/* Admin edit/delete */}
                 {isAdmin && (
                   <div className="absolute top-2 right-2 flex items-center gap-1">
@@ -799,7 +806,7 @@ export default function Auswertungen() {
                   </div>
                 )}
                 <div className="flex items-start gap-3">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.unlocked ? "gradient-brand text-white" : "bg-muted text-muted-foreground"}`}>
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.draft ? "bg-muted text-muted-foreground" : a.unlocked ? "gradient-brand text-white" : "bg-muted text-muted-foreground"}`}>
                     {ICON_MAP[a.iconName] || <Award className="h-5 w-5" />}
                   </div>
                   <div className="min-w-0">
@@ -1010,7 +1017,7 @@ export default function Auswertungen() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Pencil className="h-4 w-4 text-primary" />
-              Achievement bearbeiten
+              Meilenstein bearbeiten
             </DialogTitle>
           </DialogHeader>
           {editAchievementDialog && (
@@ -1046,6 +1053,18 @@ export default function Auswertungen() {
                 <Label className="text-xs">Bonus-Text (optional, z.B. "🎁 +25 € Bonus!")</Label>
                 <Input value={editAchievementDialog.bonusText || ""} onChange={(e) => setEditAchievementDialog({ ...editAchievementDialog, bonusText: e.target.value })} className="h-9 text-sm" />
               </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+                <input
+                  type="checkbox"
+                  id="edit-draft-toggle"
+                  checked={editAchievementDialog.draft || false}
+                  onChange={(e) => setEditAchievementDialog({ ...editAchievementDialog, draft: e.target.checked })}
+                  className="h-4 w-4 rounded border-border"
+                />
+                <Label htmlFor="edit-draft-toggle" className="text-xs cursor-pointer">
+                  Als Entwurf speichern <span className="text-muted-foreground">(nur für Admins sichtbar)</span>
+                </Label>
+              </div>
             </div>
           )}
           <DialogFooter className="mt-4">
@@ -1064,7 +1083,7 @@ export default function Auswertungen() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-4 w-4 text-primary" />
-              Neues Achievement erstellen
+              Neuen Meilenstein erstellen
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
@@ -1098,6 +1117,18 @@ export default function Auswertungen() {
             <div className="space-y-1.5">
               <Label className="text-xs">Bonus-Text (optional)</Label>
               <Input value={newAchievement.bonusText || ""} onChange={(e) => setNewAchievement(p => ({ ...p, bonusText: e.target.value }))} className="h-9 text-sm" placeholder="z.B. 🎁 +50 € Bonus!" />
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+              <input
+                type="checkbox"
+                id="new-draft-toggle"
+                checked={newAchievement.draft || false}
+                onChange={(e) => setNewAchievement(p => ({ ...p, draft: e.target.checked }))}
+                className="h-4 w-4 rounded border-border"
+              />
+              <Label htmlFor="new-draft-toggle" className="text-xs cursor-pointer">
+                Als Entwurf erstellen <span className="text-muted-foreground">(nur für Admins sichtbar)</span>
+              </Label>
             </div>
           </div>
           <DialogFooter className="mt-4">
