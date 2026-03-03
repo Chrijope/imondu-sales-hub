@@ -1,10 +1,9 @@
-import CRMLayout from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Play, CheckCircle2, Shield, ArrowRight, Users, Target,
-  TrendingUp, Zap, Building2, ChevronDown, Sun, Moon,
+  TrendingUp, Zap, Building2, ChevronDown,
   XCircle, BarChart3, Crown, Clock, Briefcase
 } from "lucide-react";
 import { useState } from "react";
@@ -129,16 +128,7 @@ export default function WebinarEntwickler() {
       };
 
   return (
-    <CRMLayout>
       <div className={`min-h-screen ${t.bg} transition-colors duration-300 relative`}>
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setIsDark(!isDark)}
-          className={`fixed top-20 right-6 z-50 p-2.5 rounded-full ${t.toggleBg} transition-all shadow-lg backdrop-blur-sm`}
-          title={isDark ? "Light Mode" : "Dark Mode"}
-        >
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </button>
 
         {/* ── HERO ── */}
         <section className="relative overflow-hidden">
@@ -445,6 +435,5 @@ export default function WebinarEntwickler() {
           </p>
         </footer>
       </div>
-    </CRMLayout>
   );
 }
