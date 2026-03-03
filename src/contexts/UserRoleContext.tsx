@@ -95,7 +95,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
       "dashboard", "inbox", "anrufe", "email", "kalender", "news",
       "kontakte", "kundenmaske", "b2c", "b2b", "pipeline", "dialer",
       "inserate", "entwickler", "entwickler-registrieren",
-      "statistik", "abrechnungen", "wettbewerb",
+      "auswertungen", "statistik", "abrechnungen", "wettbewerb",
       "immorechner", "rechner",
       "zielplanung", "academy", "lexikon", "presentation", "unterlagen", "chat", "support-ki",
       "teampartner", "berater-microseite", "ansprechpartner",
