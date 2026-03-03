@@ -230,7 +230,7 @@ export default function Dashboard() {
           </div>
 
           {/* Mitteilungen */}
-          <div className="lg:col-span-3 glass-card rounded-2xl p-5">
+          <div className="lg:col-span-3 glass-card rounded-2xl p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Mitteilungen</h2>
@@ -257,9 +257,11 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            <Link to="/inbox" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
-              Alle Mitteilungen ansehen <ArrowRight className="h-3 w-3" />
-            </Link>
+            <div className="mt-auto pt-3">
+              <Link to="/inbox" className="flex items-center gap-1 text-xs text-accent font-medium hover:underline">
+                Alle Mitteilungen ansehen <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -319,7 +321,7 @@ export default function Dashboard() {
           </div>
 
           {/* News */}
-          <div className="lg:col-span-3 glass-card rounded-2xl p-5">
+          <div className="lg:col-span-3 glass-card rounded-2xl p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">News</h2>
@@ -331,9 +333,11 @@ export default function Dashboard() {
                 </p>
               ))}
             </div>
-            <Link to="/news" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
-              Alle News ansehen <ArrowRight className="h-3 w-3" />
-            </Link>
+            <div className="mt-auto pt-3">
+              <Link to="/news" className="flex items-center gap-1 text-xs text-accent font-medium hover:underline">
+                Alle News ansehen <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -349,7 +353,7 @@ export default function Dashboard() {
         {/* Row: Wettbewerb + Abrechnung Quick Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Wettbewerb Widget */}
-          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Wettbewerb</h2>
@@ -395,13 +399,15 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <Link to="/wettbewerb" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
-              Alle Challenges ansehen <ArrowRight className="h-3 w-3" />
-            </Link>
+            <div className="mt-auto pt-3">
+              <Link to="/wettbewerb" className="flex items-center gap-1 text-xs text-accent font-medium hover:underline">
+                Alle Challenges ansehen <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
 
           {/* Abrechnungs-Widget */}
-          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Abrechnung</h2>
@@ -443,13 +449,15 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            <Link to="/abrechnungen" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
-              Zur Abrechnung <ArrowRight className="h-3 w-3" />
-            </Link>
+            <div className="mt-auto pt-3">
+              <Link to="/abrechnungen" className="flex items-center gap-1 text-xs text-accent font-medium hover:underline">
+                Zur Abrechnung <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
 
           {/* Gamification Widget */}
-          <div className="lg:col-span-4 glass-card rounded-2xl p-5">
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Dein Level</h2>
@@ -483,9 +491,11 @@ export default function Dashboard() {
                 <p className="text-muted-foreground">Noch 2.800 XP bis Level 5</p>
               </div>
             </div>
-            <Link to="/auswertungen" className="flex items-center gap-1 text-xs text-accent font-medium mt-4 hover:underline">
-              Auswertungen & Ranking <ArrowRight className="h-3 w-3" />
-            </Link>
+            <div className="mt-auto pt-3">
+              <Link to="/auswertungen" className="flex items-center gap-1 text-xs text-accent font-medium hover:underline">
+                Auswertungen & Ranking <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
         </div>
 

@@ -328,14 +328,30 @@ export default function Auswertungen() {
   const currentB2CStufe = getB2CStufe(MY_B2C_INSERATE_QUARTAL);
   const currentB2BStufe = getB2BStufe(MY_B2B_MONATSUMSATZ);
 
+  const isVP = currentRoleId === "vertriebspartner";
+  const canViewAuswertungen = isAdmin || currentRoleId === "vertriebspartner";
+
   return (
     <CRMLayout>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg">
+      <div className={`p-6 lg:p-8 space-y-6 animate-fade-in min-h-screen dashboard-mesh-bg ${isVP ? "opacity-40 pointer-events-none select-none" : ""}`}>
+        {/* Entwurf-Banner für VP */}
+        {isVP && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+            <Badge variant="outline" className="text-sm px-4 py-2 border-dashed border-muted-foreground/40 text-muted-foreground bg-background shadow-lg">
+              🔒 Entwurf – Diese Seite wird bald freigeschaltet
+            </Badge>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <div className="w-10 h-1 rounded-full gradient-brand mb-1" />
-            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Auswertungen & Ranking</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Auswertungen & Ranking</h1>
+              {isAdmin && (
+                <Badge variant="outline" className="text-[9px] border-dashed border-muted-foreground/30 text-muted-foreground">Entwurf</Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mt-1">Vergleiche dich mit anderen Vertriebspartnern – sammle XP und Boni!</p>
           </div>
         </div>
@@ -775,10 +791,10 @@ export default function Auswertungen() {
                 key={a.id}
                 className={`rounded-xl p-4 border transition-all relative ${
                   a.draft
-                    ? "bg-muted/10 border-dashed border-border opacity-40"
+                    ? "border-dashed border-border opacity-40"
                     : a.unlocked
                     ? "bg-primary/5 border-primary/20 shadow-crm-sm"
-                    : "bg-muted/30 border-border"
+                    : "bg-primary/[0.02] border-primary/10"
                 }`}
               >
                 {a.draft && isAdmin && (
@@ -806,7 +822,7 @@ export default function Auswertungen() {
                   </div>
                 )}
                 <div className="flex items-start gap-3">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.draft ? "bg-muted text-muted-foreground" : a.unlocked ? "gradient-brand text-white" : "bg-secondary text-secondary-foreground"}`}>
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${a.draft ? "bg-muted text-muted-foreground" : a.unlocked ? "gradient-brand text-white" : "gradient-brand text-white opacity-50"}`}>
                     {ICON_MAP[a.iconName] || <Award className="h-5 w-5" />}
                   </div>
                   <div className="min-w-0">

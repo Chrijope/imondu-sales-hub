@@ -723,12 +723,14 @@ export default function Chat() {
                   activeChatId === chat.id ? "bg-background" : "hover:bg-background/60"
                 } ${chat.unread > 0 ? "bg-primary/[0.03]" : ""}`}
               >
-                {/* Avatar with pin indicator */}
+                {/* Avatar with pin/unread indicator */}
                 <div className="relative shrink-0">
                   <div className="h-10 w-10 rounded-full gradient-brand flex items-center justify-center text-xs font-bold text-primary-foreground">
                     {chat.initials}
                   </div>
-                  {chat.muted ? (
+                  {chat.unread > 0 && !chat.muted ? (
+                    <div className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[hsl(var(--success))] border-2 border-background" />
+                  ) : chat.muted ? (
                     <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-card border border-border flex items-center justify-center shadow-sm">
                       <MicOff className="h-2.5 w-2.5 text-muted-foreground" />
                     </div>
