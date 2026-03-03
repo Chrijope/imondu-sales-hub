@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import {
   ArrowLeft,
   Phone,
@@ -198,6 +199,8 @@ export default function LeadDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentRoleId } = useUserRole();
+  const isVertriebspartner = currentRoleId === "vertriebspartner";
   const baseLead = SAMPLE_LEADS.find((l) => l.id === id);
 
   const [leadOverrides, setLeadOverrides] = useState<Record<string, string>>(() => {
@@ -275,6 +278,17 @@ export default function LeadDetail() {
   const hasInserat = lead.status === "b2c_inserat";
   const inseratData = MOCK_INSERAT_DATA[lead.id];
 
+  const startBackofficeChat = () => {
+    const params = new URLSearchParams({
+      newChat: `Backoffice – ${name}`,
+      category: "intern",
+      leadId: lead.id,
+      leadName: name || "",
+      leadType: lead.type,
+    });
+    navigate(`/chat?${params.toString()}`);
+  };
+
   const actions = [
     { icon: StickyNote, label: "Notiz erstellen", color: "bg-primary text-primary-foreground" },
     { icon: Mail, label: "E-Mail schreiben", color: "bg-secondary text-secondary-foreground" },
@@ -282,11 +296,14 @@ export default function LeadDetail() {
     { icon: CheckSquare, label: "Aufgabe erstellen", color: "bg-secondary text-secondary-foreground" },
     { icon: CalendarDays, label: "Meeting erstellen", color: "bg-secondary text-secondary-foreground" },
     { icon: MessageSquare, label: "WhatsApp schreiben", color: "bg-success text-success-foreground" },
+    // VP: Chat mit Backoffice starten (mit Lead-Kontext); Admin: normaler Chat starten
     {
       icon: MessageSquare,
-      label: "Chat starten",
+      label: isVertriebspartner ? "Chat mit Backoffice" : "Chat starten",
       color: "bg-primary/10 text-primary border border-primary/20",
-      onClick: () => navigate(`/chat?newChat=${encodeURIComponent(name)}&category=${chatCategory}`),
+      onClick: isVertriebspartner
+        ? startBackofficeChat
+        : () => navigate(`/chat?newChat=${encodeURIComponent(name || "")}&category=${chatCategory}`),
     },
     { icon: PhoneCall, label: "Anruf protokollieren", color: "bg-secondary text-secondary-foreground" },
     { icon: Video, label: "Meeting protokollieren", color: "bg-secondary text-secondary-foreground" },

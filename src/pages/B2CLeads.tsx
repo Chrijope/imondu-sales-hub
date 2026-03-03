@@ -1,14 +1,16 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Search, Phone, Upload, Download, SlidersHorizontal, Filter, X, Home, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Search, Phone, Upload, Download, SlidersHorizontal, Filter, X, Home, Sparkles, Plus, Trash2, MessageSquare } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import CRMLayout from "@/components/CRMLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import Powerdialer from "@/components/Powerdialer";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, Lead } from "@/data/crm-data";
 import { getScoutedLeads, removeScoutedLead, isScoutedLead } from "@/utils/scouted-leads";
 import NewLeadDialog from "@/components/NewLeadDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,6 +115,8 @@ export default function B2CLeads() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { toast } = useToast();
+  const { currentRoleId } = useUserRole();
+  const isVertriebspartner = currentRoleId === "vertriebspartner";
   const [showDialer, setShowDialer] = useState(false);
   const [visibleCols, setVisibleCols] = useState<Set<string>>(
     new Set(ALL_COLUMNS.filter((c) => c.adminDefault).map((c) => c.key))
@@ -376,23 +380,49 @@ export default function B2CLeads() {
                           }`}
                         >
                           {visibleColumns.map((col) => (
-                            <td key={col.key} className="py-3 px-4">{getCellValue(lead, col.key)}</td>
+                          <td key={col.key} className="py-3 px-4">{getCellValue(lead, col.key)}</td>
                           ))}
-                          <td className="py-3 px-2 w-10">
-                            {isScoutedLead(lead.id) && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeScoutedLead(lead.id);
-                                  setScoutedLeads(getScoutedLeads().filter((l) => l.type === "b2c"));
-                                  toast({ title: "Lead entfernt", description: `${lead.firstName} ${lead.lastName} wurde gelöscht.` });
-                                }}
-                                className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                                title="Gescouteten Lead löschen"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
+                          <td className="py-3 px-2 w-20 text-right">
+                            <div className="flex items-center gap-1 justify-end">
+                              {isVertriebspartner && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const name = `${lead.firstName} ${lead.lastName}`;
+                                        const params = new URLSearchParams({
+                                          newChat: `Backoffice – ${name}`,
+                                          category: "intern",
+                                          leadId: lead.id,
+                                          leadName: name,
+                                          leadType: "b2c",
+                                        });
+                                        navigate(`/chat?${params.toString()}`);
+                                      }}
+                                      className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                      <MessageSquare className="h-3.5 w-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="left" className="text-xs">Chat mit Backoffice</TooltipContent>
+                                </Tooltip>
+                              )}
+                              {isScoutedLead(lead.id) && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeScoutedLead(lead.id);
+                                    setScoutedLeads(getScoutedLeads().filter((l) => l.type === "b2c"));
+                                    toast({ title: "Lead entfernt", description: `${lead.firstName} ${lead.lastName} wurde gelöscht.` });
+                                  }}
+                                  className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                  title="Gescouteten Lead löschen"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
