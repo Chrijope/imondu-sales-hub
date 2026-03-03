@@ -365,6 +365,16 @@ export default function LeadDetail() {
                 </Tooltip>
               ))}
             </div>
+            {/* Prominent Chat Button */}
+            <button
+              onClick={isVertriebspartner
+                ? startBackofficeChat
+                : () => navigate(`/chat?newChat=${encodeURIComponent(name || "")}&category=${chatCategory}`)}
+              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20 text-sm font-medium hover:bg-primary/20 transition-colors"
+            >
+              <MessageSquare className="h-4 w-4" />
+              {isVertriebspartner ? "Chat mit Backoffice starten" : "Chat starten"}
+            </button>
           </div>
           <button className="p-2 rounded-lg border border-border hover:bg-secondary transition-colors">
             <Edit3 className="h-4 w-4 text-muted-foreground" />

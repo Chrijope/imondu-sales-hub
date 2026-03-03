@@ -118,9 +118,14 @@ export default function B2CLeads() {
   const { currentRoleId } = useUserRole();
   const isVertriebspartner = currentRoleId === "vertriebspartner";
   const [showDialer, setShowDialer] = useState(false);
-  const [visibleCols, setVisibleCols] = useState<Set<string>>(
-    new Set(ALL_COLUMNS.filter((c) => c.adminDefault).map((c) => c.key))
-  );
+  const STORAGE_KEY_B2C_COLS = "b2c-visible-columns";
+  const [visibleCols, setVisibleCols] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_B2C_COLS);
+      if (saved) return new Set(JSON.parse(saved));
+    } catch {}
+    return new Set(ALL_COLUMNS.filter((c) => c.adminDefault).map((c) => c.key));
+  });
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showNewLead, setShowNewLead] = useState(false);
@@ -187,6 +192,7 @@ export default function B2CLeads() {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
+      localStorage.setItem(STORAGE_KEY_B2C_COLS, JSON.stringify([...next]));
       return next;
     });
   };
@@ -344,25 +350,15 @@ export default function B2CLeads() {
                     <thead>
                       <tr className="border-b border-border bg-secondary/30">
                         {visibleColumns.map((col) => (
-                          <th key={col.key} className="text-left py-2 px-4">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                                {col.label}
-                                {col.adminDefault ? (
-                                  <span className="text-[8px] px-1 py-0.5 rounded bg-muted text-muted-foreground">Fix</span>
-                                ) : (
-                                  <span className="text-[8px] px-1 py-0.5 rounded bg-primary/10 text-primary">+</span>
-                                )}
-                              </span>
-                              <input
-                                type="text"
-                                placeholder="Filter..."
-                                value={columnFilters[col.key] || ""}
-                                onChange={(e) => setColFilter(col.key, e.target.value)}
-                                className="w-full px-1.5 py-1 rounded border border-border/60 bg-background text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                          <th key={col.key} className="text-left py-3 px-4">
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                              {col.label}
+                              {col.adminDefault ? (
+                                <span className="text-[8px] px-1 py-0.5 rounded bg-muted text-muted-foreground">Fix</span>
+                              ) : (
+                                <span className="text-[8px] px-1 py-0.5 rounded bg-primary/10 text-primary">+</span>
+                              )}
+                            </span>
                           </th>
                         ))}
                       </tr>
