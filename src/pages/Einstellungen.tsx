@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Camera, Save, Key, Eye, EyeOff, Edit3, Upload, CheckCircle2, Clock, AlertCircle, FileText, X, ChevronRight, GraduationCap } from "lucide-react";
+import { Camera, Save, Key, Eye, EyeOff, Edit3, Upload, CheckCircle2, Clock, AlertCircle, FileText, X, ChevronRight, GraduationCap, Users, QrCode, MessageCircle } from "lucide-react";
+import qrCodeImg from "@/assets/qr-codes/imondu-qa-channel.png";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -105,6 +106,44 @@ const REQUIRED_DOCUMENTS: RequiredDoc[] = [
   { id: "dsgvo", label: "DSGVO-Vereinbarung", description: "Datenschutz-Grundverordnung Einwilligung und Auftragsverarbeitung", required: true },
 ];
 
+// --- Chat groups per role ---
+interface ChatGroup {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+function getRelevantChatGroups(roleId: string): ChatGroup[] {
+  const allGroups: ChatGroup[] = [
+    { id: "allgemein", name: "Allgemein & Austausch", description: "Allgemeiner Austausch im Team", icon: "💬" },
+    { id: "vertrieb-daily", name: "Vertrieb – Daily Operations", description: "Tägliche Abstimmung im Vertrieb", icon: "📊" },
+    { id: "sales-training", name: "Sales Training & Skripte", description: "Verkaufstraining und Gesprächsleitfäden", icon: "🎯" },
+    { id: "deals", name: "Deals & Abschlüsse", description: "Erfolge und aktuelle Deals", icon: "🤝" },
+    { id: "marketing-vertrieb", name: "Marketing & Vertrieb", description: "Abstimmung Marketing und Vertrieb", icon: "📢" },
+    { id: "strategie", name: "Strategie & Wachstum", description: "Strategische Planung und Wachstum", icon: "📈" },
+    { id: "ankuendigungen", name: "Ankündigungen / Geschäftsleitung", description: "Offizielle Ankündigungen", icon: "📣" },
+    { id: "bugs", name: "Bugs & IT-Support", description: "Technische Probleme und IT-Support", icon: "🐛" },
+    { id: "kooperationen", name: "Kooperationen & Partner", description: "Partnerschaften und Kooperationen", icon: "🤝" },
+    { id: "produkt", name: "Produkt & IT", description: "Produktentwicklung und IT", icon: "💻" },
+  ];
+
+  const roleGroupMap: Record<string, string[]> = {
+    inhaber: allGroups.map(g => g.id),
+    admin: allGroups.map(g => g.id),
+    testaccount: allGroups.map(g => g.id),
+    vertriebsleiter: ["allgemein", "vertrieb-daily", "sales-training", "deals", "marketing-vertrieb", "strategie", "ankuendigungen", "bugs", "kooperationen"],
+    vertriebspartner: ["allgemein", "vertrieb-daily", "sales-training", "deals", "ankuendigungen", "bugs"],
+    marketing: ["allgemein", "marketing-vertrieb", "strategie", "ankuendigungen", "produkt"],
+    backoffice: ["allgemein", "ankuendigungen", "bugs", "produkt"],
+    buchhaltung: ["allgemein", "deals", "ankuendigungen"],
+    hr: ["allgemein", "ankuendigungen", "strategie"],
+  };
+
+  const allowedIds = roleGroupMap[roleId] || ["allgemein", "ankuendigungen"];
+  return allGroups.filter(g => allowedIds.includes(g.id));
+}
+
 // --- Onboarding steps ---
 interface OnboardingStep {
   id: string;
@@ -121,12 +160,13 @@ function getOnboardingSteps(roleId: string): OnboardingStep[] {
     { id: "email_setup", label: "E-Mail einrichten", description: "Richte deine geschäftliche E-Mail ein", tab: "email" },
     { id: "kalender", label: "Kalender verbinden", description: "Verbinde deinen Kalender", tab: "kalender" },
   ];
-  // Gewerbedaten only for Vertriebspartner
   if (roleId === "vertriebspartner") {
     base.push({ id: "gewerbe", label: "Gewerbedaten hinterlegen", description: "Trage deine Unternehmensdaten ein", tab: "gewerbe" });
   }
   base.push({ id: "finanzen", label: "Steuer & Bankdaten", description: "Hinterlege deine Steuer- und Bankdaten", tab: "finanzen" });
   base.push({ id: "unterlagen", label: "Unterlagen hochladen", description: "Lade alle Pflichtdokumente hoch", tab: "unterlagen" });
+  // Chat groups step
+  base.push({ id: "gruppen", label: "Gruppen beitreten", description: "Tritt den relevanten Chat-Gruppen bei", tab: "gruppen" });
   // Academy course: NOT for Admin/Inhaber
   if (roleId !== "admin" && roleId !== "inhaber") {
     base.push({ id: "academy", label: "Academy – Onboarding-Kurs", description: "Schließe den Backoffice-Kurs ab & erhalte dein Zertifikat", tab: "academy" });
@@ -142,6 +182,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: "gewerbe", label: "Gewerbedaten hinterlegen", description: "Trage deine Unternehmensdaten ein", tab: "gewerbe" },
   { id: "finanzen", label: "Steuer & Bankdaten", description: "Hinterlege deine Steuer- und Bankdaten", tab: "finanzen" },
   { id: "unterlagen", label: "Unterlagen hochladen", description: "Lade alle Pflichtdokumente hoch", tab: "unterlagen" },
+  { id: "gruppen", label: "Gruppen beitreten", description: "Tritt den relevanten Chat-Gruppen bei", tab: "gruppen" },
   { id: "academy", label: "Academy – Onboarding-Kurs", description: "Schließe den Backoffice-Kurs ab & erhalte dein Zertifikat", tab: "academy" },
 ];
 
@@ -203,6 +244,9 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
   // Onboarding state
   const [completedSteps, setCompletedSteps] = useState<string[]>(["passwort"]);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+
+  // Chat groups state
+  const [joinedGroups, setJoinedGroups] = useState<string[]>([]);
 
   // Role-specific settings for Eigentümer and Entwickler
   if (currentRoleId === "eigentuemer") {
@@ -663,6 +707,7 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
               ...(showGewerbedaten ? [{ value: "gewerbe", label: "Gewerbedaten" }] : []),
               { value: "finanzen", label: "Steuer & Bank" },
               { value: "unterlagen", label: "Unterlagen" },
+              { value: "gruppen", label: "Gruppen" },
               { value: "benachrichtigungen", label: "Benachrichtigungen" },
               { value: "protokoll", label: "Protokoll" },
               { value: "sicherheit", label: "Sicherheit" },
@@ -1099,6 +1144,101 @@ Geschäftsführer: Max Mustermann | AG Berlin HRB 123456</p>`);
                 </Button>
               </div>
             )}
+          </TabsContent>
+
+          {/* ── GRUPPEN ── */}
+          <TabsContent value="gruppen" className="space-y-6 mt-0">
+            <Separator />
+            <SectionBlock title="Chat-Gruppen beitreten" description="Tritt den für deine Rolle relevanten Gruppen bei, um das Backoffice vollständig freizuschalten.">
+              <div className="space-y-6 max-w-2xl">
+                {/* QR Code */}
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 flex flex-col sm:flex-row items-center gap-6">
+                  <div className="shrink-0">
+                    <img src={qrCodeImg} alt="QR-Code Gruppen beitreten" className="h-32 w-32 rounded-lg border border-border bg-white p-1" />
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h4 className="font-bold text-foreground flex items-center gap-2">
+                      <QrCode className="h-4 w-4 text-primary" /> QR-Code scannen
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Scanne den QR-Code mit deinem Smartphone, um den relevanten Chat-Gruppen beizutreten. Bestätige anschließend unten jede Gruppe einzeln.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Group list */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" /> Deine relevanten Gruppen ({getRelevantChatGroups(currentRoleId).length})
+                  </h4>
+                  {getRelevantChatGroups(currentRoleId).map((group) => {
+                    const isJoined = joinedGroups.includes(group.id);
+                    return (
+                      <div
+                        key={group.id}
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                          isJoined
+                            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5"
+                            : "border-border bg-card hover:border-primary/30"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{group.icon}</span>
+                          <div>
+                            <p className={`text-sm font-semibold ${isJoined ? "text-[hsl(var(--success))]" : "text-foreground"}`}>{group.name}</p>
+                            <p className="text-xs text-muted-foreground">{group.description}</p>
+                          </div>
+                        </div>
+                        {isJoined ? (
+                          <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-0 gap-1 text-xs">
+                            <CheckCircle2 className="h-3 w-3" /> Beigetreten
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-xs"
+                            onClick={() => {
+                              setJoinedGroups(prev => [...prev, group.id]);
+                              toast({ title: "Gruppe beigetreten ✓", description: `Du bist "${group.name}" beigetreten.` });
+                              // Check if all groups joined → mark onboarding step
+                              const allGroupIds = getRelevantChatGroups(currentRoleId).map(g => g.id);
+                              const newJoined = [...joinedGroups, group.id];
+                              if (allGroupIds.every(id => newJoined.includes(id))) {
+                                if (!completedSteps.includes("gruppen")) {
+                                  setCompletedSteps(prev => [...prev, "gruppen"]);
+                                  toast({ title: "Schritt abgeschlossen! 🎉", description: "Du bist allen relevanten Gruppen beigetreten." });
+                                }
+                              }
+                            }}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" /> Bestätigen
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Progress */}
+                <div className="flex items-center gap-3 pt-2">
+                  <Progress value={(joinedGroups.filter(id => getRelevantChatGroups(currentRoleId).some(g => g.id === id)).length / getRelevantChatGroups(currentRoleId).length) * 100} className="h-2 flex-1" />
+                  <span className="text-xs font-semibold text-primary whitespace-nowrap">
+                    {joinedGroups.filter(id => getRelevantChatGroups(currentRoleId).some(g => g.id === id)).length} / {getRelevantChatGroups(currentRoleId).length}
+                  </span>
+                </div>
+
+                {joinedGroups.filter(id => getRelevantChatGroups(currentRoleId).some(g => g.id === id)).length === getRelevantChatGroups(currentRoleId).length && (
+                  <div className="rounded-xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/5 p-4 flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Alle Gruppen beigetreten! 🎉</p>
+                      <p className="text-xs text-muted-foreground">Dieser Onboarding-Schritt ist abgeschlossen.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </SectionBlock>
           </TabsContent>
 
           {/* ── BENACHRICHTIGUNGEN ── */}
