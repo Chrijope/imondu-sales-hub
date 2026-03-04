@@ -83,7 +83,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
       "auswertungen", "statistik", "analysetool", "abrechnungen", "wettbewerb",
       "immorechner", "rechner", "marketing",
       "zielplanung", "teampartner", "nutzerverwaltung", "ansprechpartner",
-      "academy", "lexikon", "chat", "support-ki",
+      "academy", "lexikon", "chat", "support-ki", "einstellungen",
     ],
   },
   {
@@ -110,7 +110,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     menuItems: [
       "dashboard", "inbox", "email", "kalender", "news",
       "marketing", "analysetool",
-      "academy", "ansprechpartner",
+      "academy", "ansprechpartner", "einstellungen",
     ],
   },
   {
@@ -122,7 +122,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
       "dashboard", "inbox", "email", "kalender",
       "kontakte", "inserate", "entwickler", "entwickler-registrieren",
       "ansprechpartner", "unterlagen", "presentation",
-      "nutzerverwaltung",
+      "nutzerverwaltung", "einstellungen",
     ],
   },
   {
@@ -132,7 +132,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     fixed: true,
     menuItems: [
       "dashboard", "inbox", "kalender", "email",
-      "auswertungen", "abrechnungen", "wettbewerb",
+      "auswertungen", "abrechnungen", "wettbewerb", "einstellungen",
     ],
   },
   {
@@ -140,7 +140,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     name: "Individuell",
     color: "hsl(220, 10%, 46%)",
     fixed: false,
-    menuItems: ["dashboard", "inbox", "kalender"],
+    menuItems: ["dashboard", "inbox", "kalender", "einstellungen"],
   },
   {
     id: "eigentuemer",
@@ -175,7 +175,7 @@ export const DEFAULT_ROLES: RoleDef[] = [
     name: "HR",
     color: "hsl(320, 65%, 48%)",
     fixed: true,
-    menuItems: ["dashboard", "inbox", "email", "kalender", "bewerbungsmanagement", "ansprechpartner", "statistik", "chat"],
+    menuItems: ["dashboard", "inbox", "email", "kalender", "bewerbungsmanagement", "ansprechpartner", "statistik", "chat", "einstellungen"],
   },
 ];
 
