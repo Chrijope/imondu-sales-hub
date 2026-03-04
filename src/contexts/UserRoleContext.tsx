@@ -164,6 +164,13 @@ export const DEFAULT_ROLES: RoleDef[] = [
     menuItems: ["dashboard", "bewerber-portal", "chat", "einstellungen"],
   },
   {
+    id: "testaccount",
+    name: "Testaccount",
+    color: "hsl(45, 93%, 47%)",
+    fixed: true,
+    menuItems: ALL_MENU_IDS,
+  },
+  {
     id: "hr",
     name: "HR",
     color: "hsl(320, 65%, 48%)",
