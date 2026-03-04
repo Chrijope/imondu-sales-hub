@@ -168,35 +168,37 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
             Was möglich ist, wenn <span className="text-primary">Potenzial erkannt</span> wird
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto items-stretch">
           {[
-            { title: "Sanierung", zeit: "6 Monate", kosten: "400.000 €", vorher: "600.000 €", nachher: "1.050.000 €", mehrwert: "450.000 €" },
-            { title: "Grundrissoptimierung", zeit: "2 Monate", kosten: "150.000 €", vorher: "600.000 €", nachher: "850.000 €", mehrwert: "250.000 €" },
-            { title: "Teilung & Neubau", zeit: "6 Monate", kosten: "500.000 €", vorher: "250.000 €", nachher: "950.000 €", mehrwert: "700.000 €" },
-            { title: "Umnutzung / Nachverdichtung", zeit: "6 Monate", kosten: "400.000 €", vorher: "1.000.000 €", nachher: "2.600.000 €", mehrwert: "1.200.000 €" },
+            { title: "Sanierung", zeit: "6 Monate", investition: "400.000 €", vorher: "600.000 €", nachher: "1.050.000 €", wertsteigerung: "450.000 €" },
+            { title: "Grundrissoptimierung", zeit: "2 Monate", investition: "150.000 €", vorher: "600.000 €", nachher: "850.000 €", wertsteigerung: "250.000 €" },
+            { title: "Teilung & Neubau", zeit: "6 Monate", investition: "500.000 €", vorher: "250.000 €", nachher: "950.000 €", wertsteigerung: "700.000 €" },
+            { title: "Umnutzung / Nachverdichtung", zeit: "6 Monate", investition: "400.000 €", vorher: "1.000.000 €", nachher: "2.600.000 €", wertsteigerung: "1.200.000 €" },
           ].map((ex, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-              <div className="gradient-brand px-5 py-3">
-                <h3 className="text-white font-bold text-lg">{ex.title}</h3>
-                <p className="text-white/70 text-xs">Entwicklungszeit: {ex.zeit}</p>
+            <div key={i} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col">
+              <div className="gradient-brand px-4 py-3">
+                <h3 className="text-white font-bold text-sm leading-tight min-h-[2.5rem] flex items-center">{ex.title}</h3>
+                <p className="text-white/70 text-[10px]">Entwicklungszeit: {ex.zeit}</p>
               </div>
-              <div className="p-5 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Vor Entwicklung</span>
-                  <span className="font-bold text-foreground">{ex.vorher}</span>
+              <div className="p-4 flex flex-col flex-1">
+                <div className="space-y-2.5 flex-1">
+                  <div className="flex justify-between items-baseline text-sm gap-2">
+                    <span className="text-muted-foreground text-xs">Vor Entwicklung</span>
+                    <span className="font-bold text-foreground whitespace-nowrap">{ex.vorher}</span>
+                  </div>
+                  <div className="flex justify-between items-baseline text-sm gap-2">
+                    <span className="text-muted-foreground text-xs">Investitionskosten</span>
+                    <span className="text-foreground whitespace-nowrap">{ex.investition}</span>
+                  </div>
+                  <hr className="border-border" />
+                  <div className="flex justify-between items-baseline text-sm gap-2">
+                    <span className="text-muted-foreground text-xs">Nach Entwicklung</span>
+                    <span className="font-bold text-primary whitespace-nowrap">{ex.nachher}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Kosten</span>
-                  <span className="text-foreground">{ex.kosten}</span>
-                </div>
-                <hr className="border-border" />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Nach Entwicklung</span>
-                  <span className="font-bold text-primary text-lg">{ex.nachher}</span>
-                </div>
-                <div className="bg-primary/10 rounded-lg p-3 text-center">
-                  <p className="text-xs text-muted-foreground">Mehrwert</p>
-                  <p className="text-xl font-bold text-primary">+{ex.mehrwert}</p>
+                <div className="bg-primary/10 rounded-lg p-3 text-center mt-3">
+                  <p className="text-[10px] text-muted-foreground">Wertsteigerung</p>
+                  <p className="text-lg font-bold text-primary">+{ex.wertsteigerung}</p>
                 </div>
               </div>
             </div>
