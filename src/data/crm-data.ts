@@ -37,6 +37,7 @@ export interface Lead {
   notes: string;
   phone?: string;
   email?: string;
+  lostReason?: string;
 
   // B2C – Immobilieneigentümer
   firstName?: string;
@@ -270,5 +271,43 @@ export const SAMPLE_LEADS: Lead[] = [
     phone: '+49 511 8889900', email: 'krause@maler-krause.de',
     website: 'www.maler-krause.de', region: 'Niedersachsen',
     companySize: '10-20', partnerStatus: 'Interessent',
+  },
+  // B2C – Verloren
+  {
+    id: '17', type: 'b2c', status: 'b2c_lost', priority: 'low', assignee: 'Max Müller', source: 'Website',
+    createdAt: '2026-01-10', updatedAt: '2026-01-28', value: 0, notes: '',
+    firstName: 'Uwe', lastName: 'Fischer', phone: '+49 162 7778899', email: 'u.fischer@web.de',
+    address: 'Gartenstr. 5, 04109 Leipzig',
+    objekttyp: 'Einfamilienhaus', objektAdresse: 'Gartenstr. 5, 04109 Leipzig',
+    baujahr: 1990, wohnflaeche: 120, sanierungsstatus: 'Teilsaniert', eigentuemertyp: 'Selbstnutzer', interesse: 'Sanierung',
+    lostReason: 'Kein Budget für Sanierung vorhanden',
+  },
+  {
+    id: '18', type: 'b2c', status: 'b2c_lost', priority: 'low', assignee: 'Jan Fischer', source: 'Google Ads',
+    createdAt: '2026-01-05', updatedAt: '2026-01-20', value: 0, notes: '',
+    firstName: 'Monika', lastName: 'Lehmann', phone: '+49 175 3334455', email: 'm.lehmann@email.de',
+    address: 'Hauptstr. 78, 01067 Dresden',
+    objekttyp: 'Wohnung', objektAdresse: 'Hauptstr. 78, 01067 Dresden',
+    baujahr: 2010, wohnflaeche: 65, sanierungsstatus: 'Vollsaniert', eigentuemertyp: 'Vermieter', interesse: 'Verkauf',
+    lostReason: 'Anderer Anbieter gewählt',
+  },
+  // B2B – Verloren
+  {
+    id: '19', type: 'b2b', status: 'b2b_lost', priority: 'low', assignee: 'Lisa Weber', source: 'LinkedIn',
+    createdAt: '2026-01-08', updatedAt: '2026-01-25', value: 0, notes: '',
+    companyName: 'Bau & Dach Müller', gewerk: 'Dachdecker',
+    contactPerson: 'Stefan Müller', position: 'Inhaber',
+    phone: '+49 341 9990011', email: 's.mueller@bau-dach.de',
+    region: 'Sachsen', companySize: '5-10', partnerStatus: 'Inaktiv',
+    lostReason: 'Zu hohe Mitgliedschaftskosten',
+  },
+  {
+    id: '20', type: 'b2b', status: 'b2b_lost', priority: 'low', assignee: 'Max Müller', source: 'Cold Outreach',
+    createdAt: '2026-01-12', updatedAt: '2026-02-01', value: 0, notes: '',
+    companyName: 'HausWärme GmbH', gewerk: 'SHK',
+    contactPerson: 'Claudia Berger', position: 'Geschäftsführerin',
+    phone: '+49 201 5556677', email: 'c.berger@hauswaerme.de',
+    region: 'NRW', companySize: '20-50', partnerStatus: 'Inaktiv',
+    lostReason: 'Kein Interesse an Plattform-Modell',
   },
 ];

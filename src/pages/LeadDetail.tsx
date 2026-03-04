@@ -33,8 +33,33 @@ import {
 } from "lucide-react";
 import CRMLayout from "@/components/CRMLayout";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SAMPLE_LEADS, B2C_PIPELINE_STAGES, B2B_PIPELINE_STAGES, Lead } from "@/data/crm-data";
 import { useToast } from "@/hooks/use-toast";
+
+export const LOST_REASONS_B2C = [
+  "Kein Budget vorhanden",
+  "Anderer Anbieter gewählt",
+  "Kein Interesse mehr",
+  "Nicht erreichbar / keine Rückmeldung",
+  "Zeitpunkt nicht passend",
+  "Anforderungen nicht erfüllbar",
+  "Sonstiger Grund",
+];
+
+export const LOST_REASONS_B2B = [
+  "Zu hohe Mitgliedschaftskosten",
+  "Kein Interesse an Plattform-Modell",
+  "Anderer Anbieter gewählt",
+  "Kapazitäten nicht vorhanden",
+  "Nicht erreichbar / keine Rückmeldung",
+  "Unternehmen aufgelöst",
+  "Sonstiger Grund",
+];
 
 const sampleActivities = [
   { type: "call" as const, desc: "Erstgespräch geführt – Interesse an Sanierungspaket", time: "Heute 11:30", by: "Max Müller" },
@@ -202,6 +227,11 @@ export default function LeadDetail() {
   const { currentRoleId } = useUserRole();
   const isVertriebspartner = currentRoleId === "vertriebspartner";
   const baseLead = SAMPLE_LEADS.find((l) => l.id === id);
+
+  // Lost reason dialog state
+  const [showLostDialog, setShowLostDialog] = useState(false);
+  const [lostReasonSelect, setLostReasonSelect] = useState("");
+  const [lostReasonText, setLostReasonText] = useState("");
 
   const [leadOverrides, setLeadOverrides] = useState<Record<string, string>>(() => {
     return getLeadOverrides()[id || ""] || {};
@@ -388,25 +418,103 @@ export default function LeadDetail() {
             {pipelineStages.map((stage, i) => {
               const isActive = stage.id === lead.status;
               const isPast = i < currentStageIndex;
+              const isLostStage = stage.id === "b2c_lost" || stage.id === "b2b_lost";
               return (
                 <div key={stage.id} className="flex items-center shrink-0">
                   {i > 0 && <span className="text-muted-foreground mx-0.5 text-xs">→</span>}
-                  <div
+                  <button
+                    onClick={() => {
+                      if (isLostStage && !isActive) {
+                        setShowLostDialog(true);
+                        setLostReasonSelect("");
+                        setLostReasonText("");
+                      }
+                    }}
                     className={`px-2.5 py-1 rounded text-[11px] font-medium border transition-all ${
                       isActive
                         ? "bg-warning text-warning-foreground border-warning shadow-sm"
                         : isPast
                         ? "bg-success/10 text-success border-success/20"
+                        : isLostStage
+                        ? "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20 cursor-pointer"
                         : "bg-card text-muted-foreground border-border"
                     }`}
                   >
                     {isPast && "✓ "}{stage.name}
-                  </div>
+                  </button>
                 </div>
               );
             })}
           </div>
+          {/* Show existing lost reason if lead is lost */}
+          {(lead.status === "b2c_lost" || lead.status === "b2b_lost") && lead.lostReason && (
+            <div className="mt-3 px-3 py-2 rounded-lg bg-destructive/5 border border-destructive/10">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-semibold text-destructive">Grund:</span> {lead.lostReason}
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Lost Reason Dialog */}
+        <Dialog open={showLostDialog} onOpenChange={setShowLostDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-base">
+                Lead als {lead.type === "b2c" ? "\"Kein Interesse\"" : "\"Verloren\""} markieren
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Grund auswählen <span className="text-destructive">*</span></Label>
+                <Select value={lostReasonSelect} onValueChange={setLostReasonSelect}>
+                  <SelectTrigger><SelectValue placeholder="Bitte Grund wählen…" /></SelectTrigger>
+                  <SelectContent>
+                    {(lead.type === "b2c" ? LOST_REASONS_B2C : LOST_REASONS_B2B).map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {lostReasonSelect === "Sonstiger Grund" && (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Grund beschreiben <span className="text-destructive">*</span></Label>
+                  <Textarea
+                    placeholder="Bitte den Grund genauer beschreiben…"
+                    value={lostReasonText}
+                    onChange={(e) => setLostReasonText(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowLostDialog(false)}>Abbrechen</Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  const reason = lostReasonSelect === "Sonstiger Grund" ? lostReasonText.trim() : lostReasonSelect;
+                  if (!reason) {
+                    toast({ title: "Grund erforderlich", description: "Bitte geben Sie einen Grund an, warum dieser Lead verloren wurde.", variant: "destructive" });
+                    return;
+                  }
+                  // Save via overrides
+                  if (id) {
+                    const allOverrides = getLeadOverrides();
+                    const existing = allOverrides[id] || {};
+                    allOverrides[id] = { ...existing, status: lead.type === "b2c" ? "b2c_lost" : "b2b_lost", lostReason: reason };
+                    saveLeadOverrides(allOverrides);
+                    setLeadOverrides(allOverrides[id]);
+                  }
+                  setShowLostDialog(false);
+                  toast({ title: "Status geändert", description: `Lead als ${lead.type === "b2c" ? "Kein Interesse" : "Verloren"} markiert. Grund: ${reason}` });
+                }}
+              >
+                Als verloren markieren
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
