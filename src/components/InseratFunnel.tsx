@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,9 @@ import {
   ClipboardList,
   BookOpen,
   Lightbulb,
+  Mail,
+  LogIn,
+  Copy,
 } from "lucide-react";
 
 const STEPS = [
@@ -154,7 +158,9 @@ function AccordionSection({
 
 export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     objekt: true, angaben: false, entwicklung: false,
     bilder: true, dokumente: false,
@@ -244,16 +250,14 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
     if (step > 1) setStep(step - 1);
   };
 
+  const isEigentuemer = form.inserierendeRolle === "eigentuemer" || form.inserierendeRolle === "teil-eigentuemer";
+  const isFremdInseriert = form.inserierendeRolle === "makler" || form.inserierendeRolle === "angehoeriger" || form.inserierendeRolle === "imondu-auftrag";
+
+  const generatedEmail = form.eigentuemerEmail || "eigentuemer@beispiel.de";
+  const generatedPassword = "Immo-" + Math.random().toString(36).slice(2, 8) + "!";
+
   const handleSubmit = () => {
-    const rolleLabel = INSERIERENDE_ROLLEN.find(r => r.id === form.inserierendeRolle)?.label || "";
-    const isFremdInseriert = form.inserierendeRolle === "makler" || form.inserierendeRolle === "angehoeriger" || form.inserierendeRolle === "imondu-auftrag";
-    toast({
-      title: "Inserat erstellt & Eigentümer-Zugang angelegt ✓",
-      description: isFremdInseriert
-        ? `"${form.titel}" wurde gespeichert (inseriert als ${rolleLabel}). Dashboard-Zugangsdaten werden per E-Mail an ${form.eigentuemerEmail} gesendet.`
-        : `"${form.titel}" wurde gespeichert. Dashboard-Zugangsdaten werden an ${form.eigentuemerEmail} gesendet.`,
-    });
-    onClose();
+    setSubmitted(true);
   };
 
   const simulateImageUpload = () => {
@@ -264,6 +268,92 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   const simulateDocUpload = (typ: string) => {
     update({ dokumente: [...form.dokumente, { typ, name: `${typ.toLowerCase()}.pdf` }] });
   };
+
+  if (submitted) {
+    return (
+      <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
+        <div className="max-w-lg mx-auto mt-12">
+          <div className="rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+            <div className="p-8 text-center space-y-5">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-display font-bold text-foreground">Inserat erfolgreich erstellt!</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  „{form.titel}" wurde als {form.objekttyp} angelegt.
+                </p>
+              </div>
+
+              {isEigentuemer ? (
+                /* Eigentümer inseriert selbst → Zugangsdaten direkt anzeigen */
+                <div className="space-y-4 text-left">
+                  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <LogIn className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold text-foreground">Ihre Zugangsdaten zum Eigentümer-Dashboard</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Bitte notieren Sie sich Ihre Zugangsdaten. Diese wurden zusätzlich an <strong>{generatedEmail}</strong> gesendet.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-[11px] text-muted-foreground">E-Mail</p>
+                          <p className="text-sm font-mono font-medium text-foreground">{generatedEmail}</p>
+                        </div>
+                        <button onClick={() => { navigator.clipboard.writeText(generatedEmail); toast({ title: "Kopiert!" }); }} className="text-muted-foreground hover:text-foreground">
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-[11px] text-muted-foreground">Passwort</p>
+                          <p className="text-sm font-mono font-medium text-foreground">{generatedPassword}</p>
+                        </div>
+                        <button onClick={() => { navigator.clipboard.writeText(generatedPassword); toast({ title: "Kopiert!" }); }} className="text-muted-foreground hover:text-foreground">
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => navigate("/login?role=eigentuemer")}
+                    className="w-full gap-2 gradient-brand border-0 text-primary-foreground font-semibold"
+                  >
+                    <LogIn className="h-4 w-4" /> Jetzt einloggen
+                  </Button>
+                </div>
+              ) : (
+                /* Fremd-inseriert → E-Mail-Hinweis */
+                <div className="space-y-4 text-left">
+                  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold text-foreground">Zugangsdaten per E-Mail versendet</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Die Zugangsdaten zum Eigentümer-Dashboard wurden automatisch an <strong>{generatedEmail}</strong> gesendet. 
+                      Der Eigentümer kann sich damit jederzeit einloggen und sein Inserat verwalten.
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-primary bg-primary/10 rounded-lg px-3 py-2">
+                      <Info className="h-3.5 w-3.5 shrink-0" />
+                      <span>Inseriert durch: {INSERIERENDE_ROLLEN.find(r => r.id === form.inserierendeRolle)?.label}</span>
+                    </div>
+                  </div>
+
+                  <Button onClick={onClose} className="w-full gap-2 gradient-brand border-0 text-primary-foreground font-semibold">
+                    <CheckCircle2 className="h-4 w-4" /> Zurück zur Übersicht
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg">
