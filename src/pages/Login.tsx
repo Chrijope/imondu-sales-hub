@@ -1,19 +1,25 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import imonduLogo from "@/assets/imondu-logo-full.png";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { setCurrentRoleId } = useUserRole();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const roleHint = searchParams.get("role");
+  const isEntwicklerLogin = roleHint === "entwickler";
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,10 +28,14 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    // Simulate login
     setTimeout(() => {
       setLoading(false);
-      toast({ title: "Willkommen!", description: "Du wurdest erfolgreich angemeldet." });
+      if (isEntwicklerLogin) {
+        setCurrentRoleId("entwickler");
+        toast({ title: "Willkommen!", description: "Sie sind jetzt als Entwickler eingeloggt." });
+      } else {
+        toast({ title: "Willkommen!", description: "Du wurdest erfolgreich angemeldet." });
+      }
       navigate("/");
     }, 1000);
   };
@@ -34,7 +44,6 @@ export default function Login() {
     <div className="min-h-screen flex">
       {/* Left: Branding side */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Mesh gradient background */}
         <div className="absolute inset-0 dashboard-mesh-bg" />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/10" />
         
@@ -45,27 +54,42 @@ export default function Login() {
           
           <div className="space-y-6">
             <h1 className="text-4xl font-display font-bold text-foreground leading-tight">
-              Die Nr. 1 Plattform für<br />
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Immobilienentwicklung
-              </span>
+              {isEntwicklerLogin ? (
+                <>
+                  Willkommen im<br />
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Entwickler-Portal
+                  </span>
+                </>
+              ) : (
+                <>
+                  Die Nr. 1 Plattform für<br />
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Immobilienentwicklung
+                  </span>
+                </>
+              )}
             </h1>
             <p className="text-lg text-muted-foreground max-w-md">
-              Ob Eigentümer oder Entwickler – finden Sie den passenden Partner für Ihr Immobilienprojekt. Einfach, direkt und transparent.
+              {isEntwicklerLogin
+                ? "Loggen Sie sich ein, um Ihre Inserate, Anfragen und Ihr Profil zu verwalten."
+                : "Ob Eigentümer oder Entwickler – finden Sie den passenden Partner für Ihr Immobilienprojekt. Einfach, direkt und transparent."}
             </p>
             
-            <div className="flex gap-8 pt-4">
-              {[
-                { value: "2.500+", label: "Eigentümer" },
-                { value: "850+", label: "Entwickler" },
-                { value: "98%", label: "Zufriedenheit" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
-            </div>
+            {!isEntwicklerLogin && (
+              <div className="flex gap-8 pt-4">
+                {[
+                  { value: "2.500+", label: "Eigentümer" },
+                  { value: "850+", label: "Entwickler" },
+                  { value: "98%", label: "Zufriedenheit" },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -82,9 +106,20 @@ export default function Login() {
             <img src={imonduLogo} alt="IMONDU" className="h-10" />
           </div>
 
+          {isEntwicklerLogin && (
+            <div className="rounded-lg bg-primary/5 border border-primary/20 px-4 py-3 text-center">
+              <p className="text-sm font-medium text-primary">Entwickler-Login</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Melden Sie sich mit Ihren Zugangsdaten aus der Bestätigungsmail an.</p>
+            </div>
+          )}
+
           <div className="text-center lg:text-left">
-            <h2 className="text-2xl font-display font-bold text-foreground">Willkommen zurück</h2>
-            <p className="text-sm text-muted-foreground mt-1">Melde dich in deinem Account an.</p>
+            <h2 className="text-2xl font-display font-bold text-foreground">
+              {isEntwicklerLogin ? "Einloggen" : "Willkommen zurück"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isEntwicklerLogin ? "Geben Sie Ihre Zugangsdaten ein." : "Melde dich in deinem Account an."}
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -93,7 +128,7 @@ export default function Login() {
               <Input
                 id="email"
                 type="email"
-                placeholder="name@beispiel.de"
+                placeholder={isEntwicklerLogin ? "vorname.nachname@entwickler-imondu.de" : "name@beispiel.de"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-11"
@@ -142,7 +177,9 @@ export default function Login() {
 
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              Noch keinen Zugang? Wende dich an deinen Administrator.
+              {isEntwicklerLogin
+                ? "Noch nicht registriert? Wenden Sie sich an Ihren IMONDU Vertriebspartner."
+                : "Noch keinen Zugang? Wende dich an deinen Administrator."}
             </p>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CRMLayout from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ import {
   MapPin,
   FileText,
   Image as ImageIcon,
+  LogIn,
 } from "lucide-react";
 
 const FUNNEL_STEPS = [
@@ -216,7 +218,9 @@ function PlanSummaryPrice({ mitgliedschaft, gutscheinCode, applied }: { mitglied
 
 export default function EntwicklerRegistrieren() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
   const [codeApplied, setCodeApplied] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     firma: true, profil: false, info: false, referenz: false,
@@ -282,7 +286,7 @@ export default function EntwicklerRegistrieren() {
       toast({ title: "Zustimmung erforderlich", description: "Bitte alle Zustimmungen erteilen.", variant: "destructive" });
       return;
     }
-    toast({ title: "Zahlungspflichtig bestellt ✓", description: `${form.firmenname || "Entwickler"} – ${form.mitgliedschaft === "premium" ? "Premium⁺" : "Basis"} Mitgliedschaft wurde gebucht.` });
+    setSubmitted(true);
   };
 
   const toggleTag = (field: string, value: string) => {
@@ -297,6 +301,70 @@ export default function EntwicklerRegistrieren() {
   const simulateImageUpload = () => {
     update("refBilder", [...form.refBilder, `referenz_${form.refBilder.length + 1}.jpg`]);
   };
+
+  const generatedEmail = form.email || `${(form.vorname || "max").toLowerCase()}.${(form.nachname || "mustermann").toLowerCase()}@entwickler-imondu.de`;
+  const generatedPassword = "Ent" + Math.random().toString(36).slice(2, 8) + "!";
+
+  if (submitted) {
+    return (
+      <CRMLayout>
+        <div className="p-6 lg:p-8 animate-fade-in min-h-screen dashboard-mesh-bg flex items-center justify-center">
+          <div className="max-w-lg w-full space-y-6">
+            {/* Success card */}
+            <div className="rounded-2xl border border-border bg-card p-8 text-center space-y-5 shadow-lg">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-2xl font-display font-bold text-foreground">
+                Registrierung erfolgreich!
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Ihre {form.mitgliedschaft === "premium" ? "Premium⁺" : "Basis"} Mitgliedschaft für <strong>{form.firmenname || "Ihr Unternehmen"}</strong> wurde erfolgreich gebucht.
+              </p>
+
+              {/* Simulated email confirmation */}
+              <div className="rounded-xl border border-border bg-muted/30 p-5 text-left space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <FileText className="h-4 w-4 text-primary" />
+                  Bestätigungsmail gesendet
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Wir haben eine E-Mail mit Ihren Zugangsdaten an <strong>{generatedEmail}</strong> gesendet. Bitte prüfen Sie auch Ihren Spam-Ordner.
+                </p>
+                <hr className="border-border" />
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Ihre Zugangsdaten (Demo):</p>
+                  <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+                    <span className="text-muted-foreground text-xs">E-Mail:</span>
+                    <span className="font-mono text-xs text-foreground">{generatedEmail}</span>
+                    <span className="text-muted-foreground text-xs">Passwort:</span>
+                    <span className="font-mono text-xs text-foreground">{generatedPassword}</span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Bitte ändern Sie Ihr Passwort nach dem ersten Login in den Einstellungen.
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-col gap-3 pt-2">
+                <Button
+                  className="w-full h-11 gradient-brand border-0 text-primary-foreground font-semibold gap-2"
+                  onClick={() => navigate("/login?role=entwickler")}
+                >
+                  <LogIn className="h-4 w-4" />
+                  Jetzt einloggen
+                </Button>
+                <p className="text-[10px] text-muted-foreground">
+                  Sie können sich ab sofort mit den Zugangsdaten aus der Bestätigungsmail einloggen.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CRMLayout>
+    );
+  }
 
   return (
     <CRMLayout>
