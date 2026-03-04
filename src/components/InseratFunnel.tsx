@@ -1045,9 +1045,15 @@ function HintSidebar({ step }: { step: number }) {
       title: "Fast geschafft!",
       text: "Überprüfen Sie Ihre Angaben und erstellen Sie Ihr Inserat. Sie können es jederzeit nachträglich bearbeiten.",
     },
+    6: {
+      title: "Übersicht & Absenden",
+      text: "Prüfen Sie alle Angaben nochmals. Nach dem Erstellen wird automatisch ein Eigentümer-Zugang angelegt.",
+    },
   };
 
   const hint = hints[step];
+
+  if (!hint) return null;
 
   return (
     <div className="hidden lg:block">
