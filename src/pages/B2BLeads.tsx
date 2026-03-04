@@ -33,6 +33,7 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "region", label: "Region", adminDefault: true },
   { key: "status", label: "Status", adminDefault: true },
   { key: "prioritaet", label: "Priorität", adminDefault: true },
+  { key: "lostReason", label: "Verloren Grund", adminDefault: false },
   { key: "quelle", label: "Quelle", adminDefault: false },
   { key: "wert", label: "Wert", adminDefault: true },
   { key: "verantwortlich", label: "Verantwortlich", adminDefault: false },
@@ -168,7 +169,19 @@ export default function B2BLeads() {
   const [showNewLead, setShowNewLead] = useState(false);
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
+  const isVerloren = subPage === "verloren";
   const showSidebar = subPage === "gewonnen" || subPage === "bestand";
+
+  // Auto-add lostReason column when on verloren page
+  useEffect(() => {
+    if (isVerloren && !visibleCols.has("lostReason")) {
+      setVisibleCols((prev) => {
+        const next = new Set(prev);
+        next.add("lostReason");
+        return next;
+      });
+    }
+  }, [isVerloren]);
   const [scoutedLeads, setScoutedLeads] = useState<Lead[]>(() => getScoutedLeads().filter((l) => l.type === "b2b"));
 
   useEffect(() => {
@@ -258,6 +271,7 @@ export default function B2BLeads() {
           lead.priority === "high" ? "bg-destructive" : lead.priority === "medium" ? "bg-warning" : "bg-muted-foreground"
         }`} />
       );
+      case "lostReason": return <span className="text-muted-foreground text-xs">{lead.lostReason || "–"}</span>;
       case "quelle": return <span className="text-muted-foreground">{lead.source}</span>;
       case "wert": return <span className="font-semibold text-foreground text-right">€{lead.value.toLocaleString("de-DE")}</span>;
       case "verantwortlich": return <span className="text-muted-foreground">{lead.assignee}</span>;

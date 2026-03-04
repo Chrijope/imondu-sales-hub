@@ -34,6 +34,7 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "interesse", label: "Interesse", adminDefault: true },
   { key: "status", label: "Status", adminDefault: true },
   { key: "prioritaet", label: "Priorität", adminDefault: true },
+  { key: "lostReason", label: "Verloren Grund", adminDefault: false },
   { key: "quelle", label: "Quelle", adminDefault: false },
   { key: "verantwortlich", label: "Verantwortlich", adminDefault: false },
   { key: "telefon", label: "Telefon", adminDefault: false },
@@ -139,7 +140,19 @@ export default function B2CLeads() {
   }, [searchParams]);
 
   const config = SUB_PAGE_CONFIG[subPage || ""] || SUB_PAGE_CONFIG["bestand"];
+  const isVerloren = subPage === "verloren";
   const showSidebar = subPage === "gewonnen" || subPage === "bestand";
+
+  // Auto-add lostReason column when on verloren page
+  useEffect(() => {
+    if (isVerloren && !visibleCols.has("lostReason")) {
+      setVisibleCols((prev) => {
+        const next = new Set(prev);
+        next.add("lostReason");
+        return next;
+      });
+    }
+  }, [isVerloren]);
   const [scoutedLeads, setScoutedLeads] = useState<Lead[]>(() => getScoutedLeads().filter((l) => l.type === "b2c"));
 
   useEffect(() => {
@@ -221,6 +234,7 @@ export default function B2CLeads() {
           lead.priority === "high" ? "bg-destructive" : lead.priority === "medium" ? "bg-warning" : "bg-muted-foreground"
         }`} />
       );
+      case "lostReason": return <span className="text-muted-foreground text-xs">{lead.lostReason || "–"}</span>;
       case "quelle": return <span className="text-muted-foreground">{lead.source}</span>;
       case "verantwortlich": return <span className="text-muted-foreground">{lead.assignee}</span>;
       case "telefon": return <span className="text-muted-foreground text-xs">{lead.phone}</span>;
