@@ -161,7 +161,7 @@ const sectionTeam = [
 
 // ── Draft (Coming Soon) menu IDs ──
 const DRAFT_MENU_IDS = new Set([
-  "automations", "statistik", "abrechnungen", "wettbewerb",
+  "automations", "statistik", "auswertungen", "abrechnungen", "wettbewerb",
   "lead-scouring", "webinar", "support-ki", "teampartner",
   "berater-microseite", "helpdesk", "shop",
 ]);
