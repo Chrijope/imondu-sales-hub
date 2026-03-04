@@ -78,7 +78,7 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         <img src={imonduLogoDark} alt="IMONDU" className="h-8 object-contain" />
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" className="text-xs">Wie funktioniert's?</Button>
-          <Button size="sm" className="gradient-brand border-0 text-primary-foreground text-xs">Jetzt kostenlos inserieren</Button>
+          <Button size="sm" className="gradient-brand border-0 text-primary-foreground text-xs" asChild><a href="/analysetool">Jetzt Potenzial prüfen</a></Button>
         </div>
       </nav>
 
@@ -97,8 +97,8 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
             „Klarheit kostet nichts. Unwissen kann teuer sein."
           </p>
           <div className="flex items-center gap-4 mt-8">
-            <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg">
-              Jetzt kostenlos inserieren <ArrowRight className="ml-2 h-5 w-5" />
+            <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
+              <a href="/analysetool">Kostenlose Potenzialanalyse starten <ArrowRight className="ml-2 h-5 w-5" /></a>
             </Button>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" /> <span>In nur 3 Minuten</span>
@@ -154,6 +154,11 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         <p className="text-center text-muted-foreground text-sm mt-8 max-w-xl mx-auto italic">
           Dieses Wertsteigerungspotenzial bleibt häufig ungenutzt – nicht aus Mangel an Substanz, sondern aus <strong className="text-foreground">fehlender Orientierung</strong>.
         </p>
+        <div className="text-center mt-8">
+          <Button size="lg" className="gradient-brand border-0 text-primary-foreground px-8 py-5 shadow-lg" asChild>
+            <a href="/analysetool">Jetzt Dein Potenzial entdecken <ArrowRight className="ml-2 h-5 w-5" /></a>
+          </Button>
+        </div>
       </section>
 
       {/* ─── LÖSUNG: Was möglich ist – Wertsteigerungsbeispiele ─── */}
@@ -370,6 +375,9 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         <div className="text-center mt-8 bg-primary/5 border border-primary/10 rounded-xl p-6 max-w-2xl mx-auto">
           <p className="text-foreground font-semibold">Ziel: Mehr Wert aus bestehender Substanz schaffen.</p>
           <p className="text-sm text-muted-foreground mt-1">Ertrag steigern, Risiko reduzieren, Zukunft sichern.</p>
+          <Button size="lg" className="gradient-brand border-0 text-primary-foreground px-8 py-5 shadow-lg mt-4" asChild>
+            <a href="/analysetool">Potenzialanalyse starten – kostenfrei <ArrowRight className="ml-2 h-5 w-5" /></a>
+          </Button>
         </div>
       </section>
 
@@ -382,7 +390,7 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { step: "01", title: "Immobilie einstellen", desc: "Kostenfrei inserieren und Klarheit über Dein Entwicklungspotenzial erhalten.", icon: Home },
+            { step: "01", title: "Potenzialanalyse starten", desc: "Prüfe kostenlos das Entwicklungspotenzial Deiner Immobilie.", icon: Home },
             { step: "02", title: "Partner vergleichen", desc: "Alle Partner für Deine Entwicklung an einem Ort – transparent und vergleichbar.", icon: Users },
             { step: "03", title: "Du entscheidest", desc: "Wähle die Lösung, die den größten Wert aus Deiner Immobilie holt.", icon: Star },
           ].map((s) => (
@@ -392,6 +400,11 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{s.desc}</p>
             </div>
           ))}
+        </div>
+        <div className="text-center mt-8">
+          <Button size="lg" className="gradient-brand border-0 text-primary-foreground px-8 py-5 shadow-lg" asChild>
+            <a href="/analysetool">Kostenlose Potenzialanalyse starten <ArrowRight className="ml-2 h-5 w-5" /></a>
+          </Button>
         </div>
       </section>
 
@@ -521,12 +534,9 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
           <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> Keine Kosten</span>
           <span className="flex items-center gap-1.5"><Lock className="h-4 w-4" /> Keine Maklerbindung</span>
         </div>
-        <Button size="lg" className="mt-8 bg-white text-foreground hover:bg-white/90 text-base px-10 py-6 shadow-xl font-bold">
-          Jetzt kostenlos inserieren <ArrowRight className="ml-2 h-5 w-5" />
+        <Button size="lg" className="mt-8 bg-white text-foreground hover:bg-white/90 text-base px-10 py-6 shadow-xl font-bold" asChild>
+          <a href="/analysetool">Jetzt Potenzialanalyse starten <ArrowRight className="ml-2 h-5 w-5" /></a>
         </Button>
-        {rabattCode && (
-          <p className="text-white/70 text-xs mt-3">Dein Aktionscode: <span className="font-bold text-white">{rabattCode}</span></p>
-        )}
         <p className="text-white/60 text-sm mt-4 italic">Jede Immobilie hat Potenzial. Die Frage ist nur, ob Du es kennst.</p>
       </section>
 
