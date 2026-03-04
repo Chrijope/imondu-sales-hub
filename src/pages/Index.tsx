@@ -499,8 +499,36 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Row 3: Social Media + Quick Actions */}
+        {/* Row 3: System Updates + Social Media + Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* System Updates Widget */}
+          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-1 rounded-full gradient-brand" />
+              <h2 className="text-sm font-semibold text-foreground">System-Updates</h2>
+              <Badge variant="secondary" className="text-[9px] ml-auto">Neu</Badge>
+            </div>
+            <div className="space-y-3">
+              {[
+                { date: "04.03.2026", title: "Chat: Ersteller-Info & Lead-Navigation", desc: "Im Chat wird angezeigt, wer den Chat erstellt hat. Klick auf den Namen führt zum Kundenprofil.", icon: "💬" },
+                { date: "03.03.2026", title: "Ungelesen-Punkte im Chat", desc: "Ungelesene Nachrichten werden jetzt mit einem blauen Punkt markiert – wie bei WhatsApp.", icon: "🔵" },
+                { date: "01.03.2026", title: "Meilensteine im CI-Design", desc: "Alle Meilensteine werden jetzt einheitlich im IMONDU-Branding dargestellt.", icon: "🎯" },
+                { date: "28.02.2026", title: "Dashboard-Layout Optimierung", desc: "Aktions-Links in allen Kästchen sind jetzt einheitlich am unteren Rand ausgerichtet.", icon: "📐" },
+              ].map((update, i) => (
+                <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30 border border-border">
+                  <span className="text-lg shrink-0 mt-0.5">{update.icon}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold text-foreground truncate">{update.title}</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{update.desc}</p>
+                    <p className="text-[9px] text-muted-foreground/60 mt-1">{update.date}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Social Media Widget */}
           <div className="lg:col-span-4 glass-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
@@ -508,6 +536,17 @@ export default function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground">imondu Social</h2>
             </div>
             <div className="space-y-3">
+              {/* YouTube */}
+              <a href="https://www.youtube.com/@imondu" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-red-600/5 border border-red-600/15 hover:border-red-600/30 transition-all group">
+                <div className="h-10 w-10 rounded-lg bg-red-600 flex items-center justify-center shrink-0">
+                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground group-hover:text-red-600 transition-colors">@imondu</p>
+                  <p className="text-[11px] text-muted-foreground">Neueste Videos & Tutorials</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-red-600 transition-colors" />
+              </a>
               {/* Instagram */}
               <a href="https://www.instagram.com/imondu" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-orange-400/10 border border-pink-500/15 hover:border-pink-500/30 transition-all group">
                 <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-pink-500 via-purple-600 to-orange-400 flex items-center justify-center shrink-0">
@@ -530,18 +569,11 @@ export default function Dashboard() {
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
               </a>
-              {/* Embedded placeholder */}
-              <div className="rounded-lg bg-muted/50 border border-border p-4 text-center">
-                <p className="text-xs text-muted-foreground">📸 Neuester Instagram-Beitrag</p>
-                <div className="mt-2 h-28 rounded-md bg-gradient-to-br from-pink-500/10 via-purple-500/5 to-orange-400/10 flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">Feed wird geladen…</span>
-                </div>
-              </div>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-3 gap-4 content-start">
+          <div className="lg:col-span-4 grid grid-cols-1 lg:grid-cols-3 gap-4 content-start">
             <Link
               to="/b2c/neue-leads?openForm=true"
               className="glass-card rounded-2xl p-6 flex flex-col items-center gap-3 group"

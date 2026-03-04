@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import imonduLogo from "@/assets/imondu-logo-full.png";
 import imonduLogoDark from "@/assets/imondu-logo-dark.png";
+import marinkoImg from "@/assets/marinko-marjanovic.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -113,14 +114,17 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
 
       {/* ─── CEO QUOTE: Authority + Trust ─── */}
       <section className="bg-foreground text-background px-8 py-12">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-lg italic leading-relaxed opacity-90">
-            „Eigentümer brauchen keine schnellen Entscheidungen. Sie brauchen zuerst <strong className="text-primary">Klarheit über ihre Optionen</strong>."
-          </p>
-          <p className="text-sm font-bold mt-4 opacity-70">Marinko Marjanovic, Geschäftsführer</p>
-          <p className="text-sm mt-3 opacity-60">
-            Genau deshalb erhalten Eigentümer bei IMONDU zuerst Optionen – keine Verpflichtung, keine Kosten.
-          </p>
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-8">
+          <img src={marinkoImg} alt="Marinko Marjanovic" className="h-28 w-28 rounded-full object-cover object-top shrink-0 opacity-90 ring-2 ring-primary/30" />
+          <div className="text-center md:text-left">
+            <p className="text-lg italic leading-relaxed opacity-90">
+              „Eigentümer brauchen keine schnellen Entscheidungen. Sie brauchen zuerst <strong className="text-primary">Klarheit über ihre Optionen</strong>."
+            </p>
+            <p className="text-sm font-bold mt-4 opacity-70">Marinko Marjanovic, Geschäftsführer</p>
+            <p className="text-sm mt-3 opacity-60">
+              Genau deshalb erhalten Eigentümer bei IMONDU zuerst Optionen – keine Verpflichtung, keine Kosten.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -644,14 +648,17 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
 
       {/* ─── CEO QUOTE (erweitert) ─── */}
       <section className="bg-primary/5 px-8 py-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-lg italic text-foreground leading-relaxed">
-            „Gute Projekte entstehen nicht durch mehr Kaltakquise. Sie entstehen durch den <strong className="text-primary">richtigen Zugang zu Eigentümern</strong> – zur richtigen Zeit."
-          </p>
-          <p className="text-sm font-bold text-muted-foreground mt-4">Marinko Marjanovic, Geschäftsführer</p>
-          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
-            Genau deshalb verbindet IMONDU geprüfte Entwickler direkt mit Eigentümern – strukturiert, transparent und ohne Streuverlust.
-          </p>
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-8">
+          <img src={marinkoImg} alt="Marinko Marjanovic" className="h-28 w-28 rounded-full object-cover object-top shrink-0 ring-2 ring-primary/20" />
+          <div className="text-center md:text-left">
+            <p className="text-lg italic text-foreground leading-relaxed">
+              „Gute Projekte entstehen nicht durch mehr Kaltakquise. Sie entstehen durch den <strong className="text-primary">richtigen Zugang zu Eigentümern</strong> – zur richtigen Zeit."
+            </p>
+            <p className="text-sm font-bold text-muted-foreground mt-4">Marinko Marjanovic, Geschäftsführer</p>
+            <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto md:mx-0">
+              Genau deshalb verbindet IMONDU geprüfte Entwickler direkt mit Eigentümern – strukturiert, transparent und ohne Streuverlust.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
             {[
               "Planbare Projektpipeline",
