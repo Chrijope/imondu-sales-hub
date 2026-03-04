@@ -520,8 +520,8 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
           Sie möchten mehr erfahren? Kontaktieren Sie uns gerne – wir beraten Sie persönlich.
         </p>
         <div className="flex justify-center gap-3 mt-4">
-          <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
-          <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
+          <Button className="bg-foreground text-background hover:bg-foreground/90" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
+          <Button className="bg-foreground text-background hover:bg-foreground/90" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
         </div>
       </section>
 
@@ -566,13 +566,10 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
    Verkaufspsychologie: Pain → Consequence → Solution → ROI → Close
    Social-Media-Strategie: Hook → Story → Proof → Offer
    ═══════════════════════════════════════════════════════════ */
-function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse, rabattCode }: {
-  beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string; rabattCode?: string;
+function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, beraterEmail, beraterAdresse, buchungsLink }: {
+  beraterName: string; beraterTitel: string; beraterTelefon: string; beraterEmail: string; beraterAdresse: string; buchungsLink?: string;
 }) {
-  const rabattProzent = rabattCode ? (INITIAL_CODES.find(c => c.code === rabattCode)?.rabattProzent ?? 0) : 0;
-  const premiumOriginal = PREISE.premium;
-  const premiumFinal = premiumOriginal - (premiumOriginal * rabattProzent / 100);
-  const hasPremiumDiscount = rabattProzent > 0;
+  const beratungHref = buchungsLink || `tel:${beraterTelefon}`;
 
   return (
     <div className="space-y-0 bg-background">
@@ -599,23 +596,26 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
             IMONDU bringt Dir geprüfte Eigentümer – mit echtem Entwicklungspotenzial.
             <strong className="text-foreground"> Günstiger als eine Printanzeige</strong> – mit deutlich höherer Abschlusswahrscheinlichkeit.
           </p>
-          <div className="flex items-center gap-6 mt-6">
+          <div className="grid grid-cols-3 gap-3 mt-6">
             {[
               { icon: Target, label: "Mehr qualifizierte Anfragen" },
               { icon: Zap, label: "Weniger Streuverlust" },
               { icon: Eye, label: "Volle Transparenz" },
             ].map((item, i) => (
-              <span key={i} className="flex items-center gap-1.5 text-sm text-foreground font-medium">
-                <item.icon className="h-4 w-4 text-primary" /> {item.label}
-              </span>
+              <div key={i} className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <item.icon className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-sm text-foreground font-medium">{item.label}</span>
+              </div>
             ))}
           </div>
           <div className="flex items-center gap-4 mt-8">
             <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
               <a href="/entwickler-registrieren">Jetzt Partner werden <ArrowRight className="ml-2 h-5 w-5" /></a>
             </Button>
-            <Button size="lg" variant="outline" asChild>
-              <a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a>
+            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base px-8 py-6" asChild>
+              <a href={beratungHref} target={buchungsLink ? "_blank" : undefined}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a>
             </Button>
           </div>
           <p className="text-primary text-sm font-semibold mt-4 italic">
@@ -654,6 +654,9 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
                 </div>
               ))}
             </div>
+            <Button size="lg" className="gradient-brand border-0 text-primary-foreground px-8 py-5 shadow-lg mt-8" asChild>
+              <a href="/entwickler-registrieren">Jetzt Partner werden <ArrowRight className="ml-2 h-5 w-5" /></a>
+            </Button>
           </div>
         </div>
       </section>
@@ -734,6 +737,11 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
           ))}
         </div>
         <p className="text-center text-primary font-bold text-lg mt-8">Pipeline statt Projekt-Hoffnung.</p>
+        <div className="text-center mt-6">
+          <Button size="lg" className="gradient-brand border-0 text-primary-foreground px-8 py-5 shadow-lg" asChild>
+            <a href="/entwickler-registrieren">Jetzt Partner werden <ArrowRight className="ml-2 h-5 w-5" /></a>
+          </Button>
+        </div>
       </section>
 
       {/* ─── RELEVANZ ─── */}
@@ -755,6 +763,11 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
           ))}
         </div>
         <p className="text-center text-muted-foreground text-sm mt-6">Monatlich neue qualifizierte Eigentümeranfragen.</p>
+        <div className="text-center mt-6">
+          <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 px-8 py-5" asChild>
+            <a href={beratungHref} target={buchungsLink ? "_blank" : undefined}><Phone className="mr-2 h-4 w-4" /> 30-Minuten Beratungsgespräch <ArrowRight className="ml-2 h-4 w-4" /></a>
+          </Button>
+        </div>
       </section>
 
       {/* ─── MARKT ─── */}
@@ -863,22 +876,24 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
           {/* Basis */}
           <div className="rounded-xl border-2 border-border bg-card p-6">
             <p className="text-lg font-bold text-foreground">Basis-Mitgliedschaft</p>
-            <p className="text-xs text-muted-foreground">12 Monate</p>
-            <p className="text-3xl font-bold text-foreground mt-3">899 €<span className="text-sm font-normal text-muted-foreground"> /Jahr</span></p>
-            <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt. | nur {(899/365).toFixed(2).replace(".", ",")} €/Tag</p>
+            <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
+            <p className="text-3xl font-bold text-foreground mt-3">899,90 €<span className="text-sm font-normal text-muted-foreground"> /Jahr</span></p>
+            <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt. | nur {(899.90/365).toFixed(2).replace(".", ",")} €/Tag</p>
             <hr className="border-border my-4" />
             <ul className="space-y-2.5">
               {[
-                "Unbegrenzte Kontaktanfragen",
-                "Verifiziertes Profil",
-                "Sichtbarkeit bei Eigentümern",
-                "12 Monate Mitgliedschaft",
+                "Unbegrenzte Anzahl der Kontaktanfragen von Immobilieneigentümern",
+                "Identitätsprüfung für Transparenz und Sicherheit",
+                "Support durch IMONDU für Hilfestellungen",
+                "Profil in der Entwicklerübersicht sichtbar",
+                "Kontaktanfragen direkt im Dashboard",
+                "Benachrichtigungen bei neuen Inseraten in Ihrer Region",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2 text-xs text-foreground"><CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{t}</li>
               ))}
             </ul>
-            <Button className="w-full mt-5" variant="outline" asChild>
-              <a href="/entwickler-registrieren">Direkt starten</a>
+            <Button className="w-full mt-5 bg-foreground text-background hover:bg-foreground/90" asChild>
+              <a href="/entwickler-registrieren">Direkt starten <ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>
           </div>
 
@@ -887,43 +902,33 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
             <div className="absolute -top-3 right-4">
               <Badge className="gradient-brand text-primary-foreground text-[10px] border-0">Empfohlen</Badge>
             </div>
-            <p className="text-lg font-bold text-foreground">Premium-Mitgliedschaft</p>
-            <p className="text-xs text-muted-foreground">12 Monate</p>
-            <div className="mt-3">
-              {hasPremiumDiscount ? (
-                <>
-                  <p className="text-sm text-muted-foreground line-through">{formatPreis(premiumOriginal)}</p>
-                  <p className="text-3xl font-bold text-primary">{formatPreis(premiumFinal)}<span className="text-sm font-normal"> /Jahr</span></p>
-                  <p className="text-[10px] text-primary font-medium">-{rabattProzent}% Rabatt</p>
-                </>
-              ) : (
-                <p className="text-3xl font-bold text-foreground">1.249 €<span className="text-sm font-normal text-muted-foreground"> /Jahr</span></p>
-              )}
-            </div>
-            <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt. | nur {(1249/365).toFixed(2).replace(".", ",")} €/Tag</p>
+            <p className="text-lg font-bold text-foreground">Premium<sup className="text-primary">+</sup> Mitgliedschaft</p>
+            <p className="text-xs text-muted-foreground">Laufzeit 12 Monate – Preis pro Jahr</p>
+            <p className="text-3xl font-bold text-foreground mt-3">1.249,90 €<span className="text-sm font-normal text-muted-foreground"> /Jahr</span></p>
+            <p className="text-[10px] text-muted-foreground">exkl. 19% MwSt. | nur {(1249.90/365).toFixed(2).replace(".", ",")} €/Tag</p>
             <hr className="border-border my-4" />
             <ul className="space-y-2.5">
               {[
                 "Alle Basis-Vorteile",
-                "Frühzeitiger Zugang zu neuen Anfragen",
+                "Frühzeitiger Zugang zu neuen Eigentümer-Anfragen",
                 "Frühzeitige Platzierung bei limitierten Kontakten",
-                "Premium-Badge für mehr Vertrauen",
-                "Performance-Statistiken & Conversion-Insights",
+                "Premium-Badge für mehr Vertrauen bei Eigentümern",
+                "Ihre Kontaktanfrage landet immer oben in den Benachrichtigungen des Immobilienbesitzers",
+                "IMONDU Premium⁺ Verifizierung wird in Ihrem Profil angezeigt",
+                "Erweiterte Kontaktanfrage für höhere Abschlussquote",
+                "Performance-Statistiken und Conversion-Insights",
                 "Priorisierter Support",
-                "Hervorgehobene Platzierung in Deiner Region",
+                "Hervorgehobene & priorisierte Platzierung in deiner Region",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2 text-xs text-foreground font-medium"><CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />{t}</li>
               ))}
             </ul>
             <p className="text-[10px] text-destructive font-medium mt-3">* Begrenzte Branchenplätze je Region</p>
             <Button className="w-full mt-4 gradient-brand border-0 text-primary-foreground" asChild>
-              <a href="/entwickler-registrieren">Jetzt Premium starten</a>
+              <a href="/entwickler-registrieren">Jetzt Premium starten <ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>
           </div>
         </div>
-        {hasPremiumDiscount && (
-          <p className="text-[10px] text-muted-foreground text-center mt-4">* Rabatt gilt nur für das erste Vertragsjahr.</p>
-        )}
       </section>
 
       {/* ─── FAQ ─── */}
@@ -953,8 +958,8 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
         <h2 className="text-2xl font-bold text-foreground">Noch Fragen?</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">Kontaktieren Sie uns gerne – wir beraten Sie persönlich.</p>
         <div className="flex justify-center gap-3 mt-4">
-          <Button variant="outline" asChild><a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
-          <Button variant="outline" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
+          <Button className="bg-foreground text-background hover:bg-foreground/90" asChild><a href={beratungHref} target={buchungsLink ? "_blank" : undefined}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a></Button>
+          <Button className="bg-foreground text-background hover:bg-foreground/90" asChild><a href={`mailto:${beraterEmail}`}><Mail className="mr-2 h-4 w-4" /> E-Mail Kontakt</a></Button>
         </div>
       </section>
 
@@ -981,8 +986,8 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
             </div>
             <h3 className="text-xl font-bold text-foreground">30-Minuten Beratungsgespräch</h3>
             <p className="text-sm text-muted-foreground mt-2">Persönlich, unverbindlich, kostenfrei</p>
-            <Button className="w-full mt-6" variant="outline" size="lg" asChild>
-              <a href={`tel:${beraterTelefon}`}>Jetzt vereinbaren</a>
+            <Button className="w-full mt-6 bg-foreground text-background hover:bg-foreground/90" size="lg" asChild>
+              <a href={beratungHref} target={buchungsLink ? "_blank" : undefined}>Jetzt vereinbaren</a>
             </Button>
           </div>
         </div>
@@ -1003,8 +1008,8 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
           <Button size="lg" className="bg-white text-foreground hover:bg-white/90 text-base px-10 py-6 shadow-xl font-bold" asChild>
             <a href="/entwickler-registrieren">Direkt starten <ArrowRight className="ml-2 h-5 w-5" /></a>
           </Button>
-          <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-base px-8 py-6" asChild>
-            <a href={`tel:${beraterTelefon}`}><Phone className="mr-2 h-4 w-4" /> 30-Min Beratung</a>
+          <Button size="lg" className="border-2 border-white text-white hover:bg-white/10 text-base px-8 py-6" asChild>
+            <a href={beratungHref} target={buchungsLink ? "_blank" : undefined}><Phone className="mr-2 h-4 w-4" /> 30-Min Beratung</a>
           </Button>
         </div>
       </section>
@@ -1085,6 +1090,7 @@ export default function BeraterMicroseite() {
   const [newCodeMitarbeiter, setNewCodeMitarbeiter] = useState("");
   const [mitarbeiterFilter, setMitarbeiterFilter] = useState("alle");
   const [editCodeId, setEditCodeId] = useState<string | null>(null);
+  const [buchungsLink, setBuchungsLink] = useState("");
 
   const myDevCodes = rabattCodes.filter(rc => rc.type === "developer");
   const myCusCodes = rabattCodes.filter(rc => rc.type === "customer");
@@ -1172,6 +1178,11 @@ export default function BeraterMicroseite() {
                   <div><label className="text-sm font-medium text-foreground mb-1 block">E-Mail</label><Input value={beraterEmail} onChange={(e) => setBeraterEmail(e.target.value)} /></div>
                 </div>
                 <div><label className="text-sm font-medium text-foreground mb-1 block">Adresse</label><Input value={beraterAdresse} onChange={(e) => setBeraterAdresse(e.target.value)} /></div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Buchungslink (30-Min Beratungsgespräch)</label>
+                  <Input value={buchungsLink} onChange={(e) => setBuchungsLink(e.target.value)} placeholder="z.B. https://calendly.com/dein-name" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Wird mit dem CTA-Button „Beratungsgespräch" auf der Entwickler-Landingpage verknüpft.</p>
+                </div>
               </div>
               <div className="relative overflow-hidden rounded-xl border border-border self-start">
                 <div className="bg-foreground text-background px-5 py-3 relative">
@@ -1286,7 +1297,7 @@ export default function BeraterMicroseite() {
             </div>
             <div className="px-6 py-3"><code className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded block">{getLandingUrl(activeTab as any, activeTab === "customer" ? previewCusCode : previewDevCode)}</code></div>
             <TabsContent value="customer" className="mt-0"><CustomerLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} rabattCode={previewCusCode} /></TabsContent>
-            <TabsContent value="developer" className="mt-0"><DeveloperLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} rabattCode={previewDevCode} /></TabsContent>
+            <TabsContent value="developer" className="mt-0"><DeveloperLandingPreview beraterName={beraterName} beraterTitel={beraterTitel} beraterTelefon={beraterTelefon} beraterEmail={beraterEmail} beraterAdresse={beraterAdresse} buchungsLink={buchungsLink || undefined} /></TabsContent>
           </Tabs>
         </div>
 
