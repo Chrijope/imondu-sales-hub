@@ -3,7 +3,8 @@ import CRMLayout from "@/components/CRMLayout";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Share2, Linkedin, Instagram, Copy, Link2 } from "lucide-react";
+import { Share2, Linkedin, Instagram, Copy, Link2, PlusCircle } from "lucide-react";
+import InseratFunnel from "@/components/InseratFunnel";
 
 const SHARE_ROLES = ["admin", "inhaber", "vertriebsleiter", "vertriebspartner"];
 
@@ -19,6 +20,7 @@ export default function Analysetool() {
   const { currentRoleId } = useUserRole();
   const { toast } = useToast();
   const [showShare, setShowShare] = useState(false);
+  const [showFunnel, setShowFunnel] = useState(false);
   const canShare = SHARE_ROLES.includes(currentRoleId);
 
   const analyseUrl = "https://imondu-potenzial-radar.lovable.app";
@@ -29,7 +31,7 @@ export default function Analysetool() {
     const encoded = encodeURIComponent(shareText + "\n" + analyseUrl);
     const urls: Record<string, string> = {
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(analyseUrl)}`,
-      instagram: "#", // Instagram doesn't support direct URL sharing
+      instagram: "#",
       tiktok: "#",
     };
     if (platform === "instagram" || platform === "tiktok") {
@@ -45,39 +47,59 @@ export default function Analysetool() {
     toast({ title: "Link kopiert!" });
   };
 
+  if (showFunnel) {
+    return (
+      <CRMLayout>
+        <InseratFunnel onClose={() => setShowFunnel(false)} />
+      </CRMLayout>
+    );
+  }
+
   return (
     <CRMLayout>
       <div className="h-[calc(100vh-2rem)] relative">
-        {canShare && (
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-            {showShare && (
-              <div className="flex items-center gap-1.5 bg-card border border-border rounded-xl px-3 py-1.5 shadow-lg animate-fade-in">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => shareOn("linkedin")} title="LinkedIn">
-                  <Linkedin className="h-4 w-4 text-[#0A66C2]" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => shareOn("instagram")} title="Instagram">
-                  <Instagram className="h-4 w-4 text-[#E4405F]" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => shareOn("tiktok")} title="TikTok">
-                  <TikTokIcon className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={copyLink} title="Link kopieren">
-                  <Link2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 bg-card shadow-md"
-              onClick={() => setShowShare(!showShare)}
-            >
-              <Share2 className="h-3.5 w-3.5" />
-              Teilen
-            </Button>
-          </div>
-        )}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+          <Button
+            onClick={() => setShowFunnel(true)}
+            className="gap-1.5 gradient-brand border-0 text-primary-foreground shadow-md"
+            size="sm"
+          >
+            <PlusCircle className="h-3.5 w-3.5" />
+            Inserat inserieren
+          </Button>
+
+          {canShare && (
+            <>
+              {showShare && (
+                <div className="flex items-center gap-1.5 bg-card border border-border rounded-xl px-3 py-1.5 shadow-lg animate-fade-in">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => shareOn("linkedin")} title="LinkedIn">
+                    <Linkedin className="h-4 w-4 text-[#0A66C2]" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => shareOn("instagram")} title="Instagram">
+                    <Instagram className="h-4 w-4 text-[#E4405F]" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => shareOn("tiktok")} title="TikTok">
+                    <TikTokIcon className="h-4 w-4" />
+                  </Button>
+                  <div className="w-px h-5 bg-border mx-1" />
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={copyLink} title="Link kopieren">
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 bg-card shadow-md"
+                onClick={() => setShowShare(!showShare)}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Teilen
+              </Button>
+            </>
+          )}
+        </div>
+
         <iframe
           src={analyseUrl}
           className="w-full h-full border-0 rounded-xl"
