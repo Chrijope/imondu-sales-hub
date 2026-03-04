@@ -1,4 +1,5 @@
 import { UserRoleProvider } from "@/contexts/UserRoleContext";
+import { TestModeProvider } from "@/contexts/TestModeContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -69,6 +70,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
     <UserRoleProvider>
+    <TestModeProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -129,6 +131,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </TestModeProvider>
     </UserRoleProvider>
     </ThemeProvider>
   </QueryClientProvider>
