@@ -20,7 +20,8 @@ export default function Login() {
 
   const roleHint = searchParams.get("role");
   const isEntwicklerLogin = roleHint === "entwickler";
-
+  const isEigentuemerLogin = roleHint === "eigentuemer";
+  const isSpecialLogin = isEntwicklerLogin || isEigentuemerLogin;
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -33,6 +34,9 @@ export default function Login() {
       if (isEntwicklerLogin) {
         setCurrentRoleId("entwickler");
         toast({ title: "Willkommen!", description: "Sie sind jetzt als Entwickler eingeloggt." });
+      } else if (isEigentuemerLogin) {
+        setCurrentRoleId("eigentuemer");
+        toast({ title: "Willkommen!", description: "Sie sind jetzt in Ihrem Eigentümer-Dashboard eingeloggt." });
       } else {
         toast({ title: "Willkommen!", description: "Du wurdest erfolgreich angemeldet." });
       }
@@ -54,11 +58,18 @@ export default function Login() {
           
           <div className="space-y-6">
             <h1 className="text-4xl font-display font-bold text-foreground leading-tight">
-              {isEntwicklerLogin ? (
+             {isEntwicklerLogin ? (
                 <>
                   Willkommen im<br />
                   <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     Entwickler-Portal
+                  </span>
+                </>
+              ) : isEigentuemerLogin ? (
+                <>
+                  Willkommen im<br />
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Eigentümer-Dashboard
                   </span>
                 </>
               ) : (
@@ -73,10 +84,12 @@ export default function Login() {
             <p className="text-lg text-muted-foreground max-w-md">
               {isEntwicklerLogin
                 ? "Loggen Sie sich ein, um Ihre Inserate, Anfragen und Ihr Profil zu verwalten."
+                : isEigentuemerLogin
+                ? "Loggen Sie sich ein, um Ihre Immobilie zu verwalten, Entwickler zu vergleichen und Angebote einzusehen."
                 : "Ob Eigentümer oder Entwickler – finden Sie den passenden Partner für Ihr Immobilienprojekt. Einfach, direkt und transparent."}
             </p>
             
-            {!isEntwicklerLogin && (
+            {!isSpecialLogin && (
               <div className="flex gap-8 pt-4">
                 {[
                   { value: "2.500+", label: "Eigentümer" },
@@ -106,19 +119,23 @@ export default function Login() {
             <img src={imonduLogo} alt="IMONDU" className="h-10" />
           </div>
 
-          {isEntwicklerLogin && (
+          {isSpecialLogin && (
             <div className="rounded-lg bg-primary/5 border border-primary/20 px-4 py-3 text-center">
-              <p className="text-sm font-medium text-primary">Entwickler-Login</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Melden Sie sich mit Ihren Zugangsdaten aus der Bestätigungsmail an.</p>
+              <p className="text-sm font-medium text-primary">{isEntwicklerLogin ? "Entwickler-Login" : "Eigentümer-Login"}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isEntwicklerLogin
+                  ? "Melden Sie sich mit Ihren Zugangsdaten aus der Bestätigungsmail an."
+                  : "Melden Sie sich mit den Zugangsdaten an, die Sie per E-Mail erhalten haben."}
+              </p>
             </div>
           )}
 
           <div className="text-center lg:text-left">
             <h2 className="text-2xl font-display font-bold text-foreground">
-              {isEntwicklerLogin ? "Einloggen" : "Willkommen zurück"}
+              {isSpecialLogin ? "Einloggen" : "Willkommen zurück"}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {isEntwicklerLogin ? "Geben Sie Ihre Zugangsdaten ein." : "Melde dich in deinem Account an."}
+              {isSpecialLogin ? "Geben Sie Ihre Zugangsdaten ein." : "Melde dich in deinem Account an."}
             </p>
           </div>
 
