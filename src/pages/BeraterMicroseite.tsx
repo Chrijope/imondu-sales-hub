@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import imonduLogo from "@/assets/imondu-logo-full.png";
 import imonduLogoDark from "@/assets/imondu-logo-dark.png";
 import marinkoImg from "@/assets/marinko-marjanovic.png";
+import heroEigentuemer from "@/assets/hero-eigentuemer.jpg";
+import heroEntwickler from "@/assets/hero-entwickler.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -85,29 +87,34 @@ function CustomerLandingPreview({ beraterName, beraterTitel, beraterTelefon, ber
       {/* ─── HERO: Pattern Interrupt + Neugier ─── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-        <div className="relative px-8 py-20 max-w-4xl">
-          <Badge className="gradient-brand text-primary-foreground border-0 mb-4">Die Nr. 1 Plattform für Immobilienentwicklung</Badge>
-          <h1 className="text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
-            Was steckt wirklich<br />in Deiner <span className="text-primary">Immobilie?</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mt-5 max-w-2xl leading-relaxed">
-            Entdecke, welches Entwicklungspotenzial in Deiner Immobilie oder Deinem Grundstück steckt – <strong className="text-foreground">kostenlos, unverbindlich</strong> und transparent.
-          </p>
-          <p className="text-base text-primary font-semibold mt-3 italic">
-            „Klarheit kostet nichts. Unwissen kann teuer sein."
-          </p>
-          <div className="flex items-center gap-4 mt-8">
-            <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
-              <a href="/analysetool">Kostenlose Potenzialanalyse starten <ArrowRight className="ml-2 h-5 w-5" /></a>
-            </Button>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" /> <span>In nur 3 Minuten</span>
+        <div className="relative px-8 py-20 flex items-center gap-10">
+          <div className="max-w-2xl flex-1">
+            <Badge className="gradient-brand text-primary-foreground border-0 mb-4">Die Nr. 1 Plattform für Immobilienentwicklung</Badge>
+            <h1 className="text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
+              Was steckt wirklich<br />in Deiner <span className="text-primary">Immobilie?</span>
+            </h1>
+            <p className="text-xl text-muted-foreground mt-5 max-w-2xl leading-relaxed">
+              Entdecke, welches Entwicklungspotenzial in Deiner Immobilie oder Deinem Grundstück steckt – <strong className="text-foreground">kostenlos, unverbindlich</strong> und transparent.
+            </p>
+            <p className="text-base text-primary font-semibold mt-3 italic">
+              „Klarheit kostet nichts. Unwissen kann teuer sein."
+            </p>
+            <div className="flex items-center gap-4 mt-8">
+              <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
+                <a href="/analysetool">Kostenlose Potenzialanalyse starten <ArrowRight className="ml-2 h-5 w-5" /></a>
+              </Button>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" /> <span>In nur 3 Minuten</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 mt-6 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Kosten</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Verpflichtung</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Maklerbindung</span>
             </div>
           </div>
-          <div className="flex items-center gap-6 mt-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Kosten</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Verpflichtung</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Keine Maklerbindung</span>
+          <div className="hidden lg:block w-[380px] shrink-0">
+            <img src={heroEigentuemer} alt="Moderne Immobilie" className="w-full h-[340px] object-cover rounded-2xl shadow-xl" />
           </div>
         </div>
       </section>
@@ -587,40 +594,45 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
       {/* ─── HERO: Hook + Kontrast ─── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-        <div className="relative px-8 py-20 max-w-4xl">
-          <Badge className="gradient-brand text-primary-foreground border-0 mb-4">Die Nr. 1 Plattform für Immobilienentwicklung</Badge>
-          <h1 className="text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
-            Projekte mit echtem<br /><span className="text-primary">Potenzial.</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mt-5 max-w-2xl leading-relaxed">
-            IMONDU bringt Dir geprüfte Eigentümer – mit echtem Entwicklungspotenzial.
-            <strong className="text-foreground"> Günstiger als eine Printanzeige</strong> – mit deutlich höherer Abschlusswahrscheinlichkeit.
-          </p>
-          <div className="grid grid-cols-3 gap-3 mt-6">
-            {[
-              { icon: Target, label: "Mehr qualifizierte Anfragen" },
-              { icon: Zap, label: "Weniger Streuverlust" },
-              { icon: Eye, label: "Volle Transparenz" },
-            ].map((item, i) => (
-              <div key={i} className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <item.icon className="h-5 w-5 text-primary" />
+        <div className="relative px-8 py-20 flex items-center gap-10">
+          <div className="max-w-2xl flex-1">
+            <Badge className="gradient-brand text-primary-foreground border-0 mb-4">Die Nr. 1 Plattform für Immobilienentwicklung</Badge>
+            <h1 className="text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
+              Projekte mit echtem<br /><span className="text-primary">Potenzial.</span>
+            </h1>
+            <p className="text-xl text-muted-foreground mt-5 max-w-2xl leading-relaxed">
+              IMONDU bringt Dir geprüfte Eigentümer – mit echtem Entwicklungspotenzial.
+              <strong className="text-foreground"> Günstiger als eine Printanzeige</strong> – mit deutlich höherer Abschlusswahrscheinlichkeit.
+            </p>
+            <div className="grid grid-cols-3 gap-3 mt-6">
+              {[
+                { icon: Target, label: "Mehr qualifizierte Anfragen" },
+                { icon: Zap, label: "Weniger Streuverlust" },
+                { icon: Eye, label: "Volle Transparenz" },
+              ].map((item, i) => (
+                <div key={i} className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <item.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-sm text-foreground font-medium">{item.label}</span>
                 </div>
-                <span className="text-sm text-foreground font-medium">{item.label}</span>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="flex items-center gap-4 mt-8">
+              <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
+                <a href="/entwickler-registrieren">Jetzt Partner werden <ArrowRight className="ml-2 h-5 w-5" /></a>
+              </Button>
+              <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base px-8 py-6" asChild>
+                <a href={beratungHref} target={buchungsLink ? "_blank" : undefined}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a>
+              </Button>
+            </div>
+            <p className="text-primary text-sm font-semibold mt-4 italic">
+              „Ein Projekt finanziert Deine Mitgliedschaft für Jahre."
+            </p>
           </div>
-          <div className="flex items-center gap-4 mt-8">
-            <Button size="lg" className="gradient-brand border-0 text-primary-foreground text-base px-8 py-6 shadow-lg" asChild>
-              <a href="/entwickler-registrieren">Jetzt Partner werden <ArrowRight className="ml-2 h-5 w-5" /></a>
-            </Button>
-            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base px-8 py-6" asChild>
-              <a href={beratungHref} target={buchungsLink ? "_blank" : undefined}><Phone className="mr-2 h-4 w-4" /> Beratungsgespräch</a>
-            </Button>
+          <div className="hidden lg:block w-[380px] shrink-0">
+            <img src={heroEntwickler} alt="Immobilienentwicklung" className="w-full h-[340px] object-cover rounded-2xl shadow-xl" />
           </div>
-          <p className="text-primary text-sm font-semibold mt-4 italic">
-            „Ein Projekt finanziert Deine Mitgliedschaft für Jahre."
-          </p>
         </div>
       </section>
 
@@ -674,18 +686,21 @@ function DeveloperLandingPreview({ beraterName, beraterTitel, beraterTelefon, be
               Genau deshalb verbindet IMONDU geprüfte Entwickler direkt mit Eigentümern – strukturiert, transparent und ohne Streuverlust.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
-            {[
-              "Planbare Projektpipeline",
-              "Qualifizierte Eigentümeranfragen",
-              "Kein Preiskampf über Vergleichsportale",
-            ].map((t, i) => (
-              <div key={i} className="bg-card border border-border rounded-lg p-3 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                <p className="text-xs font-medium text-foreground">{t}</p>
+        </div>
+        <div className="grid grid-cols-3 gap-6 mt-10 max-w-3xl mx-auto">
+          {[
+            { icon: BarChart3, label: "Planbare Projektpipeline", desc: "Kontinuierlicher Zugang statt zufälliger Empfehlungen" },
+            { icon: Users, label: "Qualifizierte Eigentümeranfragen", desc: "Vorgeprüfte Objekte mit echtem Entwicklungsinteresse" },
+            { icon: Shield, label: "Kein Preiskampf über Vergleichsportale", desc: "Direktkontakt ohne Zwischenhändler" },
+          ].map((t, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-5 text-center shadow-sm">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <t.icon className="h-5 w-5 text-primary" />
               </div>
-            ))}
-          </div>
+              <p className="text-sm font-bold text-foreground">{t.label}</p>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{t.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
