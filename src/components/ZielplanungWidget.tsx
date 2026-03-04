@@ -145,6 +145,14 @@ export default function ZielplanungWidget() {
               <p className="text-[10px] text-muted-foreground">B2B Registrierungen</p>
             </div>
           </div>
+          {/* Progress bar - simulated progress (demo: random 40-85%) */}
+          <div className="mt-3">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+              <span>Monatsfortschritt</span>
+              <span className="font-medium text-foreground">{Math.round((new Date().getDate() / 30) * 100)}%</span>
+            </div>
+            <Progress value={Math.round((new Date().getDate() / 30) * 100)} className="h-2" />
+          </div>
         </div>
       )}
 
@@ -154,9 +162,13 @@ export default function ZielplanungWidget() {
           <span className="text-muted-foreground">Jahresziel Provision</span>
           <span className="font-bold text-foreground">{data.jahresTotal.toLocaleString("de-DE", { maximumFractionDigits: 0 })} €</span>
         </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground">
+        <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5">
           <span>{data.jahresZielB2C} B2C · {data.jahresZielB2B} B2B</span>
         </div>
+        <Progress value={Math.min(100, Math.round((data.ytdZiel / data.jahresTotal) * 100))} className="h-1.5" />
+        <p className="text-[9px] text-muted-foreground mt-1">
+          {Math.round((data.ytdZiel / data.jahresTotal) * 100)}% des Jahresziels erreicht
+        </p>
       </div>
 
       <Link to="/zielplanung" className="flex items-center gap-1 text-xs text-accent font-medium hover:underline">

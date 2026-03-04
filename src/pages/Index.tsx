@@ -341,25 +341,21 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Zielplanung Widget for Vertriebspartner */}
-        {currentRoleId === "vertriebspartner" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <div className="lg:col-span-5">
+        {/* Row: Zielplanung (for VP) + Wettbewerb + Abrechnung + Level */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Zielplanung for Vertriebspartner */}
+          {currentRoleId === "vertriebspartner" && (
+            <div className="lg:col-span-3">
               <ZielplanungWidget />
             </div>
-          </div>
-        )}
-
-        {/* Row: Wettbewerb + Abrechnung Quick Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          )}
           {/* Wettbewerb Widget */}
-          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
+          <div className={`${currentRoleId === "vertriebspartner" ? "lg:col-span-3" : "lg:col-span-4"} glass-card rounded-2xl p-5 flex flex-col`}>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Wettbewerb</h2>
             </div>
             <div className="space-y-3">
-              {/* Top active challenge preview */}
               <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <span className="text-2xl">🎧</span>
                 <div className="flex-1 min-w-0">
@@ -407,7 +403,7 @@ export default function Dashboard() {
           </div>
 
           {/* Abrechnungs-Widget */}
-          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
+          <div className={`${currentRoleId === "vertriebspartner" ? "lg:col-span-3" : "lg:col-span-4"} glass-card rounded-2xl p-5 flex flex-col`}>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Abrechnung</h2>
@@ -457,7 +453,7 @@ export default function Dashboard() {
           </div>
 
           {/* Gamification Widget */}
-          <div className="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col">
+          <div className={`${currentRoleId === "vertriebspartner" ? "lg:col-span-3" : "lg:col-span-4"} glass-card rounded-2xl p-5 flex flex-col`}>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-1 rounded-full gradient-brand" />
               <h2 className="text-sm font-semibold text-foreground">Dein Level</h2>
