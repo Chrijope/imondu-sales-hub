@@ -156,7 +156,7 @@ function AccordionSection({
   );
 }
 
-export default function InseratFunnel({ onClose }: { onClose: () => void }) {
+export default function InseratFunnel({ onClose, rabattCode }: { onClose: () => void; rabattCode?: string }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -257,6 +257,23 @@ export default function InseratFunnel({ onClose }: { onClose: () => void }) {
   const generatedPassword = "Immo-" + Math.random().toString(36).slice(2, 8) + "!";
 
   const handleSubmit = () => {
+    // Save inserat to localStorage
+    const newInserat = {
+      id: Date.now().toString(),
+      titel: form.titel,
+      objekttyp: form.objekttyp,
+      adresse: `${form.adresse}, ${form.plz} ${form.ort}`,
+      eigentuemerName: form.eigentuemerName,
+      eigentuemerEmail: form.eigentuemerEmail,
+      rabattCode: rabattCode || undefined,
+      erstelltAm: new Date().toISOString(),
+      status: "aktiv" as const,
+      bilder: form.bilder.length,
+      wohnflaeche: form.wohnflaeche,
+    };
+    const existing = JSON.parse(localStorage.getItem("imondu-inserate") || "[]");
+    existing.push(newInserat);
+    localStorage.setItem("imondu-inserate", JSON.stringify(existing));
     setSubmitted(true);
   };
 
