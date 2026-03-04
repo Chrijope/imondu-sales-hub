@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { setChatUnreadCount } from "@/utils/support-notifications";
@@ -377,6 +378,7 @@ const CHAT_CATEGORIES = [
 export default function Chat() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { currentRoleId } = useUserRole();
   const isEigentuemer = currentRoleId === "eigentuemer";
   const isEntwickler = currentRoleId === "entwickler";
@@ -607,7 +609,20 @@ export default function Chat() {
   };
 
   const togglePin = (chatId: string) => {
-    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, pinned: !c.pinned } : c)));
+    setChats((prev) => {
+      const target = prev.find((c) => c.id === chatId);
+      if (!target) return prev;
+      // If already pinned, unpin. Otherwise check max 3 limit.
+      if (target.pinned) {
+        return prev.map((c) => (c.id === chatId ? { ...c, pinned: false } : c));
+      }
+      const pinnedCount = prev.filter((c) => c.pinned).length;
+      if (pinnedCount >= 3) {
+        toast({ title: "Maximal 3 Chats können angepinnt werden", variant: "destructive" });
+        return prev;
+      }
+      return prev.map((c) => (c.id === chatId ? { ...c, pinned: true } : c));
+    });
   };
 
   const toggleUnread = (chatId: string) => {
