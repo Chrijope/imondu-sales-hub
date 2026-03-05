@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { getUserFirstName, getTimeGreeting } from "@/utils/role-names";
 import {
   Inbox as InboxIcon,
   CheckCircle2,
@@ -239,7 +240,7 @@ export default function Inbox() {
           <div className="flex items-center gap-2 mb-1">
             <div className="w-10 h-1 rounded-full gradient-brand" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">Inbox & Tagesplanung</h1>
+          <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">{getTimeGreeting()}, {getUserFirstName(currentRoleId)}</h1>
           <p className="text-sm text-muted-foreground mt-1">Deine tagesrelevanten Aufgaben, Meetings & Wochenübersicht</p>
         </div>
 
