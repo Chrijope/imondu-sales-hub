@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, PanelLeftClose, PanelLeft, Bell, Megaphone, CalendarClock, RefreshCw, MessageSquare, CheckCircle2, FlaskConical, X, ArrowRight, SlidersHorizontal, Trophy, ClipboardList, Building2, GraduationCap } from "lucide-react";
+import { Settings, PanelLeftClose, PanelLeft, Bell, Megaphone, CalendarClock, RefreshCw, MessageSquare, CheckCircle2, FlaskConical, X, ArrowRight, SlidersHorizontal, Trophy, ClipboardList, Building2, GraduationCap, LogOut } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,6 +76,7 @@ interface CRMHeaderProps {
 
 export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHeaderProps) {
   const { currentRoleId, roles, allowedMenuItems } = useUserRole();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const currentRole = roles.find((r) => r.id === currentRoleId);
   const isTestAccount = currentRoleId === "testaccount";
@@ -248,6 +250,14 @@ export default function CRMHeader({ sidebarCollapsed, onToggleSidebar }: CRMHead
                   <Settings className="h-4 w-4" />
                   Einstellungen
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+                onClick={() => { logout(); navigate("/login"); }}
+              >
+                <LogOut className="h-4 w-4" />
+                Abmelden
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
