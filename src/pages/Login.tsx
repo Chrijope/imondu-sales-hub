@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import imonduLogo from "@/assets/imondu-logo-full.png";
 
 export default function Login() {
@@ -13,6 +14,7 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { setCurrentRoleId } = useUserRole();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +33,7 @@ export default function Login() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      login();
       if (isEntwicklerLogin) {
         setCurrentRoleId("entwickler");
         toast({ title: "Willkommen!", description: "Sie sind jetzt als Entwickler eingeloggt." });
