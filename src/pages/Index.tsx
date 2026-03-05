@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getUserFirstName } from "@/utils/role-names";
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -185,7 +186,7 @@ export default function Dashboard() {
             <div className="w-10 h-1 rounded-full gradient-brand" />
           </div>
           <h1 className="text-2xl font-display font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Willkommen zurück, Max. Hier ist dein Überblick.</p>
+          <p className="text-sm text-muted-foreground mt-1">Willkommen zurück, {getUserFirstName(currentRoleId)}. Hier ist dein Überblick.</p>
         </div>
 
         {/* Row 1 */}
