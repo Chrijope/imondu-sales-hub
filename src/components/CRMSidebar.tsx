@@ -232,10 +232,23 @@ function NavItem({ path, icon: Icon, label, isActive, collapsed, badgeCount, dra
   );
 }
 
+function usePersistentOpen(key: string, defaultValue: boolean): [boolean, (v: boolean) => void] {
+  const storageKey = `sidebar-section:${key}`;
+  const [open, setOpenState] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved !== null ? saved === "true" : defaultValue;
+  });
+  const setOpen = (v: boolean) => {
+    setOpenState(v);
+    localStorage.setItem(storageKey, String(v));
+  };
+  return [open, setOpen];
+}
+
 function SectionGroup({ label, children, collapsed }: {
   label: string; children: React.ReactNode; collapsed: boolean;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = usePersistentOpen(`section:${label}`, true);
 
   if (collapsed) {
     return <div className="space-y-0.5 py-1 border-t border-border/40">{children}</div>;
@@ -266,7 +279,7 @@ function CollapsibleGroup({ label, icon: Icon, items, color, collapsed, draft, i
 }) {
   const location = useLocation();
   const hasActiveChild = items.some((i) => location.pathname.startsWith(i.path));
-  const [open, setOpen] = useState(hasActiveChild);
+  const [open, setOpen] = usePersistentOpen(`group:${label}`, hasActiveChild);
   const draftNonAdmin = draft && !isAdmin;
 
   if (collapsed) {
