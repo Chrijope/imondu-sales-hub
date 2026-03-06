@@ -89,8 +89,8 @@ function CollapsibleCard({ section, canEdit, onAddItem, onDeleteItem, onEditItem
     <div className="glass-card rounded-xl overflow-hidden">
       <div className="flex items-center">
         <button onClick={() => setOpen(!open)} className="flex-1 flex items-center gap-2 px-5 py-4 hover:bg-muted/30 transition-colors text-left">
-          <span className="text-accent text-sm">{open ? "⊖" : "⊕"}</span>
-          <span className="text-sm font-semibold text-accent">{section.title}</span>
+          <span className="text-primary text-sm">{open ? "⊖" : "⊕"}</span>
+          <span className="text-sm font-semibold text-primary">{section.title}</span>
           <span className="text-[10px] text-muted-foreground ml-1">({section.items.length})</span>
         </button>
         {canEdit && (
@@ -101,13 +101,13 @@ function CollapsibleCard({ section, canEdit, onAddItem, onDeleteItem, onEditItem
           </div>
         )}
       </div>
-      <div className="mx-5 border-t border-accent/30" />
+      <div className="mx-5 border-t border-primary/30" />
       {open && (
         <ul className="px-5 py-3 space-y-2">
           {section.items.map((item) => (
             <li key={item.id} className="flex items-center gap-2 group">
               <span className="text-sm">{TYPE_ICONS[item.type] || "📄"}</span>
-              <button className="text-sm text-foreground hover:text-accent transition-colors text-left flex-1">
+              <button className="text-sm text-foreground hover:text-primary transition-colors text-left flex-1">
                 {item.label}
               </button>
               {canEdit && (

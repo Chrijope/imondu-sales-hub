@@ -73,7 +73,7 @@ function CollapsibleCard({ section, canEdit, onAddItem, onDeleteItem, onEditItem
     <div className="glass-card rounded-xl overflow-hidden">
       <div className="flex items-center">
         <button onClick={() => setOpen(!open)} className="flex-1 flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors">
-          <span className="text-sm font-semibold text-accent">{open ? "⊖" : "⊕"} {section.title}</span>
+          <span className="text-sm font-semibold text-primary">{open ? "⊖" : "⊕"} {section.title}</span>
           {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </button>
         {canEdit && (
@@ -86,12 +86,12 @@ function CollapsibleCard({ section, canEdit, onAddItem, onDeleteItem, onEditItem
       </div>
       {open && (
         <>
-          <div className="mx-5 border-t border-accent/30" />
+          <div className="mx-5 border-t border-primary/30" />
           <ul className="px-5 py-3 space-y-2">
             {section.items.map((item) => (
               <li key={item.id} className="flex items-center gap-2 group">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
-                <button className="text-sm text-foreground hover:text-accent transition-colors text-left flex items-center gap-2 flex-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                <button className="text-sm text-foreground hover:text-primary transition-colors text-left flex items-center gap-2 flex-1">
                   {item.label}
                   {item.type === "video" && <Play className="h-3.5 w-3.5 text-muted-foreground" />}
                   {item.type === "doc" && <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
@@ -167,7 +167,7 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
                 <div className="absolute inset-0 gradient-brand opacity-10" />
                 <div className="text-center z-10">
                   <div className="h-16 w-16 rounded-full bg-card/90 shadow-crm-md flex items-center justify-center mx-auto mb-3 cursor-pointer hover:scale-105 transition-transform">
-                    <Play className="h-7 w-7 text-accent ml-1" />
+                    <Play className="h-7 w-7 text-primary ml-1" />
                   </div>
                   <p className="text-lg font-display font-bold text-foreground">{videoTitle}</p>
                   <p className="text-sm text-muted-foreground mt-1">{videoSubtitle}</p>
@@ -178,7 +178,7 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
         </div>
         <div className="flex items-center justify-center gap-3 py-4 border-t border-border">
           {hasDownload ? (
-            <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10" asChild>
+            <Button variant="outline" size="sm" className="text-xs border-primary text-primary hover:bg-primary/10" asChild>
               <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
                 <Download className="h-3.5 w-3.5 mr-1.5" /> Video herunterladen
               </a>
@@ -189,7 +189,7 @@ function ErklaervideoBlock({ canEdit }: { canEdit: boolean }) {
             </Button>
           )}
           {videoUrl ? (
-            <Button variant="outline" size="sm" className="text-xs border-accent text-accent hover:bg-accent/10" asChild>
+            <Button variant="outline" size="sm" className="text-xs border-primary text-primary hover:bg-primary/10" asChild>
               <a href={videoUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Auf YouTube ansehen
               </a>
@@ -307,7 +307,7 @@ export default function Praesentation() {
             />
           ))}
           <Link to="/leads" className="glass-card rounded-xl flex items-center justify-between px-5 py-4 hover:shadow-crm-md transition-all group">
-            <span className="text-sm font-semibold text-accent flex items-center gap-2">
+            <span className="text-sm font-semibold text-primary flex items-center gap-2">
               <ArrowRight className="h-4 w-4" /> Kontakt anlegen
             </span>
           </Link>
