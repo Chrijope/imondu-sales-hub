@@ -78,14 +78,18 @@ function ContactCard({ contact, canEdit, onEdit, onDelete }: { contact: Contact;
         <p className="text-sm font-bold text-foreground">{contact.title}</p>
         <p className="text-sm text-muted-foreground">{contact.tasks}</p>
         <div className="space-y-1 pt-1">
-          <p className="text-sm text-foreground flex items-center gap-2">
-            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-            <a href={`mailto:${contact.email}`} className="text-primary hover:underline">{contact.email}</a>
-          </p>
-          <p className="text-sm text-foreground flex items-center gap-2">
-            <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-            <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-primary transition-colors">{contact.phone}</a>
-          </p>
+          {contact.email && (
+            <p className="text-sm text-foreground flex items-center gap-2">
+              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+              <a href={`mailto:${contact.email}`} className="text-primary hover:underline">{contact.email}</a>
+            </p>
+          )}
+          {contact.phone && (
+            <p className="text-sm text-foreground flex items-center gap-2">
+              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+              <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-primary transition-colors">{contact.phone}</a>
+            </p>
+          )}
         </div>
         <div className="pt-2 flex items-center gap-2">
           {contact.showChat && (
