@@ -40,7 +40,7 @@ function SectionCard({ title, actions, children }: { title: string; actions?: Re
     <div className="glass-card rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-1 bg-accent rounded-full" />
+          <div className="w-8 h-1 bg-primary rounded-full" />
           <h2 className="font-semibold text-foreground">{title}</h2>
         </div>
         {actions && <div className="flex gap-1">{actions}</div>}
@@ -56,7 +56,7 @@ function ToggleBtn({ active, label, onClick }: { active: boolean; label: string;
     <button
       onClick={onClick}
       className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-        active ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+        active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
       }`}
     >
       {label}
@@ -70,7 +70,7 @@ function FilterDropdown({ value, options, onChange }: { value: string; options: 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="px-3 py-1 rounded text-xs font-medium bg-accent text-accent-foreground hover:bg-accent/80 flex items-center gap-1.5 border border-border">
+        <button className="px-3 py-1 rounded text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/80 flex items-center gap-1.5 border border-primary">
           {activeLabel}
           <ChevronDown className="h-3 w-3" />
         </button>
@@ -80,7 +80,7 @@ function FilterDropdown({ value, options, onChange }: { value: string; options: 
           <DropdownMenuItem
             key={opt.key}
             onClick={() => onChange(opt.key)}
-            className={`text-xs cursor-pointer ${value === opt.key ? "bg-accent text-accent-foreground font-semibold" : ""}`}
+            className={`text-xs cursor-pointer ${value === opt.key ? "bg-primary text-primary-foreground font-semibold" : ""}`}
           >
             {opt.label}
           </DropdownMenuItem>
@@ -338,9 +338,11 @@ export default function Statistik() {
     <CRMLayout>
       <div className="p-6 space-y-6 min-h-screen dashboard-mesh-bg">
         {/* Header */}
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-10 bg-accent rounded-full" />
-          <h1 className="text-3xl font-bold text-foreground">Statistiken</h1>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-10 h-1 rounded-full gradient-brand" />
+          </div>
+          <h1 className="text-2xl font-display font-bold text-foreground">Statistiken</h1>
         </div>
 
         {/* Non-HR content */}
