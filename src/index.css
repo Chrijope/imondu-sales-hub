@@ -53,8 +53,8 @@
     --b2c: 262 100% 62%;
     --b2b: 318 100% 63%;
 
-    --gradient-brand: linear-gradient(135deg, hsl(318 100% 63%), hsl(262 100% 62%));
-    --gradient-brand-subtle: linear-gradient(135deg, hsl(318 100% 63% / 0.08), hsl(262 100% 62% / 0.08));
+    --gradient-brand: hsl(262 100% 62%);
+    --gradient-brand-subtle: hsl(262 100% 62% / 0.08);
 
     --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.04);
     --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.06);
@@ -167,7 +167,7 @@
   .dashboard-mesh-bg {
     background:
       radial-gradient(ellipse at 20% 0%, hsl(262 100% 62% / 0.03) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 100%, hsl(318 100% 63% / 0.03) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, hsl(262 100% 62% / 0.03) 0%, transparent 60%),
       hsl(var(--background));
   }
 
@@ -203,7 +203,7 @@
   .dark .dashboard-mesh-bg {
     background:
       radial-gradient(ellipse at 20% 0%, hsl(262 100% 62% / 0.04) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 100%, hsl(318 100% 63% / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, hsl(262 100% 62% / 0.04) 0%, transparent 60%),
       hsl(var(--background));
   }
 }
